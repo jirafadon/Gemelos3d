@@ -2,6 +2,7 @@ import * as THREE from 'https://esm.sh/three@0.161.0';
 import { FontLoader } from 'https://esm.sh/three@0.161.0/examples/jsm/loaders/FontLoader.js';
 import { TextGeometry } from 'https://esm.sh/three@0.161.0/examples/jsm/geometries/TextGeometry.js';
 import { STLExporter } from 'https://esm.sh/three@0.161.0/examples/jsm/exporters/STLExporter.js';
+import { Brush, Evaluator, INTERSECTION } from 'https://esm.sh/three-bvh-csg@0.0.18?deps=three@0.161.0,three-mesh-bvh@0.9.7';
 
 const $ = id => document.getElementById(id);
 const viewer = $('viewer');
@@ -59,6 +60,62 @@ function makeGeometry(ch, h, d) {
   return geo;
 }
 
+function createMaterial() {
+  return new THREE.MeshStandardMaterial({ roughness: 0.65, metalness: 0.05 });
+}
+
+function splitMeshByX(mesh, usableX, totalStartX, totalEndX) {
+  const box = new THREE.Box3().setFromObject(mesh);
+  const width = box.max.x - box.min.x;
+  if (width <= usableX + 0.001) return [mesh];
+
+  const parts = [];
+  const evaluator = new Evaluator();
+  const original = new Brush(mesh.geometry.clone(), createMaterial());
+  original.position.copy(mesh.position);
+  original.rotation.copy(mesh.rotation);
+  original.scale.copy(mesh.scale);
+  original.updateMatrixWorld(true);
+
+  const start = box.min.x;
+  const count = Math.ceil(width / usableX);
+  for (let i = 0; i < count; i++) {
+    const x0 = start + i * usableX;
+    const x1 = Math.min(start + (i + 1) * usableX, box.max.x);
+    const slabWidth = Math.max(0.001, x1 - x0);
+    const cutter = new Brush(new THREE.BoxGeometry(slabWidth, box.max.y - box.min.y + 2, box.max.z - box.min.z + 2), createMaterial());
+    cutter.position.set((x0 + x1) / 2, (box.min.y + box.max.y) / 2, (box.min.z + box.max.z) / 2);
+    cutter.updateMatrixWorld(true);
+
+    try {
+      const result = evaluator.evaluate(original, cutter, INTERSECTION);
+      result.geometry.computeBoundingBox();
+      const resultBox = result.geometry.boundingBox;
+      if (resultBox && resultBox.max.x - resultBox.min.x > 0.01) {
+        result.material = createMaterial();
+        result.position.set(0, 0, 0);
+        result.rotation.set(0, 0, 0);
+        result.scale.set(1, 1, 1);
+        result.updateMatrixWorld(true);
+        result.userData = {
+          ...mesh.userData,
+          split: true,
+          splitIndex: i + 1,
+          splitCount: count,
+          splitMinX: x0,
+          splitMaxX: x1
+        };
+        parts.push(result);
+      }
+    } catch (error) {
+      console.error('Error al cortar letra:', error);
+      return [];
+    }
+  }
+
+  return parts;
+}
+
 function build() {
   if (!font) return;
   group.clear();
@@ -89,14 +146,9 @@ function build() {
     const geo = makeGeometry(ch, h, d);
     const box = geo.boundingBox;
     const w = box.max.x - box.min.x;
-    const mesh = new THREE.Mesh(
-      geo,
-      new THREE.MeshStandardMaterial({ roughness: 0.65, metalness: 0.05 })
-    );
+    const mesh = new THREE.Mesh(geo, createMaterial());
     mesh.position.x = cursor;
     mesh.userData = { char: ch, index, width: w, startX: cursor };
-    group.add(mesh);
-    currentObjects.push(mesh);
     all.push(mesh);
     cursor += w + gap;
     maxH = Math.max(maxH, box.max.y - box.min.y);
@@ -107,11 +159,42 @@ function build() {
   const totalZ = maxH;
   const fits = totalX <= usable.x && totalY <= usable.y && totalZ <= usable.z;
 
+  // Convert every letter into printable geometry. Oversized letters are cut
+  // physically with CSG intersections against X slabs that fit the printer.
+  all.forEach(mesh => {
+    const width = mesh.userData.width;
+    if (width <= usable.x + 0.001) {
+      group.add(mesh);
+      currentObjects.push(mesh);
+      return;
+    }
+
+    const parts = splitMeshByX(mesh, usable.x, mesh.userData.startX, mesh.userData.startX + width);
+    if (!parts.length) {
+      setStatus(`✕ No se pudo cortar físicamente la letra (${mesh.userData.char}).`, 'bad');
+      return;
+    }
+    parts.forEach(part => {
+      group.add(part);
+      currentObjects.push(part);
+    });
+  });
+
+  // Plan printable groups. A physically split letter is already a piece; the
+  // normal case groups complete letters into bed-sized files.
   let piece = [];
   let pieceWidth = 0;
   let pieceNumber = 1;
   all.forEach(mesh => {
     const w = mesh.userData.width;
+    if (w > usable.x + 0.001) {
+      const splitCount = Math.ceil(w / usable.x);
+      for (let i = 1; i <= splitCount; i++) {
+        const part = currentObjects.find(o => o.userData.index === mesh.userData.index && o.userData.splitIndex === i);
+        if (part) plannedPieces.push({ number: pieceNumber++, objects: [part], width: usable.x });
+      }
+      return;
+    }
     const next = piece.length ? pieceWidth + gap + w : w;
     if (piece.length && next > usable.x) {
       plannedPieces.push({ number: pieceNumber++, objects: piece, width: pieceWidth });
@@ -131,7 +214,12 @@ function build() {
   $('pieces').textContent = fits ? '1' : plannedPieces.length;
 
   if (oversizedLetter) {
-    setStatus(`✕ Una letra (${oversizedLetter.userData.char}) mide ${oversizedLetter.userData.width.toFixed(1)} mm y supera la cama útil. Todavía no se realiza corte físico de una letra individual.`, 'bad');
+    const splitParts = currentObjects.filter(o => o.userData.index === oversizedLetter.userData.index && o.userData.split);
+    if (splitParts.length) {
+      setStatus(`✓ La letra (${oversizedLetter.userData.char}) fue cortada físicamente en ${splitParts.length} piezas de hasta ${usable.x.toFixed(1)} mm.`, 'ok');
+    } else {
+      setStatus(`✕ No se pudo cortar físicamente la letra (${oversizedLetter.userData.char}).`, 'bad');
+    }
   } else if (fits) {
     setStatus(`✓ Modelo listo: entra en la cama útil (${usable.x} × ${usable.y} × ${usable.z} mm).`, 'ok');
   } else {
@@ -208,10 +296,6 @@ $('download').onclick = () => {
 
 $('downloadPieces').onclick = () => {
   if (!plannedPieces.length) return;
-  if (plannedPieces.length === 1) {
-    exportObjects(plannedPieces[0].objects, 'gemelos3d-pieza-01.stl');
-    return;
-  }
   plannedPieces.forEach((p, i) => {
     setTimeout(() => exportObjects(p.objects, `gemelos3d-pieza-${String(i + 1).padStart(2, '0')}.stl`), i * 250);
   });
