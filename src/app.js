@@ -1,29 +1,25 @@
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js';
-import { FontLoader } from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/loaders/FontLoader.js';
-import { TextGeometry } from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/geometries/TextGeometry.js';
-import { STLExporter } from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/exporters/STLExporter.js';
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.179.1/build/three.module.js';
+import { FontLoader } from 'https://cdn.jsdelivr.net/npm/three@0.179.1/examples/jsm/loaders/FontLoader.js';
+import { TextGeometry } from 'https://cdn.jsdelivr.net/npm/three@0.179.1/examples/jsm/geometries/TextGeometry.js';
 
-const $=id=>document.getElementById(id);
-const viewer=$('viewer');
+const $=id=>document.getElementById(id), viewer=$('viewer');
 const scene=new THREE.Scene(); scene.background=new THREE.Color(0x101216);
-const camera=new THREE.PerspectiveCamera(45,1,.1,5000); camera.position.set(180,150,220);
+const camera=new THREE.PerspectiveCamera(38,1,.1,5000); camera.position.set(220,170,260);
 const renderer=new THREE.WebGLRenderer({antialias:true}); renderer.setPixelRatio(Math.min(devicePixelRatio,2)); viewer.appendChild(renderer.domElement);
-scene.add(new THREE.HemisphereLight(0xffffff,0x30343d,2)); const dl=new THREE.DirectionalLight(0xffffff,2); dl.position.set(100,180,120); scene.add(dl);
-const grid=new THREE.GridHelper(600,30,0x333740,0x22262d); grid.rotation.x=Math.PI/2; scene.add(grid);
-let group=new THREE.Group(); scene.add(group); let font=null, currentObjects=[];
-new FontLoader().load('https://cdn.jsdelivr.net/npm/three@0.161.0/examples/fonts/helvetiker_regular.typeface.json', f=>{font=f; build();});
-
-function dims(){ if($('printer').value==='custom') return {x:+$('cx').value,y:+$('cy').value,z:+$('cz').value}; const [x,y,z]=$('printer').value.split(',').map(Number); return {x,y,z}; }
-function build(){ if(!font)return; group.clear(); currentObjects=[]; const text=$('text').value||'GEMELOS 3D', h=+$('height').value||60, d=+$('depth').value||12, gap=+$('spacing').value||4; let cursor=0, maxH=0;
-  const chars=[...text]; chars.forEach((ch,i)=>{ if(ch===' '){cursor+=h*.45+gap;return;} const geo=new TextGeometry(ch,{font,size:h,height:d,curveSegments:6,bevelEnabled:false}); geo.computeBoundingBox(); const w=geo.boundingBox.max.x-geo.boundingBox.min.x; geo.translate(cursor,0,0); const mat=new THREE.MeshStandardMaterial({roughness:.65,metalness:.05}); const mesh=new THREE.Mesh(geo,mat); group.add(mesh); currentObjects.push(mesh); cursor+=w+gap; maxH=Math.max(maxH,geo.boundingBox.max.y); });
-  const totalX=Math.max(0,cursor-gap), totalY=d, totalZ=maxH; const bed=dims(), margin=Math.max(0,+$('margin').value||0); const usable={x:bed.x-2*margin,y:bed.y-2*margin,z:bed.z-2*margin}; const pieces=Math.max(1,Math.ceil(totalX/Math.max(1,usable.x))); $('sx').textContent=totalX.toFixed(1); $('sy').textContent=totalY.toFixed(1); $('sz').textContent=totalZ.toFixed(1); $('pieces').textContent=pieces;
-  const fits=totalX<=usable.x&&totalY<=usable.y&&totalZ<=usable.z; $('status').innerHTML=fits?`<span class="ok">✓ Entra en la cama útil (${usable.x} × ${usable.y} × ${usable.z} mm).</span>`:`<span class="warn">⚠ Supera la cama útil (${usable.x} × ${usable.y} × ${usable.z} mm). División estimada: ${pieces} piezas.</span>`;
-  group.position.set(-totalX/2,-totalZ/2,0); grid.position.set(0,0,-d/2-1); fitCamera(totalX,totalZ,d);
-}
-function fitCamera(x,z,y){ const r=Math.max(x,z,y)*1.25; camera.position.set(r*.9,r*.75,r*1.1); camera.lookAt(0,0,0); }
-function resize(){ const w=viewer.clientWidth,h=viewer.clientHeight||600; renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix(); } addEventListener('resize',resize); resize();
-function animate(){requestAnimationFrame(animate); group.rotation.z=Math.sin(Date.now()/5000)*.02; renderer.render(scene,camera);} animate();
-$('build').onclick=build; ['printer','margin','cx','cy','cz','text','height','depth','spacing'].forEach(id=>$(id).addEventListener('input',()=>{if(id==='printer')$('customFields').hidden=$('printer').value!=='custom';build();}));
-$('printer').onchange=()=>{$('customFields').hidden=$('printer').value!=='custom';build();};
-$('download').onclick=()=>{ if(!currentObjects.length)return; const exporter=new STLExporter(); const merged=new THREE.Group(); currentObjects.forEach(o=>merged.add(o.clone())); const stl=exporter.parse(merged); const blob=new Blob([stl],{type:'model/stl'}); const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='gemelos3d-proyecto01.stl';a.click();URL.revokeObjectURL(a.href); };
-$('project').onclick=()=>{ const data={app:'Gemelos 3D',project:'Proyecto 01',printer:$('printer').value,custom:{x:$('cx').value,y:$('cy').value,z:$('cz').value},margin:+$('margin').value,text:$('text').value,height:+$('height').value,depth:+$('depth').value,spacing:+$('spacing').value}; const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='gemelos3d-proyecto01.json';a.click();};
+scene.add(new THREE.HemisphereLight(0xffffff,0x343a45,2)); const dl=new THREE.DirectionalLight(0xffffff,2.5); dl.position.set(120,200,160); scene.add(dl);
+const group=new THREE.Group(); scene.add(group); let font=null, meshes=[];
+const bed=new THREE.Mesh(new THREE.BoxGeometry(270,.8,270),new THREE.MeshStandardMaterial({color:0x343941,transparent:true,opacity:.45})); bed.position.y=-.4; scene.add(bed);
+const grid=new THREE.GridHelper(270,27,0x656c76,0x343941); grid.position.y=.1; scene.add(grid);
+new FontLoader().load('https://cdn.jsdelivr.net/npm/three@0.179.1/examples/fonts/helvetiker_bold.typeface.json',f=>{font=f;build();},undefined,()=>setStatus('No se pudo cargar la fuente. Abrí la aplicación con conexión a internet.','bad'));
+function dims(){if($('printer').value==='custom')return [+$('cx').value||1,+$('cy').value||1,+$('cz').value||1];return $('printer').value.split(',').map(Number)}
+function build(){if(!font)return; group.clear();meshes=[]; const text=$('text').value||'GEMELOS 3D',h=Math.max(1,+$('height').value||1),d=Math.max(.8,+$('depth').value||.8),gap=Math.max(0,+$('spacing').value||0);let cursor=0;
+ for(const ch of [...text]){if(ch===' '){cursor+=h*.35+gap;continue}const g=new TextGeometry(ch,{font,size:h,height:d,curveSegments:6,bevelEnabled:true,bevelThickness:Math.min(1,d*.15),bevelSize:Math.min(1,h*.025),bevelSegments:2});g.computeBoundingBox();const w=g.boundingBox.max.x-g.boundingBox.min.x;g.translate(cursor,0,0);const m=new THREE.Mesh(g,new THREE.MeshStandardMaterial({roughness:.5,metalness:.12,color:0xe7e9ed}));m.castShadow=true;group.add(m);meshes.push(m);cursor+=w+gap}
+ const x=Math.max(0,cursor-gap); const z=h; const [bx,by,bz]=dims(),margin=Math.max(0,+$('margin').value||0),ux=Math.max(1,bx-2*margin),uy=Math.max(1,by-2*margin),uz=Math.max(1,bz-2*margin); const nx=Math.max(1,Math.ceil(x/ux)),ny=Math.max(1,Math.ceil(d/uy)),nz=Math.max(1,Math.ceil(z/uz)); const pieces=nx*ny*nz; $('sx').textContent=x.toFixed(1)+' mm';$('sy').textContent=d.toFixed(1)+' mm';$('sz').textContent=z.toFixed(1)+' mm';$('pieces').textContent=pieces; const fits=pieces===1; setStatus(fits?`✓ Modelo listo. Cama útil: ${ux} × ${uy} × ${uz} mm.`:`⚠ Modelo excede la cama útil. División preliminar: ${nx} × ${ny} × ${nz} = ${pieces} piezas.` ,fits?'ok':'warn');group.position.set(-x/2,-z/2,-d/2);fitCamera(x,z,d)}
+function fitCamera(x,z,d){const r=Math.max(x,z,d,100)*1.25;camera.position.set(r*.9,r*.7,r*1.25);camera.lookAt(0,0,0)}
+function resize(){const r=viewer.getBoundingClientRect();renderer.setSize(r.width,r.height,false);camera.aspect=r.width/r.height;camera.updateProjectionMatrix()}addEventListener('resize',resize);resize();
+let drag=false,lastX=0,lastY=0,theta=.25,phi=.12;renderer.domElement.addEventListener('pointerdown',e=>{drag=true;lastX=e.clientX;lastY=e.clientY});addEventListener('pointerup',()=>drag=false);addEventListener('pointermove',e=>{if(!drag)return;theta+=(e.clientX-lastX)*.008;phi=Math.max(-1,Math.min(1,phi+(e.clientY-lastY)*.008));lastX=e.clientX;lastY=e.clientY});
+function animate(){requestAnimationFrame(animate);const r=camera.position.length();camera.position.setFromSphericalCoords(new THREE.Spherical(r,Math.PI/2-phi,theta));camera.lookAt(0,0,0);renderer.render(scene,camera)}animate();
+function setStatus(t,c=''){const s=$('status');s.className=c;s.textContent=t}
+$('build').onclick=build;['text','height','depth','spacing','margin','cx','cy','cz'].forEach(id=>$(id).addEventListener('input',build));$('printer').onchange=()=>{$('customFields').hidden=$('printer').value!=='custom';build()};
+$('download').onclick=()=>{if(!meshes.length)return;let out='solid gemelos3d\n';group.updateMatrixWorld(true);for(const m of meshes){const p=m.geometry.attributes.position;for(let i=0;i<p.count;i+=3){const a=new THREE.Vector3().fromBufferAttribute(p,i).applyMatrix4(m.matrixWorld),b=new THREE.Vector3().fromBufferAttribute(p,i+1).applyMatrix4(m.matrixWorld),c=new THREE.Vector3().fromBufferAttribute(p,i+2).applyMatrix4(m.matrixWorld),n=b.clone().sub(a).cross(c.clone().sub(a)).normalize();out+=` facet normal ${n.x} ${n.y} ${n.z}\n  outer loop\n   vertex ${a.x} ${a.y} ${a.z}\n   vertex ${b.x} ${b.y} ${b.z}\n   vertex ${c.x} ${c.y} ${c.z}\n  endloop\n endfacet\n`}}out+='endsolid gemelos3d\n';const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([out],{type:'model/stl'}));a.download='gemelos3d-proyecto01.stl';a.click()};
+$('project').onclick=()=>{const data={app:'Gemelos 3D',project:'01',printer:$('printer').value,custom:{x:+$('cx').value,y:+$('cy').value,z:+$('cz').value},margin:+$('margin').value,text:$('text').value,height:+$('height').value,depth:+$('depth').value,spacing:+$('spacing').value};const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download='gemelos3d-proyecto01.json';a.click()};
