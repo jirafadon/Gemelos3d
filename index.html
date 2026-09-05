@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gemelos 3D — Proyecto 01</title>
+  <style>
+    :root { font-family: Inter, system-ui, sans-serif; color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background:#101216; color:#f4f5f7; }
+    header { padding:18px 22px; border-bottom:1px solid #2a2e36; }
+    header h1 { margin:0 0 4px; font-size:22px; }
+    header p { margin:0; color:#9da3ad; font-size:13px; }
+    main { display:grid; grid-template-columns:320px 1fr; min-height:calc(100vh - 75px); }
+    aside { padding:18px; border-right:1px solid #2a2e36; overflow:auto; }
+    section { margin-bottom:18px; }
+    label { display:block; margin:10px 0 5px; color:#b9bec7; font-size:12px; }
+    input, select, button { width:100%; border:1px solid #343943; background:#191c22; color:#fff; border-radius:8px; padding:9px 10px; }
+    input[type=number] { appearance:textfield; }
+    button { cursor:pointer; margin-top:8px; font-weight:600; }
+    button.primary { background:#fff; color:#111; }
+    .stats { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .card { padding:10px; border:1px solid #2a2e36; border-radius:8px; background:#15181d; }
+    .card b { display:block; font-size:16px; }
+    .card span { color:#8f96a2; font-size:11px; }
+    #status { margin-top:10px; padding:9px; border-radius:8px; background:#171a20; color:#aeb4bf; font-size:12px; line-height:1.4; }
+    #viewer { position:relative; min-height:600px; }
+    canvas { display:block; width:100%; height:100%; }
+    .badge { position:absolute; right:14px; top:14px; padding:7px 9px; border-radius:7px; background:#171a20dd; border:1px solid #30343d; font-size:11px; }
+    .ok { color:#9fe3b1; } .warn { color:#f1c77a; } .bad { color:#ff9d9d; }
+    ul { margin:8px 0 0; padding-left:18px; color:#b9bec7; font-size:12px; }
+    @media (max-width:800px){ main{grid-template-columns:1fr;} aside{border-right:0;border-bottom:1px solid #2a2e36;} #viewer{min-height:55vh;} }
+  </style>
+</head>
+<body>
+<header><h1>Gemelos 3D</h1><p>Proyecto 01 · Núcleo de fabricación, cama, ajuste y división</p></header>
+<main>
+<aside>
+  <section>
+    <label for="printer">Impresora</label>
+    <select id="printer">
+      <option value="270,270,270">Snapmaker U1 — 270 × 270 × 270 mm</option>
+      <option value="256,256,256">Bambu Lab A1 — 256 × 256 × 256 mm</option>
+      <option value="256,256,256">Bambu Lab P1S — 256 × 256 × 256 mm</option>
+      <option value="220,220,250">Creality K1 — 220 × 220 × 250 mm</option>
+      <option value="custom">Personalizada…</option>
+    </select>
+    <div id="customFields" hidden>
+      <label>X (mm)</label><input id="cx" type="number" value="200" min="1">
+      <label>Y (mm)</label><input id="cy" type="number" value="200" min="1">
+      <label>Z (mm)</label><input id="cz" type="number" value="200" min="1">
+    </div>
+    <label for="margin">Margen de seguridad (mm)</label>
+    <input id="margin" type="number" value="5" min="0" step="1">
+  </section>
+  <section>
+    <label for="text">Texto</label><input id="text" value="GEMELOS 3D">
+    <label for="height">Altura (mm)</label><input id="height" type="number" value="60" min="1">
+    <label for="depth">Profundidad (mm)</label><input id="depth" type="number" value="12" min="0.8" step="0.5">
+    <label for="spacing">Separación (mm)</label><input id="spacing" type="number" value="4" min="0" step="0.5">
+    <button class="primary" id="build">Actualizar modelo</button>
+  </section>
+  <section>
+    <div class="stats">
+      <div class="card"><b id="sx">—</b><span>Ancho X</span></div>
+      <div class="card"><b id="sy">—</b><span>Profundidad Y</span></div>
+      <div class="card"><b id="sz">—</b><span>Altura Z</span></div>
+      <div class="card"><b id="pieces">—</b><span>Piezas</span></div>
+    </div>
+    <div id="status">Cargando motor 3D…</div>
+  </section>
+  <section>
+    <button id="download">Exportar STL</button>
+    <button id="project">Guardar proyecto JSON</button>
+    <ul><li>Las piezas se separan por caracteres para respetar la cama.</li><li>El exportador genera STL ASCII válido.</li><li>Esta versión no realiza todavía cortes físicos dentro de una letra única.</li></ul>
+  </section>
+</aside>
+<div id="viewer"><div class="badge">mm · vista 3D</div></div>
+</main>
+<script type="module" src="./src/app.js"></script>
+</body>
+</html>
