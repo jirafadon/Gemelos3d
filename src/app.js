@@ -25,18 +25,49 @@ scene.add(group);
 let font = null;
 let currentObjects = [];
 let plannedPieces = [];
+const fontCache = new Map();
+const fontBase = 'https://esm.sh/three@0.161.0/examples/fonts/';
+
+const fontFiles = {
+  helvetiker_regular: 'helvetiker_regular.typeface.json',
+  helvetiker_bold: 'helvetiker_bold.typeface.json',
+  optimer_regular: 'optimer_regular.typeface.json',
+  gentilis_regular: 'gentilis_regular.typeface.json'
+};
 
 function setStatus(message, className = '') {
   const status = $('status');
   if (status) status.innerHTML = `<span class="${className}">${message}</span>`;
 }
 
-new FontLoader().load(
-  'https://esm.sh/three@0.161.0/examples/fonts/helvetiker_regular.typeface.json',
-  f => { font = f; build(); },
-  undefined,
-  err => setStatus('✕ No se pudo cargar la fuente 3D. Revisá la conexión y recargá la página.', 'bad')
-);
+async function loadFont(style) {
+  if (fontCache.has(style)) return fontCache.get(style);
+  const file = fontFiles[style] || fontFiles.helvetiker_regular;
+  setStatus(`Cargando tipografía ${style.replaceAll('_', ' ')}…`);
+  try {
+    const loaded = await new FontLoader().loadAsync(fontBase + file);
+    fontCache.set(style, loaded);
+    return loaded;
+  } catch (err) {
+    console.error('Error al cargar tipografía:', err);
+    throw err;
+  }
+}
+
+async function ensureFont() {
+  const style = $('fontStyle').value;
+  if (fontCache.has(style)) {
+    font = fontCache.get(style);
+    return true;
+  }
+  try {
+    font = await loadFont(style);
+    return true;
+  } catch {
+    setStatus('✕ No se pudo cargar la tipografía 3D. Revisá la conexión y recargá la página.', 'bad');
+    return false;
+  }
+}
 
 function dims() {
   if ($('printer').value === 'custom') return {
@@ -49,12 +80,21 @@ function dims() {
 }
 
 function makeGeometry(ch, h, d) {
+  const bevelEnabled = $('bevel').checked;
+  const bevelSize = Math.max(0.1, +$('bevelSize').value || 1.2);
+  const bevelSegments = Math.max(1, Math.min(6, +$('bevelSegments').value || 2));
+  const curveSegments = Math.max(3, +$('curveSegments').value || 6);
+  const safeBevel = Math.min(bevelSize, d / 2, h / 8);
   const geo = new TextGeometry(ch, {
     font,
     size: h,
     height: d,
-    curveSegments: 6,
-    bevelEnabled: false
+    curveSegments,
+    bevelEnabled,
+    bevelThickness: safeBevel,
+    bevelSize: safeBevel,
+    bevelOffset: 0,
+    bevelSegments
   });
   geo.computeBoundingBox();
   return geo;
@@ -64,7 +104,7 @@ function createMaterial() {
   return new THREE.MeshStandardMaterial({ roughness: 0.65, metalness: 0.05 });
 }
 
-function splitMeshByX(mesh, usableX, totalStartX, totalEndX) {
+function splitMeshByX(mesh, usableX) {
   const box = new THREE.Box3().setFromObject(mesh);
   const width = box.max.x - box.min.x;
   if (width <= usableX + 0.001) return [mesh];
@@ -112,12 +152,13 @@ function splitMeshByX(mesh, usableX, totalStartX, totalEndX) {
       return [];
     }
   }
-
   return parts;
 }
 
-function build() {
-  if (!font) return;
+async function build() {
+  const ok = await ensureFont();
+  if (!ok) return;
+
   group.clear();
   currentObjects = [];
   plannedPieces = [];
@@ -136,7 +177,7 @@ function build() {
 
   let cursor = 0;
   let maxH = 0;
-  let all = [];
+  const all = [];
 
   [...text].forEach((ch, index) => {
     if (ch === ' ') {
@@ -159,17 +200,13 @@ function build() {
   const totalZ = maxH;
   const fits = totalX <= usable.x && totalY <= usable.y && totalZ <= usable.z;
 
-  // Convert every letter into printable geometry. Oversized letters are cut
-  // physically with CSG intersections against X slabs that fit the printer.
   all.forEach(mesh => {
-    const width = mesh.userData.width;
-    if (width <= usable.x + 0.001) {
+    if (mesh.userData.width <= usable.x + 0.001) {
       group.add(mesh);
       currentObjects.push(mesh);
       return;
     }
-
-    const parts = splitMeshByX(mesh, usable.x, mesh.userData.startX, mesh.userData.startX + width);
+    const parts = splitMeshByX(mesh, usable.x);
     if (!parts.length) {
       setStatus(`✕ No se pudo cortar físicamente la letra (${mesh.userData.char}).`, 'bad');
       return;
@@ -180,8 +217,6 @@ function build() {
     });
   });
 
-  // Plan printable groups. A physically split letter is already a piece; the
-  // normal case groups complete letters into bed-sized files.
   let piece = [];
   let pieceWidth = 0;
   let pieceNumber = 1;
@@ -207,7 +242,6 @@ function build() {
   if (piece.length) plannedPieces.push({ number: pieceNumber, objects: piece, width: pieceWidth });
 
   const oversizedLetter = all.find(m => m.userData.width > usable.x);
-
   $('sx').textContent = totalX.toFixed(1);
   $('sy').textContent = totalY.toFixed(1);
   $('sz').textContent = totalZ.toFixed(1);
@@ -215,11 +249,8 @@ function build() {
 
   if (oversizedLetter) {
     const splitParts = currentObjects.filter(o => o.userData.index === oversizedLetter.userData.index && o.userData.split);
-    if (splitParts.length) {
-      setStatus(`✓ La letra (${oversizedLetter.userData.char}) fue cortada físicamente en ${splitParts.length} piezas de hasta ${usable.x.toFixed(1)} mm.`, 'ok');
-    } else {
-      setStatus(`✕ No se pudo cortar físicamente la letra (${oversizedLetter.userData.char}).`, 'bad');
-    }
+    if (splitParts.length) setStatus(`✓ La letra (${oversizedLetter.userData.char}) fue cortada físicamente en ${splitParts.length} piezas de hasta ${usable.x.toFixed(1)} mm.`, 'ok');
+    else setStatus(`✕ No se pudo cortar físicamente la letra (${oversizedLetter.userData.char}).`, 'bad');
   } else if (fits) {
     setStatus(`✓ Modelo listo: entra en la cama útil (${usable.x} × ${usable.y} × ${usable.z} mm).`, 'ok');
   } else {
@@ -235,9 +266,7 @@ function build() {
 function renderPieceList() {
   const list = $('pieceList');
   if (!list) return;
-  list.innerHTML = plannedPieces.map(p =>
-    `<div class="piece"><b>Pieza ${p.number}</b><span>${p.objects.map(o => o.userData.char).join('')} · ${p.width.toFixed(1)} mm</span></div>`
-  ).join('');
+  list.innerHTML = plannedPieces.map(p => `<div class="piece"><b>Pieza ${p.number}</b><span>${p.objects.map(o => o.userData.char).join('')} · ${p.width.toFixed(1)} mm</span></div>`).join('');
 }
 
 function fitCamera(x, z, y) {
@@ -264,14 +293,20 @@ function animate() {
 animate();
 
 $('build').onclick = build;
-['printer', 'margin', 'cx', 'cy', 'cz', 'text', 'height', 'depth', 'spacing'].forEach(id => {
+['printer', 'margin', 'cx', 'cy', 'cz', 'text', 'height', 'depth', 'spacing', 'curveSegments', 'bevelSize', 'bevelSegments'].forEach(id => {
   $(id).addEventListener('input', () => {
     if (id === 'printer') $('customFields').hidden = $('printer').value !== 'custom';
+    if (id === 'bevelSize' || id === 'bevelSegments') $('bevel').checked = true;
     build();
   });
 });
 $('printer').onchange = () => {
   $('customFields').hidden = $('printer').value !== 'custom';
+  build();
+};
+$('fontStyle').onchange = build;
+$('bevel').onchange = () => {
+  $('bevelFields').hidden = !$('bevel').checked;
   build();
 };
 
@@ -291,34 +326,39 @@ function exportObjects(objects, filename) {
 
 $('download').onclick = () => {
   if (!currentObjects.length) return;
-  exportObjects(currentObjects, 'gemelos3d-proyecto01.stl');
+  exportObjects(currentObjects, 'gemelos3d-proyecto02.stl');
 };
 
 $('downloadPieces').onclick = () => {
   if (!plannedPieces.length) return;
-  plannedPieces.forEach((p, i) => {
-    setTimeout(() => exportObjects(p.objects, `gemelos3d-pieza-${String(i + 1).padStart(2, '0')}.stl`), i * 250);
-  });
+  plannedPieces.forEach((p, i) => setTimeout(() => exportObjects(p.objects, `gemelos3d-pieza-${String(i + 1).padStart(2, '0')}.stl`), i * 250));
 };
 
 $('project').onclick = () => {
   const data = {
     app: 'Gemelos 3D',
-    project: 'Proyecto 01',
+    project: 'Proyecto 02',
     printer: $('printer').value,
     custom: { x: $('cx').value, y: $('cy').value, z: $('cz').value },
     margin: +$('margin').value,
     text: $('text').value,
+    fontStyle: $('fontStyle').value,
     height: +$('height').value,
     depth: +$('depth').value,
     spacing: +$('spacing').value,
+    curveSegments: +$('curveSegments').value,
+    bevel: $('bevel').checked,
+    bevelSize: +$('bevelSize').value,
+    bevelSegments: +$('bevelSegments').value,
     pieces: plannedPieces.map(p => ({ number: p.number, width: p.width, text: p.objects.map(o => o.userData.char).join('') }))
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'gemelos3d-proyecto01.json';
+  a.download = 'gemelos3d-proyecto02.json';
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 };
+
+ensureFont().then(build);
