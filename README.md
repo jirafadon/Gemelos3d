@@ -13,12 +13,17 @@ Primera base funcional de Gemelos 3D.
 - Visualización 3D.
 - Cálculo de dimensiones X/Y/Z.
 - Detección de ajuste contra cama útil.
-- Estimación de cantidad de piezas cuando el ancho supera la cama.
+- División física de geometría sobredimensionada mediante CSG (`three-bvh-csg`).
+- Generación de piezas independientes a partir de una letra que supera el ancho útil.
+- Acomodado automático en una o varias camas, con rotación de 90°.
+- Reserva configurable de área para torre de purga.
 - Exportación STL.
 - Guardado de parámetros como JSON.
 
-### Límite explícito de esta etapa
-La división mostrada es una **estimación por caracteres**. Todavía no corta físicamente una letra única que sea demasiado grande ni genera automáticamente STL independientes con encastres. Eso corresponde al Proyecto 04.
+### Estado de la división física
+La división de piezas grandes **ya está implementada realmente**. `src/app.js` utiliza `three-bvh-csg` para intersectar la geometría con volúmenes de corte y generar piezas físicas independientes mediante `splitMeshByX()`.
+
+La división profesional con búsqueda de cortes óptimos, encastres/uniones y optimización avanzada corresponde a etapas posteriores. No debe confundirse con una simple estimación por caracteres.
 
 ### Cómo probar
 Abrir `index.html` en un navegador moderno con conexión a Internet. Los módulos Three.js se cargan desde CDN.
