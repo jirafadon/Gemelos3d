@@ -6,125 +6,37 @@
   <title>Gemelos 3D — Proyecto 02</title>
   <style>
     :root { font-family: Inter, system-ui, sans-serif; color-scheme: dark; }
-    * { box-sizing: border-box; }
-    body { margin:0; background:#101216; color:#f4f5f7; }
-    header { padding:18px 22px; border-bottom:1px solid #2a2e36; }
-    header h1 { margin:0 0 4px; font-size:22px; } header p { margin:0; color:#9da3ad; font-size:13px; }
-    main { display:grid; grid-template-columns:360px 1fr; min-height:calc(100vh - 75px); }
-    aside { padding:14px; border-right:1px solid #2a2e36; overflow:auto; }
-    section { margin-bottom:10px; padding:12px; border:1px solid #2a2e36; border-radius:10px; background:#13161b; }
-    .sectionTitle { margin:0 0 3px; font-size:14px; font-weight:700; }
-    .sectionHint { margin:0 0 9px; color:#777f8c; font-size:11px; line-height:1.35; }
-    label { display:block; margin:9px 0 5px; color:#b9bec7; font-size:12px; }
-    input,select,button { width:100%; border:1px solid #343943; background:#191c22; color:#fff; border-radius:8px; padding:9px 10px; }
-    button { cursor:pointer; margin-top:7px; font-weight:600; } button.primary { background:#fff; color:#111; }
-    .row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-    .check { display:flex; align-items:center; gap:8px; margin-top:10px; color:#b9bec7; font-size:12px; }
-    .check input { width:auto; }
-    .hint { margin-top:6px; color:#777f8c; font-size:11px; line-height:1.35; }
-    .bedSummary { margin-top:9px; padding:9px; border-radius:8px; background:#171a20; border:1px solid #2a2e36; font-size:12px; line-height:1.45; }
-    .bedSummary b { font-size:14px; }
-    .stats { display:grid; grid-template-columns:1fr 1fr; gap:8px; } .card { padding:10px; border:1px solid #2a2e36; border-radius:8px; background:#15181d; }
-    .card b { display:block; font-size:16px; } .card span { color:#8f96a2; font-size:11px; }
-    #status { margin-top:10px; padding:9px; border-radius:8px; background:#171a20; color:#aeb4bf; font-size:12px; line-height:1.4; }
-    #viewer { position:relative; min-height:600px; } canvas { display:block; width:100%; height:100%; }
-    .badge { position:absolute; right:14px; top:14px; padding:7px 9px; border-radius:7px; background:#171a20dd; border:1px solid #30343d; font-size:11px; }
-    .ok { color:#9fe3b1; } .warn { color:#f1c77a; } .bad { color:#ff9d9d; }
-    .piece { display:flex; justify-content:space-between; gap:8px; padding:7px 8px; margin-top:5px; border:1px solid #2a2e36; border-radius:7px; background:#15181d; font-size:11px; }
-    .piece span { color:#9da3ad; } ul { margin:8px 0 0; padding-left:18px; color:#b9bec7; font-size:12px; }
-    @media(max-width:800px){ main{grid-template-columns:1fr;} aside{border-right:0;border-bottom:1px solid #2a2e36;} #viewer{min-height:55vh;} }
+    * { box-sizing:border-box; } body{margin:0;background:#101216;color:#f4f5f7}
+    header{padding:18px 22px;border-bottom:1px solid #2a2e36} header h1{margin:0 0 4px;font-size:22px} header p{margin:0;color:#9da3ad;font-size:13px}
+    main{display:grid;grid-template-columns:360px 1fr;min-height:calc(100vh - 75px)} aside{padding:14px;border-right:1px solid #2a2e36;overflow:auto}
+    section{margin-bottom:10px;padding:12px;border:1px solid #2a2e36;border-radius:10px;background:#13161b}.sectionTitle{margin:0 0 3px;font-size:14px}.sectionHint{margin:0 0 9px;color:#777f8c;font-size:11px;line-height:1.35}
+    label{display:block;margin:9px 0 5px;color:#b9bec7;font-size:12px} input,select,button{width:100%;border:1px solid #343943;background:#191c22;color:#fff;border-radius:8px;padding:9px 10px}button{cursor:pointer;margin-top:7px;font-weight:600}button.primary{background:#fff;color:#111}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.check{display:flex;align-items:center;gap:8px;margin-top:10px;color:#b9bec7;font-size:12px}.check input{width:auto}.hint{margin-top:6px;color:#777f8c;font-size:11px;line-height:1.35}
+    .bedSummary{margin-top:9px;padding:9px;border-radius:8px;background:#171a20;border:1px solid #2a2e36;font-size:12px;line-height:1.45}.bedSummary b{font-size:14px}
+    .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}.card{padding:10px;border:1px solid #2a2e36;border-radius:8px;background:#15181d}.card b{display:block;font-size:16px}.card span{color:#8f96a2;font-size:11px}
+    #status{margin-top:10px;padding:9px;border-radius:8px;background:#171a20;color:#aeb4bf;font-size:12px;line-height:1.4}#viewer{position:relative;min-height:600px}canvas{display:block;width:100%;height:100%}.badge{position:absolute;right:14px;top:14px;padding:7px 9px;border-radius:7px;background:#171a20dd;border:1px solid #30343d;font-size:11px}
+    .ok{color:#9fe3b1}.warn{color:#f1c77a}.bad{color:#ff9d9d}.piece{display:flex;justify-content:space-between;gap:8px;padding:7px 8px;margin-top:5px;border:1px solid #2a2e36;border-radius:7px;background:#15181d;font-size:11px}.piece span{color:#9da3ad}.bedCard{padding:9px;margin-top:7px;border:1px solid #2a2e36;border-radius:8px;background:#15181d;font-size:12px}.bedCard button{margin-top:6px}.bedCard b{font-size:13px}ul{margin:8px 0 0;padding-left:18px;color:#b9bec7;font-size:12px}
+    @media(max-width:800px){main{grid-template-columns:1fr}aside{border-right:0;border-bottom:1px solid #2a2e36}#viewer{min-height:55vh}}
   </style>
 </head>
 <body>
 <header><h1>Gemelos 3D</h1><p>Proyecto 02 · Motor profesional de letras</p></header>
-<main>
-<aside>
-<section>
-  <h2 class="sectionTitle">1. 🖨️ Impresora</h2>
-  <p class="sectionHint">Elegí la máquina primero. La cama disponible se calcula automáticamente.</p>
-  <label for="printer">Impresora</label>
-  <select id="printer">
-    <option value="270,270,270">Snapmaker U1 — 270 × 270 × 270 mm</option>
-    <option value="256,256,256">Bambu Lab A1 — 256 × 256 × 256 mm</option>
-    <option value="256,256,256">Bambu Lab P1S — 256 × 256 × 256 mm</option>
-    <option value="220,220,250">Creality K1 — 220 × 220 × 250 mm</option>
-    <option value="custom">Personalizada…</option>
-  </select>
-  <div id="customFields" hidden>
-    <label>X — ancho de cama (mm)</label><input id="cx" type="number" value="200" min="1">
-    <label>Y — largo de cama (mm)</label><input id="cy" type="number" value="200" min="1">
-    <label>Z — altura máxima (mm)</label><input id="cz" type="number" value="200" min="1">
-  </div>
+<main><aside>
+<section><h2 class="sectionTitle">1. 🖨️ Impresora</h2><p class="sectionHint">Elegí la máquina primero. La cama disponible se calcula automáticamente.</p>
+<label for="printer">Impresora</label><select id="printer"><option value="270,270,270">Snapmaker U1 — 270 × 270 × 270 mm</option><option value="256,256,256">Bambu Lab A1 — 256 × 256 × 256 mm</option><option value="256,256,256">Bambu Lab P1S — 256 × 256 × 256 mm</option><option value="220,220,250">Creality K1 — 220 × 220 × 250 mm</option><option value="custom">Personalizada…</option></select>
+<div id="customFields" hidden><label>X — ancho de cama (mm)</label><input id="cx" type="number" value="200" min="1"><label>Y — largo de cama (mm)</label><input id="cy" type="number" value="200" min="1"><label>Z — altura máxima (mm)</label><input id="cz" type="number" value="200" min="1"></div></section>
+<section><h2 class="sectionTitle">2. 🛏️ Cama de impresión</h2><p class="sectionHint">Definimos el espacio real antes de crear y acomodar la pieza.</p>
+<label for="margin">Margen de seguridad (mm)</label><input id="margin" type="number" value="5" min="0" step="1">
+<label for="purgeMode">Torre de purga</label><select id="purgeMode"><option value="none">No reservar</option><option value="u1" selected>Snapmaker U1 — reservar espacio</option><option value="custom">Personalizada</option></select>
+<div id="purgeFields" class="row"><div><label for="purgeX">Ancho reserva X (mm)</label><input id="purgeX" type="number" value="40" min="5" step="1"></div><div><label for="purgeY">Largo reserva Y (mm)</label><input id="purgeY" type="number" value="40" min="5" step="1"></div></div>
+<div class="bedSummary"><b>Cama útil</b><br><span id="bedInfo">Seleccioná una impresora.</span><br><span id="purgeInfo"></span></div>
 </section>
-
-<section>
-  <h2 class="sectionTitle">2. 🛏️ Cama de impresión</h2>
-  <p class="sectionHint">Definimos cuánto espacio real podemos usar antes de crear la pieza.</p>
-  <label for="margin">Margen de seguridad (mm)</label>
-  <input id="margin" type="number" value="5" min="0" step="1">
-  <div class="bedSummary">
-    <b>Cama útil</b><br>
-    Se descuenta el margen de seguridad de los cuatro lados.<br>
-    <span id="bedInfo">Seleccioná una impresora.</span>
-  </div>
-  <div class="hint">La reserva para torre de purga y el optimizador de cama se incorporan en la siguiente etapa, sin falsear todavía el cálculo.</div>
-</section>
-
-<section>
-  <h2 class="sectionTitle">3. 📐 Tamaño de la pieza</h2>
-  <p class="sectionHint">Estas medidas controlan la geometría real de la letra.</p>
-  <label for="text">Texto</label><input id="text" value="GEMELOS 3D">
-  <div class="row">
-    <div><label for="height">Altura Y (mm)</label><input id="height" type="number" value="60" min="1" step="1"></div>
-    <div><label for="widthScale">Ancho X (%)</label><input id="widthScale" type="number" value="100" min="10" max="300" step="1"></div>
-  </div>
-  <div class="row">
-    <div><label for="depth">Espesor Z (mm)</label><input id="depth" type="number" value="12" min="0.8" step="0.5"></div>
-    <div><label for="spacing">Separación X (mm)</label><input id="spacing" type="number" value="4" min="0" step="0.5"></div>
-  </div>
-  <div class="hint">El ancho X es independiente de la altura Y. El tamaño final aparece en los indicadores.</div>
-</section>
-
-<section>
-  <h2 class="sectionTitle">4. 🔤 Forma</h2>
-  <div class="row">
-    <div><label for="fontStyle">Tipografía</label><select id="fontStyle">
-      <option value="helvetiker_regular">Helvetiker Regular</option>
-      <option value="helvetiker_bold">Helvetiker Bold</option>
-      <option value="optimer_regular">Optimer Regular</option>
-      <option value="gentilis_regular">Gentilis Regular</option>
-    </select></div>
-    <div><label for="curveSegments">Curvas</label><select id="curveSegments"><option value="4">Rápida</option><option value="6" selected>Equilibrada</option><option value="10">Alta</option></select></div>
-  </div>
-  <label class="check"><input id="bevel" type="checkbox"> Biselar bordes</label>
-  <div id="bevelFields" class="row" hidden>
-    <div><label for="bevelSize">Bisel (mm)</label><input id="bevelSize" type="number" value="1.2" min="0.1" step="0.1"></div>
-    <div><label for="bevelSegments">Segmentos</label><input id="bevelSegments" type="number" value="2" min="1" max="6" step="1"></div>
-  </div>
-  <button class="primary" id="build">Actualizar modelo</button>
-</section>
-
-<section>
-  <h2 class="sectionTitle">5. 🧩 Resultado y fabricación</h2>
-  <div class="stats">
-    <div class="card"><b id="sx">—</b><span>Ancho X</span></div><div class="card"><b id="sy">—</b><span>Largo Y</span></div>
-    <div class="card"><b id="sz">—</b><span>Altura Z</span></div><div class="card"><b id="pieces">—</b><span>Piezas</span></div>
-  </div>
-  <div id="status">Cargando motor 3D…</div>
-  <div class="hint">Próxima etapa: acomodado automático, rotación, múltiples camas y reserva configurable para torre de purga.</div>
-</section>
-
-<section>
-  <h2 class="sectionTitle">6. 📦 Exportación</h2>
-  <button id="download">Exportar STL completo</button>
-  <button id="downloadPieces">Exportar piezas STL</button>
-  <button id="project">Guardar proyecto JSON</button>
-  <div id="pieceList"></div>
-  <ul><li>La tipografía forma parte real de la geometría imprimible.</li><li>Altura Y, ancho X y espesor Z son parámetros independientes.</li><li>El corte físico y la exportación del Proyecto 01 se mantienen.</li></ul>
-</section>
-</aside>
-<div id="viewer"><div class="badge">mm · vista 3D · Proyecto 02</div></div>
-</main>
-<script type="module" src="./src/app.js"></script>
-</body>
-</html>
+<section><h2 class="sectionTitle">3. 📐 Tamaño de la pieza</h2><p class="sectionHint">Estas medidas controlan la geometría real de la letra.</p><label for="text">Texto</label><input id="text" value="GEMELOS 3D">
+<div class="row"><div><label for="height">Altura Y (mm)</label><input id="height" type="number" value="60" min="1" step="1"></div><div><label for="widthScale">Ancho X (%)</label><input id="widthScale" type="number" value="100" min="10" max="300" step="1"></div></div>
+<div class="row"><div><label for="depth">Espesor Z (mm)</label><input id="depth" type="number" value="12" min="0.8" step="0.5"></div><div><label for="spacing">Separación X (mm)</label><input id="spacing" type="number" value="4" min="0" step="0.5"></div></div></section>
+<section><h2 class="sectionTitle">4. 🔤 Forma</h2><div class="row"><div><label for="fontStyle">Tipografía</label><select id="fontStyle"><option value="helvetiker_regular">Helvetiker Regular</option><option value="helvetiker_bold">Helvetiker Bold</option><option value="optimer_regular">Optimer Regular</option><option value="gentilis_regular">Gentilis Regular</option></select></div><div><label for="curveSegments">Curvas</label><select id="curveSegments"><option value="4">Rápida</option><option value="6" selected>Equilibrada</option><option value="10">Alta</option></select></div></div>
+<label class="check"><input id="bevel" type="checkbox"> Biselar bordes</label><div id="bevelFields" class="row" hidden><div><label for="bevelSize">Bisel (mm)</label><input id="bevelSize" type="number" value="1.2" min="0.1" step="0.1"></div><div><label for="bevelSegments">Segmentos</label><input id="bevelSegments" type="number" value="2" min="1" max="6" step="1"></div></div><button class="primary" id="build">Actualizar modelo</button></section>
+<section><h2 class="sectionTitle">5. 🧩 Acomodado y fabricación</h2><button class="primary" id="optimize">Optimizar camas</button><button id="centerAll">Centrar en cama</button><div class="stats"><div class="card"><b id="sx">—</b><span>Ancho X</span></div><div class="card"><b id="sy">—</b><span>Largo Y</span></div><div class="card"><b id="sz">—</b><span>Altura Z</span></div><div class="card"><b id="pieces">—</b><span>Piezas</span></div></div><div id="status">Cargando motor 3D…</div><div id="bedList"></div></section>
+<section><h2 class="sectionTitle">6. 📦 Exportación</h2><button id="download">Exportar STL completo</button><button id="downloadPieces">Exportar piezas STL</button><button id="project">Guardar proyecto JSON</button><div id="pieceList"></div><ul><li>La geometría y los cortes son reales.</li><li>El optimizador usa el espacio útil de cada cama y permite rotación de 90°.</li><li>La reserva de purga es un área de seguridad configurable, no una falsa pieza STL.</li></ul></section>
+</aside><div id="viewer"><div class="badge">mm · vista 3D · Proyecto 02</div></div></main>
+<script type="module" src="./src/app.js"></script></body></html>
