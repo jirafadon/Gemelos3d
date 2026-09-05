@@ -26,8 +26,11 @@ let font = null;
 let currentObjects = [];
 let plannedPieces = [];
 const fontCache = new Map();
-const fontBase = 'https://esm.sh/three@0.161.0/examples/fonts/';
 
+// Fonts are static example assets, not JavaScript modules. Keep them on the
+// Three.js examples host so changing the font does not depend on esm.sh path
+// rewriting or module resolution.
+const fontBase = 'https://threejs.org/examples/fonts/';
 const fontFiles = {
   helvetiker_regular: 'helvetiker_regular.typeface.json',
   helvetiker_bold: 'helvetiker_bold.typeface.json',
@@ -43,7 +46,7 @@ function setStatus(message, className = '') {
 async function loadFont(style) {
   if (fontCache.has(style)) return fontCache.get(style);
   const file = fontFiles[style] || fontFiles.helvetiker_regular;
-  setStatus(`Cargando tipografía ${style.replaceAll('_', ' ')}…`);
+  setStatus(`Cargando tipografía…`, 'warn');
   try {
     const loaded = await new FontLoader().loadAsync(fontBase + file);
     fontCache.set(style, loaded);
