@@ -1,7 +1,7 @@
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js';
-import { FontLoader } from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/loaders/FontLoader.js';
-import { TextGeometry } from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/geometries/TextGeometry.js';
-import { STLExporter } from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/exporters/STLExporter.js';
+import * as THREE from 'https://esm.sh/three@0.161.0';
+import { FontLoader } from 'https://esm.sh/three@0.161.0/examples/jsm/loaders/FontLoader.js';
+import { TextGeometry } from 'https://esm.sh/three@0.161.0/examples/jsm/geometries/TextGeometry.js';
+import { STLExporter } from 'https://esm.sh/three@0.161.0/examples/jsm/exporters/STLExporter.js';
 
 const $ = id => document.getElementById(id);
 const viewer = $('viewer');
@@ -25,9 +25,16 @@ let font = null;
 let currentObjects = [];
 let plannedPieces = [];
 
+function setStatus(message, className = '') {
+  const status = $('status');
+  if (status) status.innerHTML = `<span class="${className}">${message}</span>`;
+}
+
 new FontLoader().load(
-  'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/fonts/helvetiker_regular.typeface.json',
-  f => { font = f; build(); }
+  'https://esm.sh/three@0.161.0/examples/fonts/helvetiker_regular.typeface.json',
+  f => { font = f; build(); },
+  undefined,
+  err => setStatus('✕ No se pudo cargar la fuente 3D. Revisá la conexión y recargá la página.', 'bad')
 );
 
 function dims() {
@@ -100,8 +107,6 @@ function build() {
   const totalZ = maxH;
   const fits = totalX <= usable.x && totalY <= usable.y && totalZ <= usable.z;
 
-  // Real piece plan: group complete characters into printable files.
-  // A single character wider than the usable bed is flagged rather than falsely cut.
   let piece = [];
   let pieceWidth = 0;
   let pieceNumber = 1;
@@ -126,11 +131,11 @@ function build() {
   $('pieces').textContent = fits ? '1' : plannedPieces.length;
 
   if (oversizedLetter) {
-    $('status').innerHTML = `<span class="bad">✕ Una letra (${oversizedLetter.userData.char}) mide ${oversizedLetter.userData.width.toFixed(1)} mm y supera la cama útil. Todavía no se realiza corte físico de una letra individual.</span>`;
+    setStatus(`✕ Una letra (${oversizedLetter.userData.char}) mide ${oversizedLetter.userData.width.toFixed(1)} mm y supera la cama útil. Todavía no se realiza corte físico de una letra individual.`, 'bad');
   } else if (fits) {
-    $('status').innerHTML = `<span class="ok">✓ Modelo listo: entra en la cama útil (${usable.x} × ${usable.y} × ${usable.z} mm).</span>`;
+    setStatus(`✓ Modelo listo: entra en la cama útil (${usable.x} × ${usable.y} × ${usable.z} mm).`, 'ok');
   } else {
-    $('status').innerHTML = `<span class="warn">⚠ Modelo dividido en ${plannedPieces.length} archivos imprimibles por grupos de letras. Cada pieza respeta X=${usable.x.toFixed(1)} mm.</span>`;
+    setStatus(`⚠ Modelo dividido en ${plannedPieces.length} archivos imprimibles por grupos de letras. Cada pieza respeta X=${usable.x.toFixed(1)} mm.`, 'warn');
   }
 
   group.position.set(-totalX / 2, -totalZ / 2, 0);
