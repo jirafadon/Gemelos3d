@@ -14,7 +14,7 @@
     .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.check{display:flex;align-items:center;gap:8px;margin-top:10px;color:#b9bec7;font-size:12px}.check input{width:auto}.hint{margin-top:6px;color:#777f8c;font-size:11px;line-height:1.35}
     .bedSummary{margin-top:9px;padding:9px;border-radius:8px;background:#171a20;border:1px solid #2a2e36;font-size:12px;line-height:1.45}.bedSummary b{font-size:14px}
     .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}.card{padding:10px;border:1px solid #2a2e36;border-radius:8px;background:#15181d}.card b{display:block;font-size:16px}.card span{color:#8f96a2;font-size:11px}
-    #status{margin-top:10px;padding:9px;border-radius:8px;background:#171a20;color:#aeb4bf;font-size:12px;line-height:1.4}#viewer{position:relative;min-height:600px}canvas{display:block;width:100%;height:100%}.badge{position:absolute;right:14px;top:14px;padding:7px 9px;border-radius:7px;background:#171a20dd;border:1px solid #30343d;font-size:11px}
+    #status{margin-top:10px;padding:9px;border-radius:8px;background:#171a20;color:#aeb4bf;font-size:12px;line-height:1.4}canvas{display:block;width:100%;height:100%}.badge{position:absolute;right:14px;top:14px;padding:7px 9px;border-radius:7px;background:#171a20dd;border:1px solid #30343d;font-size:11px}
     .ok{color:#9fe3b1}.warn{color:#f1c77a}.bad{color:#ff9d9d}.piece{display:flex;justify-content:space-between;gap:8px;padding:7px 8px;margin-top:5px;border:1px solid #2a2e36;border-radius:7px;background:#15181d;font-size:11px}.piece span{color:#9da3ad}.bedCard{padding:9px;margin-top:7px;border:1px solid #2a2e36;border-radius:8px;background:#15181d;font-size:12px}.bedCard button{margin-top:6px}.bedCard b{font-size:13px}ul{margin:8px 0 0;padding-left:18px;color:#b9bec7;font-size:12px}
     @media(max-width:800px){main{grid-template-columns:1fr}aside{border-right:0;border-bottom:1px solid #2a2e36}#viewer{min-height:55vh}}
   </style>
@@ -27,7 +27,7 @@
 <div id="customFields" hidden><label>X — ancho de cama (mm)</label><input id="cx" type="number" value="200" min="1"><label>Y — largo de cama (mm)</label><input id="cy" type="number" value="200" min="1"><label>Z — altura máxima (mm)</label><input id="cz" type="number" value="200" min="1"></div></section>
 <section><h2 class="sectionTitle">2. 🛏️ Cama de impresión</h2><p class="sectionHint">Definimos el espacio real antes de crear y acomodar la pieza.</p>
 <label for="margin">Margen de seguridad (mm)</label><input id="margin" type="number" value="5" min="0" step="1">
-<label for="purgeMode">Torre de purga</label><select id="purgeMode"><option value="none">No reservar</option><option value="u1" selected>Snapmaker U1 — reservar espacio</option><option value="custom">Personalizada</option></select>
+<label for="purgeMode">Torre de purga</label><select id="purgeMode"><option value="none" selected>No reservar</option><option value="u1">Snapmaker U1 — reservar espacio</option><option value="custom">Personalizada</option></select>
 <div id="purgeFields" class="row"><div><label for="purgeX">Ancho reserva X (mm)</label><input id="purgeX" type="number" value="40" min="5" step="1"></div><div><label for="purgeY">Largo reserva Y (mm)</label><input id="purgeY" type="number" value="40" min="5" step="1"></div></div>
 <div class="bedSummary"><b>Cama útil</b><br><span id="bedInfo">Seleccioná una impresora.</span><br><span id="purgeInfo"></span></div>
 </section>
