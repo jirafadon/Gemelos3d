@@ -10,7 +10,7 @@
     body { margin:0; background:#101216; color:#f4f5f7; }
     header { padding:18px 22px; border-bottom:1px solid #2a2e36; }
     header h1 { margin:0 0 4px; font-size:22px; } header p { margin:0; color:#9da3ad; font-size:13px; }
-    main { display:grid; grid-template-columns:340px 1fr; min-height:calc(100vh - 75px); }
+    main { display:grid; grid-template-columns:360px 1fr; min-height:calc(100vh - 75px); }
     aside { padding:18px; border-right:1px solid #2a2e36; overflow:auto; }
     section { margin-bottom:18px; } label { display:block; margin:10px 0 5px; color:#b9bec7; font-size:12px; }
     input,select,button { width:100%; border:1px solid #343943; background:#191c22; color:#fff; border-radius:8px; padding:9px 10px; }
@@ -18,6 +18,7 @@
     .row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
     .check { display:flex; align-items:center; gap:8px; margin-top:10px; color:#b9bec7; font-size:12px; }
     .check input { width:auto; }
+    .hint { margin-top:6px; color:#777f8c; font-size:11px; line-height:1.35; }
     .stats { display:grid; grid-template-columns:1fr 1fr; gap:8px; } .card { padding:10px; border:1px solid #2a2e36; border-radius:8px; background:#15181d; }
     .card b { display:block; font-size:16px; } .card span { color:#8f96a2; font-size:11px; }
     #status { margin-top:10px; padding:9px; border-radius:8px; background:#171a20; color:#aeb4bf; font-size:12px; line-height:1.4; }
@@ -43,9 +44,9 @@
 <option value="custom">Personalizada…</option>
 </select>
 <div id="customFields" hidden>
-<label>X (mm)</label><input id="cx" type="number" value="200" min="1">
-<label>Y (mm)</label><input id="cy" type="number" value="200" min="1">
-<label>Z (mm)</label><input id="cz" type="number" value="200" min="1">
+<label>X cama (mm)</label><input id="cx" type="number" value="200" min="1">
+<label>Y cama (mm)</label><input id="cy" type="number" value="200" min="1">
+<label>Z cama (mm)</label><input id="cz" type="number" value="200" min="1">
 </div>
 <label for="margin">Margen de seguridad (mm)</label><input id="margin" type="number" value="5" min="0" step="1">
 </section>
@@ -61,10 +62,14 @@
 <div><label for="curveSegments">Curvas</label><select id="curveSegments"><option value="4">Rápida</option><option value="6" selected>Equilibrada</option><option value="10">Alta</option></select></div>
 </div>
 <div class="row">
-<div><label for="height">Altura (mm)</label><input id="height" type="number" value="60" min="1"></div>
-<div><label for="depth">Profundidad (mm)</label><input id="depth" type="number" value="12" min="0.8" step="0.5"></div>
+<div><label for="height">Altura de letra Y (mm)</label><input id="height" type="number" value="60" min="1" step="1"></div>
+<div><label for="widthScale">Ancho X (%)</label><input id="widthScale" type="number" value="100" min="10" max="300" step="1"></div>
 </div>
-<label for="spacing">Separación entre letras (mm)</label><input id="spacing" type="number" value="4" min="0" step="0.5">
+<div class="row">
+<div><label for="depth">Altura de impresión Z / espesor (mm)</label><input id="depth" type="number" value="12" min="0.8" step="0.5"></div>
+<div><label for="spacing">Separación X (mm)</label><input id="spacing" type="number" value="4" min="0" step="0.5"></div>
+</div>
+<div class="hint">Ahora podés modificar independientemente la altura de la letra, su ancho horizontal y el espesor de impresión. El tamaño final X × Y × Z se calcula abajo.</div>
 <label class="check"><input id="bevel" type="checkbox"> Biselar bordes</label>
 <div id="bevelFields" class="row" hidden>
 <div><label for="bevelSize">Bisel (mm)</label><input id="bevelSize" type="number" value="1.2" min="0.1" step="0.1"></div>
@@ -74,7 +79,7 @@
 </section>
 <section>
 <div class="stats">
-<div class="card"><b id="sx">—</b><span>Ancho X</span></div><div class="card"><b id="sy">—</b><span>Profundidad Y</span></div>
+<div class="card"><b id="sx">—</b><span>Ancho X</span></div><div class="card"><b id="sy">—</b><span>Largo Y</span></div>
 <div class="card"><b id="sz">—</b><span>Altura Z</span></div><div class="card"><b id="pieces">—</b><span>Piezas</span></div>
 </div>
 <div id="status">Cargando motor 3D…</div>
@@ -84,7 +89,7 @@
 <button id="downloadPieces">Exportar piezas STL</button>
 <button id="project">Guardar proyecto JSON</button>
 <div id="pieceList"></div>
-<ul><li>La tipografía forma parte real de la geometría imprimible.</li><li>Podés elegir estilo, calidad de curvas, separación y bisel.</li><li>El corte físico y la exportación del Proyecto 01 se mantienen.</li></ul>
+<ul><li>La tipografía forma parte real de la geometría imprimible.</li><li>Altura Y, ancho X y espesor Z son parámetros independientes.</li><li>El corte físico y la exportación del Proyecto 01 se mantienen.</li></ul>
 </section>
 </aside>
 <div id="viewer"><div class="badge">mm · vista 3D · Proyecto 02</div></div>
