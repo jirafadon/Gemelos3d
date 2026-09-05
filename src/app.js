@@ -3,27 +3,233 @@ import { FontLoader } from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/
 import { TextGeometry } from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/geometries/TextGeometry.js';
 import { STLExporter } from 'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/exporters/STLExporter.js';
 
-const $=id=>document.getElementById(id);
-const viewer=$('viewer');
-const scene=new THREE.Scene(); scene.background=new THREE.Color(0x101216);
-const camera=new THREE.PerspectiveCamera(45,1,.1,5000); camera.position.set(180,150,220);
-const renderer=new THREE.WebGLRenderer({antialias:true}); renderer.setPixelRatio(Math.min(devicePixelRatio,2)); viewer.appendChild(renderer.domElement);
-scene.add(new THREE.HemisphereLight(0xffffff,0x30343d,2)); const dl=new THREE.DirectionalLight(0xffffff,2); dl.position.set(100,180,120); scene.add(dl);
-const grid=new THREE.GridHelper(600,30,0x333740,0x22262d); grid.rotation.x=Math.PI/2; scene.add(grid);
-let group=new THREE.Group(); scene.add(group); let font=null, currentObjects=[];
-new FontLoader().load('https://cdn.jsdelivr.net/npm/three@0.161.0/examples/fonts/helvetiker_regular.typeface.json', f=>{font=f; build();});
+const $ = id => document.getElementById(id);
+const viewer = $('viewer');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x101216);
+const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 5000);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+viewer.appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x30343d, 2));
+const dl = new THREE.DirectionalLight(0xffffff, 2);
+dl.position.set(100, 180, 120);
+scene.add(dl);
+const grid = new THREE.GridHelper(600, 30, 0x333740, 0x22262d);
+grid.rotation.x = Math.PI / 2;
+scene.add(grid);
 
-function dims(){ if($('printer').value==='custom') return {x:+$('cx').value,y:+$('cy').value,z:+$('cz').value}; const [x,y,z]=$('printer').value.split(',').map(Number); return {x,y,z}; }
-function build(){ if(!font)return; group.clear(); currentObjects=[]; const text=$('text').value||'GEMELOS 3D', h=+$('height').value||60, d=+$('depth').value||12, gap=+$('spacing').value||4; let cursor=0, maxH=0;
-  const chars=[...text]; chars.forEach((ch,i)=>{ if(ch===' '){cursor+=h*.45+gap;return;} const geo=new TextGeometry(ch,{font,size:h,height:d,curveSegments:6,bevelEnabled:false}); geo.computeBoundingBox(); const w=geo.boundingBox.max.x-geo.boundingBox.min.x; geo.translate(cursor,0,0); const mat=new THREE.MeshStandardMaterial({roughness:.65,metalness:.05}); const mesh=new THREE.Mesh(geo,mat); group.add(mesh); currentObjects.push(mesh); cursor+=w+gap; maxH=Math.max(maxH,geo.boundingBox.max.y); });
-  const totalX=Math.max(0,cursor-gap), totalY=d, totalZ=maxH; const bed=dims(), margin=Math.max(0,+$('margin').value||0); const usable={x:bed.x-2*margin,y:bed.y-2*margin,z:bed.z-2*margin}; const pieces=Math.max(1,Math.ceil(totalX/Math.max(1,usable.x))); $('sx').textContent=totalX.toFixed(1); $('sy').textContent=totalY.toFixed(1); $('sz').textContent=totalZ.toFixed(1); $('pieces').textContent=pieces;
-  const fits=totalX<=usable.x&&totalY<=usable.y&&totalZ<=usable.z; $('status').innerHTML=fits?`<span class="ok">✓ Entra en la cama útil (${usable.x} × ${usable.y} × ${usable.z} mm).</span>`:`<span class="warn">⚠ Supera la cama útil (${usable.x} × ${usable.y} × ${usable.z} mm). División estimada: ${pieces} piezas.</span>`;
-  group.position.set(-totalX/2,-totalZ/2,0); grid.position.set(0,0,-d/2-1); fitCamera(totalX,totalZ,d);
+let group = new THREE.Group();
+scene.add(group);
+let font = null;
+let currentObjects = [];
+let plannedPieces = [];
+
+new FontLoader().load(
+  'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/fonts/helvetiker_regular.typeface.json',
+  f => { font = f; build(); }
+);
+
+function dims() {
+  if ($('printer').value === 'custom') return {
+    x: Math.max(1, +$('cx').value || 1),
+    y: Math.max(1, +$('cy').value || 1),
+    z: Math.max(1, +$('cz').value || 1)
+  };
+  const [x, y, z] = $('printer').value.split(',').map(Number);
+  return { x, y, z };
 }
-function fitCamera(x,z,y){ const r=Math.max(x,z,y)*1.25; camera.position.set(r*.9,r*.75,r*1.1); camera.lookAt(0,0,0); }
-function resize(){ const w=viewer.clientWidth,h=viewer.clientHeight||600; renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix(); } addEventListener('resize',resize); resize();
-function animate(){requestAnimationFrame(animate); group.rotation.z=Math.sin(Date.now()/5000)*.02; renderer.render(scene,camera);} animate();
-$('build').onclick=build; ['printer','margin','cx','cy','cz','text','height','depth','spacing'].forEach(id=>$(id).addEventListener('input',()=>{if(id==='printer')$('customFields').hidden=$('printer').value!=='custom';build();}));
-$('printer').onchange=()=>{$('customFields').hidden=$('printer').value!=='custom';build();};
-$('download').onclick=()=>{ if(!currentObjects.length)return; const exporter=new STLExporter(); const merged=new THREE.Group(); currentObjects.forEach(o=>merged.add(o.clone())); const stl=exporter.parse(merged); const blob=new Blob([stl],{type:'model/stl'}); const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='gemelos3d-proyecto01.stl';a.click();URL.revokeObjectURL(a.href); };
-$('project').onclick=()=>{ const data={app:'Gemelos 3D',project:'Proyecto 01',printer:$('printer').value,custom:{x:$('cx').value,y:$('cy').value,z:$('cz').value},margin:+$('margin').value,text:$('text').value,height:+$('height').value,depth:+$('depth').value,spacing:+$('spacing').value}; const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='gemelos3d-proyecto01.json';a.click();};
+
+function makeGeometry(ch, h, d) {
+  const geo = new TextGeometry(ch, {
+    font,
+    size: h,
+    height: d,
+    curveSegments: 6,
+    bevelEnabled: false
+  });
+  geo.computeBoundingBox();
+  return geo;
+}
+
+function build() {
+  if (!font) return;
+  group.clear();
+  currentObjects = [];
+  plannedPieces = [];
+
+  const text = $('text').value || 'GEMELOS 3D';
+  const h = Math.max(1, +$('height').value || 60);
+  const d = Math.max(0.8, +$('depth').value || 12);
+  const gap = Math.max(0, +$('spacing').value || 4);
+  const bed = dims();
+  const margin = Math.max(0, +$('margin').value || 0);
+  const usable = {
+    x: Math.max(1, bed.x - 2 * margin),
+    y: Math.max(1, bed.y - 2 * margin),
+    z: Math.max(1, bed.z - 2 * margin)
+  };
+
+  let cursor = 0;
+  let maxH = 0;
+  let all = [];
+
+  [...text].forEach((ch, index) => {
+    if (ch === ' ') {
+      cursor += h * 0.45 + gap;
+      return;
+    }
+    const geo = makeGeometry(ch, h, d);
+    const box = geo.boundingBox;
+    const w = box.max.x - box.min.x;
+    const mesh = new THREE.Mesh(
+      geo,
+      new THREE.MeshStandardMaterial({ roughness: 0.65, metalness: 0.05 })
+    );
+    mesh.position.x = cursor;
+    mesh.userData = { char: ch, index, width: w, startX: cursor };
+    group.add(mesh);
+    currentObjects.push(mesh);
+    all.push(mesh);
+    cursor += w + gap;
+    maxH = Math.max(maxH, box.max.y - box.min.y);
+  });
+
+  const totalX = Math.max(0, cursor - gap);
+  const totalY = d;
+  const totalZ = maxH;
+  const fits = totalX <= usable.x && totalY <= usable.y && totalZ <= usable.z;
+
+  // Real piece plan: group complete characters into printable files.
+  // A single character wider than the usable bed is flagged rather than falsely cut.
+  let piece = [];
+  let pieceWidth = 0;
+  let pieceNumber = 1;
+  all.forEach(mesh => {
+    const w = mesh.userData.width;
+    const next = piece.length ? pieceWidth + gap + w : w;
+    if (piece.length && next > usable.x) {
+      plannedPieces.push({ number: pieceNumber++, objects: piece, width: pieceWidth });
+      piece = [];
+      pieceWidth = 0;
+    }
+    piece.push(mesh);
+    pieceWidth = piece.length === 1 ? w : pieceWidth + gap + w;
+  });
+  if (piece.length) plannedPieces.push({ number: pieceNumber, objects: piece, width: pieceWidth });
+
+  const oversizedLetter = all.find(m => m.userData.width > usable.x);
+
+  $('sx').textContent = totalX.toFixed(1);
+  $('sy').textContent = totalY.toFixed(1);
+  $('sz').textContent = totalZ.toFixed(1);
+  $('pieces').textContent = fits ? '1' : plannedPieces.length;
+
+  if (oversizedLetter) {
+    $('status').innerHTML = `<span class="bad">✕ Una letra (${oversizedLetter.userData.char}) mide ${oversizedLetter.userData.width.toFixed(1)} mm y supera la cama útil. Todavía no se realiza corte físico de una letra individual.</span>`;
+  } else if (fits) {
+    $('status').innerHTML = `<span class="ok">✓ Modelo listo: entra en la cama útil (${usable.x} × ${usable.y} × ${usable.z} mm).</span>`;
+  } else {
+    $('status').innerHTML = `<span class="warn">⚠ Modelo dividido en ${plannedPieces.length} archivos imprimibles por grupos de letras. Cada pieza respeta X=${usable.x.toFixed(1)} mm.</span>`;
+  }
+
+  group.position.set(-totalX / 2, -totalZ / 2, 0);
+  grid.position.set(0, 0, -d / 2 - 1);
+  fitCamera(totalX, totalZ, d);
+  renderPieceList();
+}
+
+function renderPieceList() {
+  const list = $('pieceList');
+  if (!list) return;
+  list.innerHTML = plannedPieces.map(p =>
+    `<div class="piece"><b>Pieza ${p.number}</b><span>${p.objects.map(o => o.userData.char).join('')} · ${p.width.toFixed(1)} mm</span></div>`
+  ).join('');
+}
+
+function fitCamera(x, z, y) {
+  const r = Math.max(x, z, y) * 1.25;
+  camera.position.set(r * 0.9, r * 0.75, r * 1.1);
+  camera.lookAt(0, 0, 0);
+}
+
+function resize() {
+  const w = viewer.clientWidth;
+  const h = viewer.clientHeight || 600;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize);
+resize();
+
+function animate() {
+  requestAnimationFrame(animate);
+  group.rotation.z = Math.sin(Date.now() / 5000) * 0.02;
+  renderer.render(scene, camera);
+}
+animate();
+
+$('build').onclick = build;
+['printer', 'margin', 'cx', 'cy', 'cz', 'text', 'height', 'depth', 'spacing'].forEach(id => {
+  $(id).addEventListener('input', () => {
+    if (id === 'printer') $('customFields').hidden = $('printer').value !== 'custom';
+    build();
+  });
+});
+$('printer').onchange = () => {
+  $('customFields').hidden = $('printer').value !== 'custom';
+  build();
+};
+
+function exportObjects(objects, filename) {
+  const exporter = new STLExporter();
+  const root = new THREE.Group();
+  objects.forEach(o => root.add(o.clone()));
+  const stl = exporter.parse(root);
+  const blob = new Blob([stl], { type: 'model/stl' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+$('download').onclick = () => {
+  if (!currentObjects.length) return;
+  exportObjects(currentObjects, 'gemelos3d-proyecto01.stl');
+};
+
+$('downloadPieces').onclick = () => {
+  if (!plannedPieces.length) return;
+  if (plannedPieces.length === 1) {
+    exportObjects(plannedPieces[0].objects, 'gemelos3d-pieza-01.stl');
+    return;
+  }
+  plannedPieces.forEach((p, i) => {
+    setTimeout(() => exportObjects(p.objects, `gemelos3d-pieza-${String(i + 1).padStart(2, '0')}.stl`), i * 250);
+  });
+};
+
+$('project').onclick = () => {
+  const data = {
+    app: 'Gemelos 3D',
+    project: 'Proyecto 01',
+    printer: $('printer').value,
+    custom: { x: $('cx').value, y: $('cy').value, z: $('cz').value },
+    margin: +$('margin').value,
+    text: $('text').value,
+    height: +$('height').value,
+    depth: +$('depth').value,
+    spacing: +$('spacing').value,
+    pieces: plannedPieces.map(p => ({ number: p.number, width: p.width, text: p.objects.map(o => o.userData.char).join('') }))
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'gemelos3d-proyecto01.json';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+};
