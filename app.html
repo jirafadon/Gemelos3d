@@ -68,6 +68,15 @@
 </aside>
 <div id="viewer"><div class="badge">GEMELOS 3D · MM · VISTA DE FABRICACIÓN</div></div>
 </div>
+<script>
+(function(){
+  const printer=document.getElementById('printer'), custom=document.getElementById('customFields');
+  const purge=document.getElementById('purgeMode'), purgeFields=document.getElementById('purgeFields');
+  const bevel=document.getElementById('bevel'), bevelFields=document.getElementById('bevelFields');
+  function sync(){custom.hidden=printer.value!=='custom';purgeFields.hidden=purge.value==='none';bevelFields.hidden=!bevel.checked;}
+  printer.addEventListener('change',sync); purge.addEventListener('change',sync); bevel.addEventListener('change',sync); sync();
+})();
+</script>
 <script type="module" src="./src/app-bedflow.js"></script>
 </body>
 </html>
