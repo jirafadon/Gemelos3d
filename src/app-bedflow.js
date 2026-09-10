@@ -174,11 +174,21 @@ function renderLists(){
   const pieces=$('pieceList');pieces.innerHTML='';items.forEach(i=>{const row=document.createElement('div');row.className='piece';row.innerHTML=`<b>Pieza ${i.id}</b><span>Cama ${i.bed+1} · ${i.width.toFixed(1)} × ${i.height.toFixed(1)} mm</span>`;pieces.appendChild(row);});
 }
 function frame(){const c=bed();camera.position.set(0,0,Math.max(c.full.x,c.full.y)*1.65);camera.up.set(0,1,0);controls.target.set(0,0,0);controls.update();}
+function setView(view){
+  const c=bed(),d=Math.max(c.full.x,c.full.y)*1.65;
+  if(view==='top') camera.position.set(0,0,d);
+  else if(view==='front') camera.position.set(0,-d,0);
+  else if(view==='side') camera.position.set(d,0,0);
+  else camera.position.set(d*.72,d*.72,d*.72);
+  camera.up.set(0,1,0);controls.target.set(0,0,0);controls.update();
+  document.querySelectorAll('.viewTools button').forEach(b=>b.classList.toggle('active',b.dataset.view===view));
+}
 function build(){
   clearObjects();const text=($('text').value||'').trim();if(!text){status('Escribí un texto antes de crear el modelo.','warn');return;}if(!font){status('La tipografía todavía no está lista.','warn');return;}
   const c=bed(),h=Math.max(1,num('height',60)),d=Math.max(.8,num('depth',12)),spacing=Math.max(0,num('spacing',4)),width=Math.max(0,num('widthScale',0)),layout=makeLayout(text,spacing,h,width),whole=makeWord(layout,d),wb=new THREE.Box3().setFromObject(whole);
   if(wb.max.x-wb.min.x<=c.usable.x+.001&&wb.max.y-wb.min.y<=c.usable.y+.001){const item={id:1,object:whole,bed:0,width:wb.max.x-wb.min.x,height:wb.max.y-wb.min.y,source:text,fragment:false};items.push(item);objectLayer.add(whole);pack(false);status(`Texto creado: ${item.width.toFixed(1)} × ${item.height.toFixed(1)} × ${d.toFixed(1)} mm.`,'ok');return;}
-  whole.traverse(n=>{if(n.geometry)n.geometry.dispose();});const frags=splitWord(layout,d);if(!frags.length){status('No se pudo dividir el texto con estas medidas.','bad');return;}
+  whole.traverse(n=>{if(n.geometry)n.geometry.dispose();});
+  const frags=splitWord(layout,d);if(!frags.length){status('No se pudo dividir el texto con estas medidas.','bad');return;}
   frags.forEach((f,index)=>{const b=new THREE.Box3().setFromObject(f),item={id:index+1,object:f,bed:0,width:b.max.x-b.min.x,height:b.max.y-b.min.y,source:text,fragment:true,gridRow:f.userData.row,gridCol:f.userData.col};items.push(item);objectLayer.add(f);});
   if(pack(false))status(`Texto completo dividido físicamente en ${items.length} fragmentos y distribuido en ${plates.length} camas.`,'ok');
 }
@@ -194,7 +204,14 @@ function saveProject(){
 function wire(){
   const ids=['printer','margin','purgeMode','purgeX','purgeY','cx','cy','cz','height','widthScale','depth','spacing','fontStyle','curveSegments','bevel','bevelSize','bevelSegments'];
   ids.forEach(id=>$(id)?.addEventListener('change',async()=>{info();if(id==='fontStyle')await loadFont();if(['printer','margin','purgeMode','purgeX','purgeY','cx','cy','cz'].includes(id)){drawBed();frame();}}));
-  $('buildTop').onclick=async()=>{if(await loadFont())build();};$('clearText').onclick=clearObjects;$('centerAll').onclick=centerAll;$('optimize').onclick=optimize;$('download').onclick=()=>exportSTL(false);$('downloadPieces').onclick=()=>exportSTL(true);$('project').onclick=saveProject;
+  $('buildTop').onclick=async()=>{if(await loadFont())build()};
+  $('clearText').onclick=clearObjects;
+  $('centerAll').onclick=centerAll;
+  $('optimize').onclick=optimize;
+  $('download').onclick=()=>exportSTL(false);
+  $('downloadPieces').onclick=()=>exportSTL(true);
+  $('project').onclick=saveProject;
+  document.querySelectorAll('.viewTools button').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
 }
 function resize(){const w=Math.max(1,viewer.clientWidth),h=Math.max(1,viewer.clientHeight);renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
 wire();info();drawBed();frame();resize();window.addEventListener('resize',resize);status('Listo. Escribí el texto arriba y bajá por las opciones.');
