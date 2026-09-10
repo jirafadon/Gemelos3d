@@ -36,6 +36,7 @@ let font = null;
 let items = [];
 let plates = [];
 let activeBed = 0;
+let selectedItem = null;
 
 const num = (id, fallback) => {
   const n = Number($(id)?.value);
@@ -142,7 +143,27 @@ function splitWord(layout,depth){
   }
   return fragments;
 }
-function clearObjects(){items=[];plates=[];activeBed=0;objectLayer.clear();$('pieceList').innerHTML='';$('bedList').innerHTML='';stats();drawBed();}
+function clearSelection(){
+  if(selectedItem) selectedItem.object.traverse(n=>{if(n.isMesh&&n.material?.emissive){n.material.emissive.setHex(0x000000);n.material.emissiveIntensity=0;}});
+  selectedItem=null;
+}
+function ensureSelectionPanel(){
+  let panel=$('selectedPiece');
+  if(panel)return panel;
+  panel=document.createElement('div');panel.id='selectedPiece';panel.className='selectedPiece';
+  panel.innerHTML='<b>Pieza seleccionada</b><span>Elegí una pieza para ver sus datos.</span>';
+  const list=$('pieceList');list.parentElement.insertBefore(panel,list);
+  return panel;
+}
+function selectItem(item){
+  if(selectedItem&&selectedItem!==item)clearSelection();
+  selectedItem=item;activeBed=item.bed;
+  item.object.traverse(n=>{if(n.isMesh&&n.material?.emissive){n.material.emissive.setHex(0x5f748f);n.material.emissiveIntensity=.8;}});
+  const panel=ensureSelectionPanel();
+  panel.innerHTML=`<b>Pieza ${item.id}</b><span>Cama ${item.bed+1} · ${item.width.toFixed(1)} × ${item.height.toFixed(1)} mm</span><span>Rotación ${(THREE.MathUtils.radToDeg(item.object.rotation.z)%360+360)%360}°</span>`;
+  render();
+}
+function clearObjects(){clearSelection();items=[];plates=[];activeBed=0;objectLayer.clear();$('pieceList').innerHTML='';$('bedList').innerHTML='';$('selectedPiece')?.remove();stats();drawBed();}
 function reset(item){item.object.position.set(0,0,0);item.object.rotation.z=0;item.object.updateMatrixWorld(true);}
 function itemBox(item,angle=0){reset(item);item.object.rotation.z=angle;item.object.updateMatrixWorld(true);const b=new THREE.Box3().setFromObject(item.object);const out={w:b.max.x-b.min.x,h:b.max.y-b.min.y};reset(item);return out;}
 function overlap(a,b,g){return a.x<b.x+b.w+g&&a.x+a.w+g>b.x&&a.y<b.y+b.h+g&&a.y+a.h+g>b.y;}
@@ -171,9 +192,11 @@ function stats(){
 }
 function renderLists(){
   const beds=$('bedList');beds.innerHTML='';plates.forEach((p,i)=>{const card=document.createElement('div');card.className=`bedCard${i===activeBed?' active':''}`;card.innerHTML=`<div class="bedTab"><b>Cama ${i+1}</b><span>${p.items.length} pieza${p.items.length===1?'':'s'}</span></div><button>Ver esta cama</button>`;card.querySelector('button').onclick=()=>{activeBed=i;render();};beds.appendChild(card);});
-  const pieces=$('pieceList');pieces.innerHTML='';items.forEach(i=>{const row=document.createElement('div');row.className='piece';row.innerHTML=`<b>Pieza ${i.id}</b><span>Cama ${i.bed+1} · ${i.width.toFixed(1)} × ${i.height.toFixed(1)} mm</span>`;pieces.appendChild(row);});
+  const pieces=$('pieceList');pieces.innerHTML='';items.forEach(i=>{const row=document.createElement('button');row.type='button';row.className=`piece${i===selectedItem?' selected':''}`;row.innerHTML=`<b>Pieza ${i.id}</b><span>Cama ${i.bed+1} · ${i.width.toFixed(1)} × ${i.height.toFixed(1)} mm</span>`;row.onclick=()=>selectItem(i);pieces.appendChild(row);});
+  const panel=ensureSelectionPanel();
+  if(!selectedItem)panel.innerHTML='<b>Pieza seleccionada</b><span>Elegí una pieza para ver sus datos.</span>';
 }
-function frame(){const c=bed();camera.position.set(0,0,Math.max(c.full.x,c.full.y)*1.65);camera.up.set(0,1,0);controls.target.set(0,0,0);controls.update();}
+function frame(){const c=bed();camera.position.set(Math.max(c.full.x,c.full.y)*.72,Math.max(c.full.x,c.full.y)*.72,Math.max(c.full.x,c.full.y)*.72);camera.up.set(0,1,0);controls.target.set(0,0,0);controls.update();}
 function setView(view){
   const c=bed(),d=Math.max(c.full.x,c.full.y)*1.65;
   if(view==='top') camera.position.set(0,0,d);
