@@ -84,7 +84,6 @@ function drawBed(){
   g.add(line([[left,bottom,.08],[left+c.usable.x,bottom,.08],[left+c.usable.x,bottom+c.usable.y,.08],[left,bottom+c.usable.y,.08],[left,bottom,.08]],0x657180));
   if(c.p.x){const r=new THREE.Mesh(new THREE.PlaneGeometry(c.p.x,c.p.y),new THREE.MeshBasicMaterial({color:0x8b6f35,transparent:true,opacity:.24,side:THREE.DoubleSide}));r.position.set(-x/2+c.margin+c.p.x/2,bottom+c.p.y/2,.03);g.add(r);}
   const l=label(`CAMA ${activeBed+1} · ${x} × ${y} mm`); l.position.set(0,-y*.44,.12); g.add(l); bedLayer.add(g);
-  objectLayer.children.forEach(o=>o.visible=o.userData.bed===activeBed);
 }
 function info(){
   const c=bed();
@@ -165,7 +164,7 @@ function pack(allowRotate=false){
   }
   plates.forEach(p=>centerPlate(p,c));render();return true;
 }
-function render(){objectLayer.children.forEach(o=>o.visible=o.userData.bed===activeBed);drawBed();renderLists();stats();}
+function render(){items.forEach(i=>{i.object.visible=i.bed===activeBed;});drawBed();renderLists();stats();}
 function stats(){
   if(!items.length){$('sx').textContent='—';$('sy').textContent='—';$('sz').textContent='—';$('pieces').textContent='0';return;}
   const b=new THREE.Box3();items.forEach(i=>b.expandByObject(i.object));$('sx').textContent=`${(b.max.x-b.min.x).toFixed(1)} mm`;$('sy').textContent=`${(b.max.y-b.min.y).toFixed(1)} mm`;$('sz').textContent=`${(b.max.z-b.min.z).toFixed(1)} mm`;$('pieces').textContent=String(items.length);
