@@ -3,25 +3,18 @@ const aside = document.querySelector('aside');
 
 function money(n){return `$ ${Number(n||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}`;}
 function num(id,fallback){const n=Number(document.getElementById(id)?.value);return Number.isFinite(n)?n:fallback;}
-
-function triangleVolume(a,b,c){return (a.x*(b.y*c.z-b.z*c.y)-a.y*(b.x*c.z-b.z*c.x)+a.z*(b.x*c.y-b.y*c.x))/6;}
-function meshVolume(mesh){
-  const g=mesh.geometry;if(!g?.attributes?.position)return 0;
-  const p=g.attributes.position;const index=g.index;let v=0;
-  const a=new THREE.Vector3(),b=new THREE.Vector3(),c=new THREE.Vector3();
-  const tri=(ia,ib,ic)=>{a.fromBufferAttribute(p,ia).applyMatrix4(mesh.matrixWorld);b.fromBufferAttribute(p,ib).applyMatrix4(mesh.matrixWorld);c.fromBufferAttribute(p,ic).applyMatrix4(mesh.matrixWorld);v+=triangleVolume(a,b,c);};
-  if(index){for(let i=0;i<index.count;i+=3)tri(index.getX(i),index.getX(i+1),index.getX(i+2));}
-  else{for(let i=0;i<p.count;i+=3)tri(i,i+1,i+2);}
-  return Math.abs(v);
-}
 function estimate(){
-  const roots=[...document.querySelectorAll('#pieceList .piece')];
-  const meshes=window.__gemelos3dItems || [];
+  const rows=[...document.querySelectorAll('#pieceList .piece')];
+  const depth=Math.max(.8,num('depth',12));
   let volume=0;
-  for(const item of meshes)item.object?.traverse(n=>{if(n.isMesh)volume+=meshVolume(n);});
+  for(const row of rows){
+    const span=row.querySelector('span');
+    const m=span?.textContent.match(/·\s*([\d.,]+)\s*×\s*([\d.,]+)\s*mm/i);
+    if(m){const w=Number(m[1].replace(',','.')),h=Number(m[2].replace(',','.'));if(Number.isFinite(w)&&Number.isFinite(h))volume+=w*h*depth;}
+  }
   const density=Math.max(.01,num('costDensity',1.24));
   const waste=Math.max(0,num('costWaste',8));
-  const grams=volume*density*(1+waste/100);
+  const grams=(volume/1000)*density*(1+waste/100);
   const priceKg=Math.max(0,num('costMaterial',22));
   const material=grams/1000*priceKg;
   const speed=Math.max(1,num('costMinutes100g',45));
@@ -32,7 +25,7 @@ function estimate(){
   const energy=kwh*kwhPrice;
   const labor=Math.max(0,num('costLabor',0))*hours;
   const direct=material+energy+labor;
-  const margin=Math.max(0,num('costMargin',30));
+  const margin=Math.min(99,Math.max(0,num('costMargin',30)));
   const sale=direct/(1-margin/100);
   document.getElementById('costWeight').textContent=`${grams.toFixed(1)} g`;
   document.getElementById('costTime').textContent=`${hours.toFixed(1)} h`;
@@ -41,7 +34,7 @@ function estimate(){
   document.getElementById('costDirectOut').textContent=money(direct);
   document.getElementById('costSaleOut').textContent=money(Number.isFinite(sale)?sale:0);
   document.getElementById('costKwhOut').textContent=`${kwh.toFixed(2)} kWh`;
-  document.getElementById('costPiecesOut').textContent=String(roots.length);
+  document.getElementById('costPiecesOut').textContent=String(rows.length);
 }
 
 function install(){
@@ -79,13 +72,15 @@ function install(){
       Costo directo: <b id="costDirectOut">$ 0,00</b><br>
       <span style="display:block;margin-top:5px">Precio sugerido: <b id="costSaleOut">$ 0,00</b></span>
     </div>
-    <div class="hint">Estimación orientativa. El consumo real depende del laminado, relleno, soportes, temperatura, pausas y material utilizado.</div>`;
+    <div class="hint">Estimación orientativa: usa las dimensiones de las piezas. El consumo real puede variar por relleno, soportes, paredes y laminado.</div>`;
   const exportSection=[...aside.querySelectorAll('section')].find(s=>s.querySelector('#download'));
   if(exportSection)exportSection.after(section);else aside.appendChild(section);
   section.querySelectorAll('input').forEach(i=>i.addEventListener('input',estimate));
   section.querySelector('#costRefresh').addEventListener('click',estimate);
+  const observer=new MutationObserver(()=>requestAnimationFrame(estimate));
+  const list=document.getElementById('pieceList');
+  if(list)observer.observe(list,{childList:true,subtree:true});
   estimate();
 }
 
-window.addEventListener('gemelos3d:state',estimate);
 install();
