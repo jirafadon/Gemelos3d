@@ -20,6 +20,11 @@ header p{font-size:11px!important;color:#697382!important}
 .layout{grid-template-columns:355px minmax(0,1fr)!important;min-height:calc(100vh - 68px)!important}
 aside{padding:14px!important;border-right:1px solid var(--g-border)!important;background:linear-gradient(180deg,#0b0e13 0%,#090c11 100%);scrollbar-width:thin}
 aside>section{margin-bottom:10px!important;padding:13px!important;border:1px solid var(--g-border)!important;border-radius:var(--g-radius)!important;background:rgba(15,19,25,.88)!important;box-shadow:0 5px 18px rgba(0,0,0,.10)}
+#workspaceNav{position:sticky;top:-14px;z-index:6;padding:12px 2px 9px;background:linear-gradient(180deg,#0b0e13 78%,rgba(11,14,19,0));backdrop-filter:blur(8px)}
+#workspaceNav [data-ws-step]{cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:.16s!important}
+#workspaceNav [data-ws-step]:hover{color:#dfe5ed!important;border-color:#394352!important;transform:none!important}
+#workspaceNav [data-ws-step].active{background:#edf0f4!important;color:#090c11!important;border-color:#edf0f4!important;box-shadow:0 4px 14px rgba(0,0,0,.22)}
+#workspaceNav [data-ws-step].done{color:#c3cbd6!important;border-color:#303a48!important}
 .sectionTitle{font-size:12px!important;font-weight:750!important;letter-spacing:.01em}
 .sectionHint{font-size:10px!important;color:#687282!important;margin-bottom:9px!important}
 .sectionNumber{color:#5e6878!important;font-variant-numeric:tabular-nums}
@@ -59,14 +64,31 @@ function enhance(){
   const nav=document.createElement('nav');
   nav.id='workspaceNav';
   nav.setAttribute('aria-label','Flujo de trabajo');
-  nav.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin:0 2px 9px"><strong style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#687282">Flujo de trabajo</strong><span style="font-size:9px;color:#4f5968">GEMELOS 3D</span></div><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:12px">${['Diseño','Medidas','Fabricar','Costos','Entrega'].map((x,i)=>`<button type="button" data-ws-step="${i}" style="min-height:28px!important;padding:4px 3px!important;font-size:8px!important;margin:0!important;background:#0c1117!important;color:#697484!important;border:1px solid #202733!important;border-radius:7px!important">${x}</button>`).join('')}</div>`;
-  nav.querySelectorAll('[data-ws-step]').forEach((btn,i)=>btn.addEventListener('click',()=>{
-    const targets=[aside.children[0],aside.children[1],aside.children[5],document.getElementById('costPanel'),document.getElementById('exportSection')];
+  nav.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin:0 2px 9px"><strong style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#687282">Flujo de trabajo</strong><span id="workspaceState" style="font-size:9px;color:#4f5968">DISEÑO</span></div><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:12px">${['Diseño','Medidas','Fabricar','Costos','Entrega'].map((x,i)=>`<button type="button" data-ws-step="${i}" style="min-height:28px!important;padding:4px 3px!important;font-size:8px!important;margin:0!important;background:#0c1117!important;color:#697484!important;border:1px solid #202733!important;border-radius:7px!important">${x}</button>`).join('')}</div>`;
+  const buttons=[...nav.querySelectorAll('[data-ws-step]')];
+  const targets=[aside.children[1],aside.children[2],aside.children[6],document.getElementById('costPanel'),document.getElementById('exportSection')];
+  const labels=['DISEÑO','MEDIDAS','FABRICAR','COSTOS','ENTREGA'];
+  function activate(index){
+    buttons.forEach((btn,i)=>btn.classList.toggle('active',i===index));
+    buttons.forEach((btn,i)=>btn.classList.toggle('done',i<index));
+    const state=nav.querySelector('#workspaceState');
+    if(state) state.textContent=labels[index]||'DISEÑO';
+  }
+  buttons.forEach((btn,i)=>btn.addEventListener('click',()=>{
     const target=targets[i];
+    activate(i);
     if(target) target.scrollIntoView({behavior:'smooth',block:'start'});
   }));
+  const observedTargets=targets.filter(Boolean);
+  if('IntersectionObserver' in window && observedTargets.length){
+    const io=new IntersectionObserver(entries=>{
+      const visible=entries.filter(e=>e.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];
+      if(visible){const idx=observedTargets.indexOf(visible.target);if(idx>=0) activate(idx);}
+    },{root:aside,threshold:[.15,.35,.6]});
+    observedTargets.forEach(el=>io.observe(el));
+  }
+  activate(0);
   aside.prepend(nav);
 }
 
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',enhance,{once:true}); else enhance();
-`;
