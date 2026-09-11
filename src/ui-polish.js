@@ -51,6 +51,26 @@ button.primary:hover{background:#fff!important}
 .bedCard.active{border-color:#68778a!important;background:#151b23!important}
 .bedCard button{min-height:30px!important}
 .sizeGuide{background:#0b0f15!important;border-color:#222a35!important;border-radius:9px!important}
+
+/* Visor = mesa de trabajo: HUD discreto, sin tocar el canvas ni la geometría. */
+#viewer{isolation:isolate}
+#viewer .g-viewerHud{position:absolute;inset:0;z-index:2;pointer-events:none;color:#8e98a7;font-variant-numeric:tabular-nums}
+.g-viewerHud .g-hudTop{position:absolute;left:16px;right:16px;top:16px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.g-viewerHud .g-hudTitle{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid #252e3a;border-radius:9px;background:rgba(8,11,16,.58);backdrop-filter:blur(8px);box-shadow:0 10px 28px rgba(0,0,0,.14)}
+.g-viewerHud .g-dot{width:6px;height:6px;border-radius:50%;background:#697586;box-shadow:0 0 0 3px rgba(105,117,134,.10)}
+.g-viewerHud .g-title{font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#aeb7c4}
+.g-viewerHud .g-subtitle{font-size:8px;color:#606b7a;margin-left:2px}
+.g-viewerHud .g-meta{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.g-viewerHud .g-chip{padding:6px 8px;border:1px solid #252e3a;border-radius:8px;background:rgba(8,11,16,.58);backdrop-filter:blur(8px);font-size:8px;color:#8e98a7}
+.g-viewerHud .g-chip b{color:#d5dbe3;font-weight:700}
+.g-viewerHud .g-bottom{position:absolute;left:16px;right:16px;bottom:16px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.g-viewerHud .g-hint{max-width:360px;padding:7px 9px;border:1px solid #252e3a;border-radius:8px;background:rgba(8,11,16,.48);backdrop-filter:blur(8px);font-size:8px;color:#606b7a}
+.g-viewerHud .g-status{padding:7px 9px;border:1px solid #252e3a;border-radius:8px;background:rgba(8,11,16,.58);backdrop-filter:blur(8px);font-size:8px;color:#7e8999;text-align:right}
+.g-viewerHud .g-status strong{color:#b9c2ce}
+#viewer.g-hasModel .g-dot{background:#9fe3b1;box-shadow:0 0 0 3px rgba(159,227,177,.10)}
+#viewer.g-hasModel .g-hint{color:#788494}
+#viewer.g-fabMode .g-dot{background:#d9e0e8;box-shadow:0 0 0 3px rgba(217,224,232,.09)}
+@media(max-width:800px){.g-viewerHud .g-hudTop{left:8px;right:8px;top:8px}.g-viewerHud .g-bottom{left:8px;right:8px;bottom:8px}.g-viewerHud .g-meta{display:none}.g-viewerHud .g-hint{max-width:240px}.g-viewerHud .g-status{font-size:7px}}
 @media(max-width:900px){.layout{grid-template-columns:315px minmax(0,1fr)!important}}
 @media(max-width:800px){header{padding:0 12px!important}.layout{display:flex!important;flex-direction:column!important}aside{order:2;max-height:none!important}.layout #viewer{order:1;min-height:62vh!important;height:62vh}.fabricationPanel{max-height:38%!important}}
 `;
@@ -61,6 +81,32 @@ function enhance(){
   injectStyles();
   const aside=document.querySelector('aside');
   if(!aside || document.getElementById('workspaceNav')) return;
+  const viewer=document.getElementById('viewer');
+  if(viewer && !viewer.querySelector('.g-viewerHud')){
+    const hud=document.createElement('div');
+    hud.className='g-viewerHud';
+    hud.innerHTML=`<div class="g-hudTop"><div class="g-viewerTitle"><div class="g-viewerHud g-hudTitle"><span class="g-dot"></span><span class="g-title">Mesa de trabajo 3D</span><span class="g-subtitle">Vista de diseño</span></div></div><div class="g-meta"><span class="g-chip">X <b id="gHudX">—</b> mm</span><span class="g-chip">Y <b id="gHudY">—</b> mm</span><span class="g-chip">Z <b id="gHudZ">—</b> mm</span><span class="g-chip">Piezas <b id="gHudPieces">0</b></span></div></div><div class="g-bottom"><div class="g-hint" id="gHudHint">Generá un modelo para comenzar a trabajar en 3D.</div><div class="g-status"><strong id="gHudMode">DISEÑO</strong><br><span id="gHudStatus">Listo</span></div></div>`;
+    viewer.appendChild(hud);
+    hud.querySelectorAll('.g-viewerHud').forEach(el=>{if(el.classList.contains('g-viewerHud') && el.classList.contains('g-hudTitle')) el.classList.remove('g-viewerHud')});
+    const read=(id, fallback='—')=>document.getElementById(id)?.textContent||fallback;
+    const sync=()=>{
+      const x=document.getElementById('sx')?.textContent||'—', y=document.getElementById('sy')?.textContent||'—', z=document.getElementById('sz')?.textContent||'—', p=document.getElementById('pieces')?.textContent||'0';
+      document.getElementById('gHudX').textContent=x;document.getElementById('gHudY').textContent=y;document.getElementById('gHudZ').textContent=z;document.getElementById('gHudPieces').textContent=p;
+      const status=document.getElementById('status');
+      const txt=status?.textContent?.trim()||'Listo';
+      document.getElementById('gHudStatus').textContent=txt.length>52?txt.slice(0,52)+'…':txt;
+      const hasModel=p!=='0' || x!=='—';
+      viewer.classList.toggle('g-hasModel',hasModel);
+      document.getElementById('gHudHint').textContent=hasModel?'Arrastrá para orbitar · rueda para zoom · usá las vistas para inspeccionar el modelo.':'Generá un modelo para comenzar a trabajar en 3D.';
+      const fab=viewer.classList.contains('fabricationMode') || document.querySelector('.fabricationPanel.fabricationMode');
+      viewer.classList.toggle('g-fabMode',!!fab);
+      document.getElementById('gHudMode').textContent=fab?'FABRICACIÓN':'DISEÑO';
+    };
+    const mo=new MutationObserver(sync);
+    ['sx','sy','sz','pieces','status'].forEach(id=>{const el=document.getElementById(id);if(el)mo.observe(el,{childList:true,subtree:true,characterData:true});});
+    const fabObserver=new MutationObserver(sync); fabObserver.observe(viewer,{attributes:true,attributeFilter:['class'],subtree:true});
+    setInterval(sync,900); sync();
+  }
   const nav=document.createElement('nav');
   nav.id='workspaceNav';
   nav.setAttribute('aria-label','Flujo de trabajo');
