@@ -5,18 +5,19 @@
     if(document.getElementById(STYLE_ID)) return;
     const s=document.createElement('style'); s.id=STYLE_ID;
     s.textContent=`
-/* ===== DESKTOP: dashboard + visor central ===== */
+/* ===== DESKTOP: dashboard real sobre el visor ===== */
 @media(min-width:801px){
   .layout{grid-template-columns:300px minmax(0,1fr)!important}
-  #viewer{display:flex!important;flex-direction:column!important;align-items:stretch!important;justify-content:flex-start!important;min-height:calc(100vh - 68px)!important}
-  #gDesktopDashboard{display:grid;grid-template-columns:1.35fr repeat(4,1fr);gap:8px;padding:12px 14px 0;position:relative;z-index:5;flex:0 0 auto}
-  .gDashCard{min-width:0;padding:9px 11px;border:1px solid #252d38;border-radius:10px;background:#0e131a;box-shadow:0 5px 16px rgba(0,0,0,.12)}
-  .gDashCard small{display:block;font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:#687382;margin-bottom:4px}
-  .gDashCard strong{display:block;font-size:13px;color:#e6eaf0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .gDashCard span{font-size:9px;color:#7d8795}
-  #viewer canvas{position:absolute!important;inset:0!important;z-index:0}
-  #viewer .viewTools,#viewer .badge{z-index:6}
-  #viewer .fabricationPanel{z-index:7}
+  #viewer{position:relative!important;min-height:calc(100vh - 68px)!important;overflow:hidden!important}
+  #viewer canvas{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;z-index:0!important}
+  #gDesktopDashboard{position:absolute!important;left:16px!important;right:16px!important;top:16px!important;display:grid!important;grid-template-columns:minmax(230px,1.5fr) repeat(4,minmax(105px,1fr))!important;gap:8px!important;padding:0!important;margin:0!important;z-index:100!important;pointer-events:none!important}
+  .gDashCard{min-width:0!important;padding:10px 12px!important;border:1px solid #303947!important;border-radius:10px!important;background:rgba(10,14,20,.90)!important;backdrop-filter:blur(10px)!important;box-shadow:0 8px 24px rgba(0,0,0,.28)!important}
+  .gDashCard small{display:block!important;font-size:8px!important;letter-spacing:.08em!important;text-transform:uppercase!important;color:#687382!important;margin-bottom:4px!important}
+  .gDashCard strong{display:block!important;font-size:13px!important;color:#e6eaf0!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  .gDashCard span{font-size:9px!important;color:#7d8795!important}
+  #viewer .viewTools{z-index:110!important}
+  #viewer .badge{z-index:110!important}
+  #viewer .fabricationPanel{z-index:120!important}
 }
 /* ===== MOBILE: categorías arriba + acordeón ===== */
 @media(max-width:800px){
@@ -55,10 +56,14 @@
     viewer.appendChild(d);
     const sync=()=>{
       const q=id=>document.getElementById(id)?.textContent?.trim()||'—';
-      document.getElementById('gDashSize').textContent=`${q('sx')} × ${q('sy')} × ${q('sz')}`;
-      document.getElementById('gDashPieces').textContent=q('pieces');
-      document.getElementById('gDashStatus').textContent=(q('status')||'Listo').slice(0,28);
-      const info=q('bedInfo'); document.getElementById('gDashBed').textContent=info==='—'?'—':info.split('\n')[0].slice(0,22);
+      const size=document.getElementById('gDashSize');
+      const pieces=document.getElementById('gDashPieces');
+      const bed=document.getElementById('gDashBed');
+      const status=document.getElementById('gDashStatus');
+      if(size)size.textContent=`${q('sx')} × ${q('sy')} × ${q('sz')}`;
+      if(pieces)pieces.textContent=q('pieces');
+      if(status)status.textContent=(q('status')||'Listo').slice(0,28);
+      const info=q('bedInfo'); if(bed)bed.textContent=info==='—'?'—':info.split('\n')[0].slice(0,22);
     };
     ['sx','sy','sz','pieces','status','bedInfo'].forEach(id=>{const e=document.getElementById(id);if(e)new MutationObserver(sync).observe(e,{childList:true,subtree:true,characterData:true});});
     setInterval(sync,1000); sync();
