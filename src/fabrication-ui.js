@@ -1,3 +1,5 @@
+import './layout-quality-fix.js';
+
 const viewer = document.getElementById('viewer');
 const aside = document.querySelector('aside');
 const bedList = document.getElementById('bedList');
