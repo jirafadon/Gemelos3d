@@ -168,18 +168,8 @@ function reset(item){item.object.position.set(0,0,0);item.object.rotation.z=0;it
 function itemBox(item,angle=0){reset(item);item.object.rotation.z=angle;item.object.updateMatrixWorld(true);const b=new THREE.Box3().setFromObject(item.object);const out={w:b.max.x-b.min.x,h:b.max.y-b.min.y};reset(item);return out;}
 function overlap(a,b,g){return a.x<b.x+b.w+g&&a.x+a.w+g>b.x&&a.y<b.y+b.h+g&&a.y+a.h+g>b.y;}
 function findSpot(used,w,h,c,g){
-  const xs=[0],ys=[0];
-  for(const p of used){xs.push(p.x+p.w+g);ys.push(p.y+p.h+g);}
-  const ux=[...new Set(xs.map(v=>Number(v.toFixed(4))))].sort((a,b)=>a-b);
-  const uy=[...new Set(ys.map(v=>Number(v.toFixed(4))))].sort((a,b)=>a-b);
-  let best=null;
-  for(const y of uy)for(const x of ux){
-    if(x<0||y<0||x+w>c.usable.x+.001||y+h>c.usable.y+.001)continue;
-    const r={x,y,w,h};
-    if(used.some(p=>overlap(r,p,g)))continue;
-    const score=(y+h)*1000000+(x+w);
-    if(!best||score<best.score)best={...r,score};
-  }
+  const candidates=[[0,0]];for(const p of used)candidates.push([p.x+p.w+g,p.y],[p.x,p.y+p.h+g]);let best=null;
+  for(const [x,y] of candidates){if(x<0||y<0||x+w>c.usable.x+.001||y+h>c.usable.y+.001)continue;const r={x,y,w,h};if(used.some(p=>overlap(r,p,g)))continue;const score=(y+h)*100000+x+w;if(!best||score<best.score)best={...r,score};}
   return best;
 }
 function place(item,rect,angle,c){reset(item);item.object.rotation.z=angle;item.object.updateMatrixWorld(true);const b=new THREE.Box3().setFromObject(item.object),left=-c.full.x/2+c.margin+c.p.x,bottom=-c.full.y/2+c.margin;item.object.position.x=left+rect.x-b.min.x;item.object.position.y=bottom+rect.y-b.min.y;item.object.updateMatrixWorld(true);}
@@ -188,105 +178,64 @@ function centerPlate(plate,c){
   plate.items.forEach(i=>{i.object.position.x+=dx;i.object.position.y+=dy;i.object.updateMatrixWorld(true);});
 }
 function pack(allowRotate=false){
-  const c=bed();
-  const gap=1;
-  plates=[];items.forEach(reset);
-  const order=[...items].sort((a,b)=>{
-    if(a.fragment&&b.fragment)return (a.gridRow-b.gridRow)||(a.gridCol-b.gridCol);
-    return 0;
-  });
-  for(const item of order){
-    let placed=false;
-    const angles=allowRotate?[0,Math.PI/2]:[0];
-    for(let pi=0;pi<plates.length&&!placed;pi++)for(const angle of angles){
-      const size=itemBox(item,angle),spot=findSpot(plates[pi].used,size.w,size.h,c,gap);
-      if(!spot)continue;
-      place(item,spot,angle,c);item.bed=pi;plates[pi].items.push(item);plates[pi].used.push(spot);placed=true;break;
-    }
-    if(!placed){
-      const size=itemBox(item,0),spot=findSpot([],size.w,size.h,c,gap);
-      if(!spot){status(`La pieza ${item.id} no entra en la cama útil.`,'bad');return false;}
-      const plate={items:[],used:[]};
-      place(item,spot,0,c);item.bed=plates.length;plate.items.push(item);plate.used.push(spot);plates.push(plate);
-    }
+  const c=bed(),gap=Math.max(0,num('spacing',4));plates=[];items.forEach(reset);
+  for(const item of items){let placed=false;const angles=allowRotate?[0,Math.PI/2]:[0];
+    for(let pi=0;pi<plates.length&&!placed;pi++)for(const angle of angles){const size=itemBox(item,angle),spot=findSpot(plates[pi].used,size.w,size.h,c,gap);if(!spot)continue;place(item,spot,angle,c);item.bed=pi;plates[pi].items.push(item);plates[pi].used.push(spot);placed=true;break;}
+    if(!placed){const size=itemBox(item,0),spot=findSpot([],size.w,size.h,c,gap);if(!spot){status(`La pieza ${item.id} no entra en la cama útil.`,'bad');return false;}const plate={items:[],used:[]};place(item,spot,0,c);item.bed=plates.length;plate.items.push(item);plate.used.push(spot);plates.push(plate);}
   }
-  plates.forEach(p=>centerPlate(p,c));
-  render();
-  return true;
+  plates.forEach(p=>centerPlate(p,c));render();return true;
 }
-
+function render(){items.forEach(i=>{i.object.visible=i.bed===activeBed;});drawBed();renderLists();stats();}
 function stats(){
-  $('stats').innerHTML=`<span>${items.length} pieza(s)</span><span>${plates.length} cama(s)</span>`;
+  if(!items.length){$('sx').textContent='—';$('sy').textContent='—';$('sz').textContent='—';$('pieces').textContent='0';return;}
+  const b=new THREE.Box3();items.forEach(i=>b.expandByObject(i.object));$('sx').textContent=`${(b.max.x-b.min.x).toFixed(1)} mm`;$('sy').textContent=`${(b.max.y-b.min.y).toFixed(1)} mm`;$('sz').textContent=`${(b.max.z-b.min.z).toFixed(1)} mm`;$('pieces').textContent=String(items.length);
 }
-function render(){
-  drawBed();info();stats();
-  const active=plates[activeBed];
-  document.querySelectorAll('.bedCard').forEach((el,i)=>el.classList.toggle('active',i===activeBed));
-  document.querySelectorAll('.piece').forEach(el=>el.classList.toggle('active',Number(el.dataset.bed)===activeBed));
-  items.forEach(i=>i.object.visible=i.bed===activeBed);
-  if(active)active.items.forEach(i=>i.object.visible=true);
-  buildBedList();buildPieceList();
+function renderLists(){
+  const beds=$('bedList');beds.innerHTML='';plates.forEach((p,i)=>{const card=document.createElement('div');card.className=`bedCard${i===activeBed?' active':''}`;card.innerHTML=`<div class="bedTab"><b>Cama ${i+1}</b><span>${p.items.length} pieza${p.items.length===1?'':'s'}</span></div><button>Ver esta cama</button>`;card.querySelector('button').onclick=()=>{activeBed=i;render();};beds.appendChild(card);});
+  const pieces=$('pieceList');pieces.innerHTML='';items.forEach(i=>{const row=document.createElement('button');row.type='button';row.className=`piece${i===selectedItem?' selected':''}`;row.innerHTML=`<b>Pieza ${i.id}</b><span>Cama ${i.bed+1} · ${i.width.toFixed(1)} × ${i.height.toFixed(1)} mm</span>`;row.onclick=()=>selectItem(i);pieces.appendChild(row);});
+  const panel=ensureSelectionPanel();
+  if(!selectedItem)panel.innerHTML='<b>Pieza seleccionada</b><span>Elegí una pieza para ver sus datos.</span>';
 }
-function buildBedList(){
-  const el=$('bedList');el.innerHTML='';
-  plates.forEach((p,i)=>{const d=document.createElement('button');d.className=`bedCard ${i===activeBed?'active':''}`;d.textContent=`Cama ${i+1} · ${p.items.length} pieza(s)`;d.onclick=()=>{activeBed=i;render();};el.appendChild(d);});
-}
-function buildPieceList(){
-  const el=$('pieceList');el.innerHTML='';
-  items.forEach(i=>{const d=document.createElement('button');d.className=`piece ${i.bed===activeBed?'active':''}`;d.dataset.bed=i.bed;d.textContent=`Pieza ${i.id} · cama ${i.bed+1} · ${i.width.toFixed(1)} × ${i.height.toFixed(1)} mm`;d.onclick=()=>selectItem(i);el.appendChild(d);});
+function frame(){const c=bed();camera.position.set(Math.max(c.full.x,c.full.y)*.72,Math.max(c.full.x,c.full.y)*.72,Math.max(c.full.x,c.full.y)*.72);camera.up.set(0,1,0);controls.target.set(0,0,0);controls.update();}
+function setView(view){
+  const c=bed(),d=Math.max(c.full.x,c.full.y)*1.65;
+  if(view==='top') camera.position.set(0,0,d);
+  else if(view==='front') camera.position.set(0,-d,0);
+  else if(view==='side') camera.position.set(d,0,0);
+  else camera.position.set(d*.72,d*.72,d*.72);
+  camera.up.set(0,1,0);controls.target.set(0,0,0);controls.update();
+  document.querySelectorAll('.viewTools button').forEach(b=>b.classList.toggle('active',b.dataset.view===view));
 }
 function build(){
-  clearObjects();
-  const text=($('text').value||'').trim();
-  if(!text){status('Escribí un texto antes de crear el modelo.','warn');return;}
-  if(!font){status('La tipografía todavía no está lista.','warn');return;}
+  clearObjects();const text=($('text').value||'').trim();if(!text){status('Escribí un texto antes de crear el modelo.','warn');return;}if(!font){status('La tipografía todavía no está lista.','warn');return;}
   const c=bed(),h=Math.max(1,num('height',60)),d=Math.max(.8,num('depth',12)),spacing=Math.max(0,num('spacing',4)),width=Math.max(0,num('widthScale',0)),layout=makeLayout(text,spacing,h,width),whole=makeWord(layout,d),wb=new THREE.Box3().setFromObject(whole);
-  if(wb.max.x-wb.min.x<=c.usable.x+.001&&wb.max.y-wb.min.y<=c.usable.y+.001){
-    const item={id:1,object:whole,bed:0,width:wb.max.x-wb.min.x,height:wb.max.y-wb.min.y,source:text,fragment:false};items.push(item);objectLayer.add(whole);pack(false);status(`Texto creado: ${item.width.toFixed(1)} × ${item.height.toFixed(1)} × ${d.toFixed(1)} mm.`,'ok');return;
-  }
+  if(wb.max.x-wb.min.x<=c.usable.x+.001&&wb.max.y-wb.min.y<=c.usable.y+.001){const item={id:1,object:whole,bed:0,width:wb.max.x-wb.min.x,height:wb.max.y-wb.min.y,source:text,fragment:false};items.push(item);objectLayer.add(whole);pack(false);status(`Texto creado: ${item.width.toFixed(1)} × ${item.height.toFixed(1)} × ${d.toFixed(1)} mm.`,'ok');return;}
   whole.traverse(n=>{if(n.geometry)n.geometry.dispose();});
-  const frags=splitWord(layout,d);
-  if(!frags.length){status('No se pudo dividir el texto con estas medidas.','bad');return;}
+  const frags=splitWord(layout,d);if(!frags.length){status('No se pudo dividir el texto con estas medidas.','bad');return;}
   frags.forEach((f,index)=>{const b=new THREE.Box3().setFromObject(f),item={id:index+1,object:f,bed:0,width:b.max.x-b.min.x,height:b.max.y-b.min.y,source:text,fragment:true,gridRow:f.userData.row,gridCol:f.userData.col};items.push(item);objectLayer.add(f);});
   if(pack(false))status(`Texto completo dividido físicamente en ${items.length} fragmentos y distribuido en ${plates.length} camas.`,'ok');
 }
-
-function optimize(){
-  if(!items.length){status('Primero creá un modelo.','warn');return;}
-  if(pack(true))status(`Optimización aplicada: ${plates.length} cama(s).`,'ok');
+function centerAll(){if(!items.length){status('Primero creá el modelo.','warn');return;}plates.forEach(p=>centerPlate(p,bed()));render();status('Modelo centrado en la cama. La escala no cambió.','ok');}
+function optimize(){if(!items.length){status('Primero creá el modelo.','warn');return;}if(pack(true))status(`Acomodado terminado: ${plates.length} cama${plates.length===1?'':'s'}. La escala física se mantuvo.`,'ok');}
+function exportSTL(parts){
+  if(!items.length){status('No hay modelo para exportar.','warn');return;}const out=new THREE.Group();items.forEach(i=>out.add(i.object.clone(true)));out.updateMatrixWorld(true);const text=new STLExporter().parse(out),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'model/stl'}));a.download=parts?'gemelos3d-piezas.stl':'gemelos3d.stl';a.click();URL.revokeObjectURL(a.href);
 }
-function exportSTL(){
-  if(!items.length){status('No hay piezas para exportar.','warn');return;}
-  const exporter=new STLExporter();
-  const group=new THREE.Group();items.forEach(i=>group.add(i.object.clone()));
-  const data=exporter.parse(group);const blob=new Blob([data],{type:'model/stl'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`gemelos3d-${($('text').value||'modelo').trim().replace(/\\s+/g,'-').toLowerCase()}.stl`;a.click();URL.revokeObjectURL(a.href);status('STL exportado.','ok');
+function saveProject(){
+  const payload={app:'Gemelos3D',version:6,text:$('text').value,height:num('height',60),widthTotal:num('widthScale',0),depth:num('depth',12),spacing:num('spacing',4),printer:$('printer').value,margin:num('margin',5),purgeMode:$('purgeMode').value,purgeX:num('purgeX',40),purgeY:num('purgeY',40),font:$('fontStyle').value,pieces:items.map(i=>({id:i.id,bed:i.bed,width:i.width,height:i.height}))};
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}));a.download='gemelos3d-proyecto.json';a.click();URL.revokeObjectURL(a.href);
 }
-function exportPieces(){
-  if(!items.length){status('No hay piezas para exportar.','warn');return;}
-  const exporter=new STLExporter();items.forEach(i=>{const g=i.object.clone();const data=exporter.parse(g);const blob=new Blob([data],{type:'model/stl'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`pieza-${i.id}-cama-${i.bed+1}.stl`;a.click();URL.revokeObjectURL(a.href);});status(`${items.length} STL(s) exportados.`,'ok');
+function wire(){
+  const ids=['printer','margin','purgeMode','purgeX','purgeY','cx','cy','cz','height','widthScale','depth','spacing','fontStyle','curveSegments','bevel','bevelSize','bevelSegments'];
+  ids.forEach(id=>$(id)?.addEventListener('change',async()=>{info();if(id==='fontStyle')await loadFont();if(['printer','margin','purgeMode','purgeX','purgeY','cx','cy','cz'].includes(id)){drawBed();frame();}}));
+  $('buildTop').onclick=async()=>{if(await loadFont())build()};
+  $('clearText').onclick=clearObjects;
+  $('centerAll').onclick=centerAll;
+  $('optimize').onclick=optimize;
+  $('download').onclick=()=>exportSTL(false);
+  $('downloadPieces').onclick=()=>exportSTL(true);
+  $('project').onclick=saveProject;
+  document.querySelectorAll('.viewTools button').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
 }
-function resetView(){
-  const c=bed();camera.position.set(0,-Math.max(c.full.x,c.full.y)*1.25,Math.max(c.full.x,c.full.y)*1.15);controls.target.set(0,0,0);controls.update();
-}
-function fit(){
-  const b=new THREE.Box3();objectLayer.traverse(o=>{if(o.visible&&o.isMesh)b.expandByObject(o);});if(b.isEmpty())return;
-  const s=b.getSize(new THREE.Vector3()),m=Math.max(s.x,s.y,s.z)*1.8;camera.position.set(b.getCenter(new THREE.Vector3()).x-m,b.getCenter(new THREE.Vector3()).y-m,b.max.z+m);controls.target.copy(b.getCenter(new THREE.Vector3()));controls.update();
-}
-function onResize(){const r=viewer.getBoundingClientRect();camera.aspect=Math.max(.1,r.width/r.height);camera.updateProjectionMatrix();renderer.setSize(r.width,r.height,false);}
-function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera);}
-
-$('printer').addEventListener('change',()=>{if(items.length)build();else{drawBed();info();}});
-['margin','purgeMode','purgeX','purgeY','cx','cy','cz'].forEach(id=>$(id)?.addEventListener('input',()=>{if(items.length)build();else{drawBed();info();}}));
-$('fontStyle').addEventListener('change',async()=>{await loadFont();if(items.length)build();});
-$('createBtn').addEventListener('click',build);
-$('optimizeBtn').addEventListener('click',optimize);
-$('exportBtn').addEventListener('click',exportSTL);
-$('exportPiecesBtn').addEventListener('click',exportPieces);
-$('resetViewBtn').addEventListener('click',resetView);
-$('fitBtn').addEventListener('click',fit);
-$('height').addEventListener('input',info);$('depth').addEventListener('input',info);$('widthScale').addEventListener('input',info);
-$('spacing').addEventListener('input',info);
-$('bevel').addEventListener('change',()=>{if(items.length)build();});
-window.addEventListener('resize',onResize);
-
-(async()=>{await loadFont();drawBed();info();onResize();resetView();animate();})();
+function resize(){const w=Math.max(1,viewer.clientWidth),h=Math.max(1,viewer.clientHeight);renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+wire();info();drawBed();frame();resize();window.addEventListener('resize',resize);status('Listo. Escribí el texto arriba y bajá por las opciones.');
+(function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera);})();
