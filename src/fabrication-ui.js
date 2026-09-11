@@ -1,4 +1,5 @@
 import './layout-quality-fix.js';
+import './cost-ui.js';
 
 const viewer = document.getElementById('viewer');
 const aside = document.querySelector('aside');
