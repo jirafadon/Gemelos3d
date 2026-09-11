@@ -196,7 +196,18 @@ function renderLists(){
   const panel=ensureSelectionPanel();
   if(!selectedItem)panel.innerHTML='<b>Pieza seleccionada</b><span>Elegí una pieza para ver sus datos.</span>';
 }
-function frame(){const c=bed();camera.position.set(Math.max(c.full.x,c.full.y)*.72,Math.max(c.full.x,c.full.y)*.72,Math.max(c.full.x,c.full.y)*.72);camera.up.set(0,1,0);controls.target.set(0,0,0);controls.update();}
+function frame(){
+  const c=bed(),d=Math.max(c.full.x,c.full.y)*2.05;
+  const aspect=Math.max(.5,viewer.clientWidth/Math.max(1,viewer.clientHeight));
+  const mobile=window.matchMedia('(max-width:800px)').matches;
+  const spread=mobile?1.08:1;
+  const h=Math.max(c.full.x,c.full.y)*.72*spread;
+  const v=Math.max(c.full.x,c.full.y)*.62*spread;
+  camera.position.set(h,-d*.92,v);
+  camera.up.set(0,0,1);
+  controls.target.set(0,0,0);
+  controls.update();
+}
 function setView(view){
   const c=bed(),d=Math.max(c.full.x,c.full.y)*1.65;
   if(view==='top') camera.position.set(0,0,d);
@@ -237,5 +248,10 @@ function wire(){
   document.querySelectorAll('.viewTools button').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
 }
 function resize(){const w=Math.max(1,viewer.clientWidth),h=Math.max(1,viewer.clientHeight);renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
-wire();info();drawBed();frame();resize();window.addEventListener('resize',resize);status('Listo. Escribí el texto arriba y bajá por las opciones.');
+wire();info();drawBed();resize();frame();window.addEventListener('resize',()=>{resize();frame();});status('Listo. Escribí el texto arriba y bajá por las opciones.');
+(function mobileLayoutFix(){
+  const style=document.createElement('style');
+  style.textContent='@media(max-width:800px){.layout{display:flex!important;flex-direction:column!important}.layout aside{order:1!important;max-height:none!important}.layout #viewer{order:2!important;min-height:48vh!important;height:48vh!important}.layout #viewer canvas{display:block}}';
+  document.head.appendChild(style);
+})();
 (function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera);})();
