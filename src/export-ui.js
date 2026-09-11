@@ -1,3 +1,5 @@
+import './project-ui.js';
+
 const aside = document.querySelector('aside');
 
 function value(id, fallback=''){
@@ -17,9 +19,7 @@ function collectProject(){
     return m?{id:Number(m[1]),bed:Number(m[2]),widthMm:Number(m[3].replace(',','.')),heightMm:Number(m[4].replace(',','.'))}:{label:text};
   });
   return {
-    app:'Gemelos 3D',
-    formatVersion:1,
-    createdAt:new Date().toISOString(),
+    app:'Gemelos 3D',formatVersion:1,createdAt:new Date().toISOString(),
     design:{text:value('text'),heightMm:num('height',60),widthTotalMm:num('widthScale',0),depthMm:num('depth',12),spacingMm:num('spacing',4),font:value('fontStyle'),curveSegments:num('curveSegments',6),bevel:document.getElementById('bevel')?.checked===true,bevelSizeMm:num('bevelSize',1.2),bevelSegments:num('bevelSegments',2)},
     printer:{preset:value('printer'),marginMm:num('margin',5),purgeMode:value('purgeMode'),purgeXmm:num('purgeX',40),purgeYmm:num('purgeY',40)},
     fabrication:{beds:document.querySelectorAll('#bedList .bedCard').length,pieces},
@@ -44,16 +44,7 @@ function install(){
   section.querySelector('#exportProjectPlus').onclick=()=>downloadText('gemelos3d-proyecto-completo.json',JSON.stringify(collectProject(),null,2),'application/json');
   section.querySelector('#exportSheetPlus').onclick=()=>{
     const p=collectProject();
-    const lines=[
-      'GEMELOS 3D — FICHA TÉCNICA',
-      '',`Texto: ${p.design.text || '—'}`,
-      `Alto: ${p.design.heightMm} mm`,`Ancho total: ${p.design.widthTotalMm || 'Natural'} mm`,`Grosor: ${p.design.depthMm} mm`,
-      `Tipografía: ${p.design.font}`,`Bisel: ${p.design.bevel?'Sí':'No'}`,
-      '',`Impresora: ${p.printer.preset}`,`Margen: ${p.printer.marginMm} mm`,
-      '',`Camas: ${p.fabrication.beds}`,`Piezas: ${p.fabrication.pieces.length}`,
-      '',...p.fabrication.pieces.map(x=>`Pieza ${x.id}: cama ${x.bed}, ${x.widthMm} × ${x.heightMm} mm`),
-      '',`Generado: ${p.createdAt}`
-    ];
+    const lines=['GEMELOS 3D — FICHA TÉCNICA','',`Texto: ${p.design.text || '—'}`,`Alto: ${p.design.heightMm} mm`,`Ancho total: ${p.design.widthTotalMm || 'Natural'} mm`,`Grosor: ${p.design.depthMm} mm`,`Tipografía: ${p.design.font}`,`Bisel: ${p.design.bevel?'Sí':'No'}`,'',`Impresora: ${p.printer.preset}`,`Margen: ${p.printer.marginMm} mm`,'',`Camas: ${p.fabrication.beds}`,`Piezas: ${p.fabrication.pieces.length}`,'',...p.fabrication.pieces.map(x=>`Pieza ${x.id}: cama ${x.bed}, ${x.widthMm} × ${x.heightMm} mm`),'',`Generado: ${p.createdAt}`];
     downloadText('gemelos3d-ficha-tecnica.txt',lines.join('\n'));
   };
 }
