@@ -124,7 +124,8 @@ function meshFromPolygon(poly,depth){
   for(let i=1;i<outer.length;i++)shape.lineTo(outer[i][0],outer[i][1]); shape.closePath();
   for(let i=1;i<poly.length;i++){const ring=poly[i];if(ring.length<3)continue;const hole=new THREE.Path();hole.moveTo(ring[0][0],ring[0][1]);for(let j=1;j<ring.length;j++)hole.lineTo(ring[j][0],ring[j][1]);hole.closePath();shape.holes.push(hole);}
   const z=Math.max(.8,depth),bs=Math.min(bevelSize(),z/2); const geo=new THREE.ExtrudeGeometry(shape,{depth:z,curveSegments:Math.max(3,num('curveSegments',6)),bevelEnabled:$('bevel').checked&&bs>0,bevelSize:bs,bevelThickness:bs,bevelSegments:Math.max(1,num('bevelSegments',2))});
-  geo.translate(0,0,-z/2); return new THREE.Mesh(geo,new THREE.MeshStandardMaterial({roughness:.65,metalness:.04}));
+  // The printer bed is Z=0. Keep the bottom of every generated piece on the bed instead of embedding half of it below the bed plane.
+  geo.translate(0,0,0); return new THREE.Mesh(geo,new THREE.MeshStandardMaterial({roughness:.65,metalness:.04}));
 }
 function makeWord(layout,depth){
   const g=new THREE.Group(); for(const ch of layout.chars)for(const poly of scaledPolygons(layout,ch)){const m=meshFromPolygon(poly,depth);if(m)g.add(m);} g.userData.role='word';g.updateMatrixWorld(true);return g;
@@ -228,16 +229,21 @@ function build(){
 }
 function centerAll(){if(!items.length){status('Primero creá el modelo.','warn');return;}plates.forEach(p=>centerPlate(p,bed()));render();status('Modelo centrado en la cama. La escala no cambió.','ok');}
 function optimize(){if(!items.length){status('Primero creá el modelo.','warn');return;}if(pack(true))status(`Acomodado terminado: ${plates.length} cama${plates.length===1?'':'s'}. La escala física se mantuvo.`,'ok');}
-function exportSTL(parts){
-  if(!items.length){status('No hay modelo para exportar.','warn');return;}const out=new THREE.Group();items.forEach(i=>out.add(i.object.clone(true)));out.updateMatrixWorld(true);const text=new STLExporter().parse(out),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'model/stl'}));a.download=parts?'gemelos3d-piezas.stl':'gemelos3d.stl';a.click();URL.revokeObjectURL(a.href);
+function exportSTL(pieces=false){
+  if(!items.length){status('No hay modelo para exportar.','warn');return;}
+  const exporter=new STLExporter();const targets=pieces?items.filter(i=>i.bed===activeBed):[objectLayer];const data=exporter.parse(pieces?(targets.length===1?targets[0].object:objectLayer):objectLayer,{binary:true});const blob=new Blob([data],{type:'model/stl'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=pieces?`gemelos3d-cama-${activeBed+1}.stl`:'gemelos3d.stl';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
 function saveProject(){
-  const payload={app:'Gemelos3D',version:6,text:$('text').value,height:num('height',60),widthTotal:num('widthScale',0),depth:num('depth',12),spacing:num('spacing',4),printer:$('printer').value,margin:num('margin',5),purgeMode:$('purgeMode').value,purgeX:num('purgeX',40),purgeY:num('purgeY',40),font:$('fontStyle').value,pieces:items.map(i=>({id:i.id,bed:i.bed,width:i.width,height:i.height}))};
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}));a.download='gemelos3d-proyecto.json';a.click();URL.revokeObjectURL(a.href);
+  const payload={version:3,text:$('text').value,height:num('height',60),depth:num('depth',12),spacing:num('spacing',4),widthScale:num('widthScale',0),fontStyle:$('fontStyle').value,printer:$('printer').value,custom:{x:num('cx',200),y:num('cy',200),z:num('cz',200)},purgeMode:$('purgeMode').value,purge:{x:num('purgeX',40),y:num('purgeY',40)},margin:num('margin',5)};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='gemelos3d-proyecto.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
 function wire(){
-  const ids=['printer','margin','purgeMode','purgeX','purgeY','cx','cy','cz','height','widthScale','depth','spacing','fontStyle','curveSegments','bevel','bevelSize','bevelSegments'];
-  ids.forEach(id=>$(id)?.addEventListener('change',async()=>{info();if(id==='fontStyle')await loadFont();if(['printer','margin','purgeMode','purgeX','purgeY','cx','cy','cz'].includes(id)){drawBed();frame();}}));
+  ['height','depth','spacing','widthScale','curveSegments','bevelSize','bevelSegments','cx','cy','cz','purgeX','purgeY','margin'].forEach(id=>$(id)?.addEventListener('input',info));
+  ['printer','purgeMode'].forEach(id=>$(id)?.addEventListener('change',()=>{info();drawBed();frame();}));
+  ['height','depth','spacing','widthScale','bevel','bevelSize','bevelSegments'].forEach(id=>$(id)?.addEventListener('change',info));
+  ['printer','purgeMode','purgeX','purgeY','margin','cx','cy','cz'].forEach(id=>$(id)?.addEventListener('change',()=>{info();drawBed();frame();}));
+  const ids=['height','depth','spacing','widthScale','curveSegments','bevelSize','bevelSegments','cx','cy','cz','purgeX','purgeY','margin','bevel'];ids.forEach(id=>$(id)?.addEventListener('input',info));
+  $('fontStyle')?.addEventListener('change',async()=>{info();await loadFont();});
   $('buildTop').onclick=async()=>{if(await loadFont())build()};
   $('clearText').onclick=clearObjects;
   $('centerAll').onclick=centerAll;
