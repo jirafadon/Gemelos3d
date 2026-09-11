@@ -6,6 +6,37 @@ const pieceList = document.getElementById('pieceList');
 function installFabricationUI(){
   if (!viewer || !aside || !bedList || !pieceList) return;
 
+  if (!document.getElementById('fabricationInspectorStyles')) {
+    const style = document.createElement('style');
+    style.id = 'fabricationInspectorStyles';
+    style.textContent = `
+      .fabSummary{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin:7px 0}
+      .fabSummary div{padding:6px 5px;border:1px solid #252a33;border-radius:7px;background:#14181f;text-align:center}
+      .fabSummary b{display:block;font-size:13px;color:#f5f7fa}
+      .fabSummary span{display:block;margin-top:1px;color:#7f8794;font-size:8px}
+      .fabSelectedTitle{font-size:9px;letter-spacing:.08em;color:#7f8794;font-weight:800;margin:8px 0 4px}
+      .fabSelected{padding:7px;border:1px solid #303641;border-radius:7px;background:#14181f;min-height:34px}
+      .fabSelected b,.fabSelected span{display:block}
+      .fabSelected b{font-size:10px}
+      .fabSelected span{margin-top:3px;color:#8d96a3;font-size:9px;line-height:1.35}
+      .fabBedCard{padding:7px;margin-top:5px;border:1px solid #252a33;border-radius:7px;background:#14181f;font-size:10px;cursor:pointer}
+      .fabBedCard.active{border-color:#8a95a5;background:#1a1f27}
+      .fabBedMain{display:flex;justify-content:space-between;align-items:center;gap:7px}
+      .fabBedMain>div{min-width:0;flex:1}
+      .fabBedMain>div .bedTab{pointer-events:none}
+      .fabBedMain>span{color:#8d96a3;font-size:8px;font-weight:800;white-space:nowrap}
+      .fabBedCard button{margin-top:5px;padding:6px;font-size:9px}
+      .fabPieceRow{display:flex;justify-content:space-between;gap:7px;padding:7px;margin-top:5px;border:1px solid #252a33;border-radius:7px;background:#14181f;font-size:9px;cursor:pointer}
+      .fabPieceRow b{font-size:10px}
+      .fabPieceRow span{color:#8d96a3;text-align:right}
+      .fabPieceRow.selected{border-color:#8a95a5;background:#1a1f27}
+      .fabricationPanel:not(.hasBeds) .fabBedsTitle,.fabricationPanel:not(.hasBeds) #fabBeds{display:none}
+      .fabricationPanel:not(.hasPieces) .fabPiecesTitle,.fabricationPanel:not(.hasPieces) #fabPieces{display:none}
+      .fabricationPanel:not(.hasSelection) .fabSelectedTitle{margin-top:7px}
+    `;
+    document.head.appendChild(style);
+  }
+
   let panel = document.getElementById('fabricationPanel');
   if (!panel) {
     panel = document.createElement('div');
@@ -19,27 +50,22 @@ function installFabricationUI(){
         </div>
         <span class="fabLive">● EN VIVO</span>
       </div>
-
       <div class="fabMode" role="tablist" aria-label="Modo de visualización">
         <button type="button" data-fab-mode="model" class="active">Modelo</button>
         <button type="button" data-fab-mode="fabrication">Fabricación</button>
       </div>
-
       <div class="fabSummary" id="fabSummary">
         <div><b id="fabBedCount">0</b><span>camas</span></div>
         <div><b id="fabPieceCount">0</b><span>piezas</span></div>
         <div><b id="fabActiveBed">—</b><span>cama activa</span></div>
       </div>
-
       <div class="fabBedsTitle">CAMAS</div>
       <div id="fabBeds"></div>
-
       <div class="fabSelectedTitle">SELECCIÓN</div>
       <div id="fabSelected" class="fabSelected">
         <b>Ninguna pieza seleccionada</b>
         <span>Elegí una pieza para ver sus medidas y cama.</span>
       </div>
-
       <div class="fabPiecesTitle">PIEZAS</div>
       <div id="fabPieces"></div>
     `;
@@ -75,7 +101,7 @@ function installFabricationUI(){
       item.innerHTML = `
         <div class="fabBedMain">
           <div>${tab?.innerHTML || `Cama ${index + 1}`}</div>
-          <span>${index === activeIndex ? 'ACTIVA' : 'Disponible'}</span>
+          <span>${index === activeIndex ? 'ACTIVA' : 'DISPONIBLE'}</span>
         </div>
         <button type="button">Ver cama ${index + 1}</button>
       `;
@@ -88,7 +114,7 @@ function installFabricationUI(){
     });
 
     fabPieces.innerHTML = '';
-    pieceRows.forEach((row, index) => {
+    pieceRows.forEach(row => {
       const item = document.createElement('div');
       item.className = `fabPieceRow${row.classList.contains('selected') ? ' selected' : ''}`;
       item.innerHTML = row.innerHTML;
