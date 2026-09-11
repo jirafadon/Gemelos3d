@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Gemelos 3D — Buscar modelos</title>
+<style>
+:root{font-family:Inter,system-ui,sans-serif;color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#0b0d11;color:#f5f7fa}header{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid #252a33;background:#0d1015;position:sticky;top:0;z-index:5}h1{font-size:19px;margin:0}header p{margin:2px 0 0;color:#7f8794;font-size:11px}.back{padding:8px 12px;text-decoration:none;border:1px solid #303641;border-radius:8px;color:#dfe4eb}.page{max-width:1100px;margin:auto;padding:28px 18px 50px}.hero{padding:24px;border:1px solid #303641;border-radius:14px;background:#10141a;margin-bottom:16px}.hero h2{margin:0 0 7px;font-size:26px}.hero p{margin:0;color:#8f98a5;line-height:1.5}.search{display:flex;gap:8px;margin-top:18px}.search input{flex:1}.search input,.search button,.filters select{border:1px solid #343b47;background:#171b22;color:#fff;border-radius:8px;padding:11px;font:inherit;font-size:13px}.search button{background:#f5f7fa;color:#0b0d11;font-weight:700;cursor:pointer}.filters{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 16px}.filters select{font-size:11px;padding:8px}.source{font-size:11px;color:#7f8794;margin-bottom:12px}.results{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.card{border:1px solid #2b313b;border-radius:12px;background:#10141a;padding:14px}.thumb{height:150px;border-radius:9px;background:linear-gradient(145deg,#1b212b,#0d1015);display:grid;place-items:center;color:#626c7b;font-size:12px;text-align:center}.card h3{font-size:14px;margin:12px 0 5px}.meta{color:#7f8794;font-size:10px;line-height:1.5}.card button{margin-top:11px;border:1px solid #3a424e;background:#171c24;color:#fff;border-radius:7px;padding:8px 10px;font-size:11px;font-weight:650;cursor:pointer}.empty{grid-column:1/-1;padding:30px;text-align:center;border:1px dashed #343b47;border-radius:12px;color:#7f8794}.notice{margin-top:16px;padding:12px;border-radius:9px;background:#151922;color:#8f98a5;font-size:11px;line-height:1.5}@media(max-width:800px){.results{grid-template-columns:1fr}.search{flex-direction:column}.hero h2{font-size:22px}.page{padding:18px 12px 40px}}
+</style>
+</head>
+<body>
+<header><div><h1>Gemelos 3D · Buscar modelos</h1><p>Encontrá un modelo y llevalo al Taller</p></div><a class="back" href="./">← Inicio</a></header>
+<main class="page">
+<section class="hero"><h2>🔎 Buscar modelos 3D</h2><p>Escribí lo que necesitás con lenguaje natural. Gemelos 3D prepara la búsqueda en catálogos externos y después podremos conectar la importación directa del modelo.</p><div class="search"><input id="q" placeholder="Ej.: soporte para celular Toyota Corolla"><button id="searchBtn">Buscar modelos</button></div></section>
+<div class="filters"><select id="type"><option value="">Todos los formatos</option><option>STL</option><option>3MF</option><option>OBJ</option></select><select id="license"><option value="">Cualquier licencia</option><option>Libre / comercial</option><option>Libre no comercial</option></select><select id="source"><option value="">Todos los catálogos</option><option>Printables</option><option>MakerWorld</option></select></div>
+<div class="source" id="sourceText">Escribí una búsqueda para comenzar.</div>
+<section class="results" id="results"><div class="empty">Tus resultados aparecerán acá.</div></section>
+<div class="notice"><b>Arquitectura:</b> esta sección está separada del Taller. El siguiente paso será conectar un backend que consulte fuentes de modelos, normalice los resultados y permita <b>“Usar en Gemelos 3D”</b> para enviar el archivo al flujo de Importar → Taller.</div>
+</main>
+<script>
+const q=document.querySelector('#q'),results=document.querySelector('#results'),sourceText=document.querySelector('#sourceText');
+function run(){const term=q.value.trim();if(!term){results.innerHTML='<div class="empty">Escribí qué modelo necesitás.</div>';sourceText.textContent='Esperando una búsqueda.';return}const encoded=encodeURIComponent(term);const links=[['Printables','https://www.printables.com/search/models?q='+encoded],['MakerWorld','https://makerworld.com/en/search/models?keyword='+encoded]];sourceText.textContent='Búsqueda preparada en los catálogos seleccionados. La consulta directa desde Gemelos 3D se conectará en el backend.';results.innerHTML=links.map(([name,url])=>`<article class="card"><div class="thumb">🔎<br>${name}<br><small>Resultados del catálogo</small></div><h3>${name}</h3><div class="meta">Buscar “${term.replace(/</g,'&lt;')}” en este catálogo.</div><button onclick="window.open('${url}','_blank','noopener')">Ver resultados</button></article>`).join('')}
+document.querySelector('#searchBtn').addEventListener('click',run);q.addEventListener('keydown',e=>{if(e.key==='Enter')run()});
+</script>
+</body>
+</html>
