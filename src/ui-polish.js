@@ -78,6 +78,15 @@ button.primary:hover{background:#fff!important}
 #viewer.g-hasModel:after{opacity:.20}
 .g-viewerHud .g-hudTitle{position:relative}
 .g-viewerHud .g-hudTitle:after{content:"";position:absolute;left:10px;bottom:-6px;width:18px;height:1px;background:#566173;opacity:.55}
+
+/* Limpieza visual: el modelo y la cama vuelven a ser los protagonistas. */
+#viewer .g-viewerHud{display:none!important}
+#viewer:before,#viewer:after{display:none!important}
+#viewer{background:#0b0e13!important}
+#viewer canvas{filter:none!important}
+.viewTools{box-shadow:none!important;background:rgba(10,14,20,.78)!important}
+.badge{box-shadow:none!important}
+
 @media(max-width:800px){.g-viewerHud .g-hudTop{left:8px;right:8px;top:8px}.g-viewerHud .g-bottom{left:8px;right:8px;bottom:8px}.g-viewerHud .g-meta{display:none}.g-viewerHud .g-hint{max-width:240px}.g-viewerHud .g-status{font-size:7px}#viewer:before{inset:10px}#viewer:after{width:52px;height:52px}}
 @media(max-width:900px){.layout{grid-template-columns:315px minmax(0,1fr)!important}}
 @media(max-width:800px){header{padding:0 12px!important}.layout{display:flex!important;flex-direction:column!important}aside{order:2;max-height:none!important}.layout #viewer{order:1;min-height:62vh!important;height:62vh}.fabricationPanel{max-height:38%!important}}
