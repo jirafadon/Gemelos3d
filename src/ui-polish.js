@@ -70,7 +70,15 @@ button.primary:hover{background:#fff!important}
 #viewer.g-hasModel .g-dot{background:#9fe3b1;box-shadow:0 0 0 3px rgba(159,227,177,.10)}
 #viewer.g-hasModel .g-hint{color:#788494}
 #viewer.g-fabMode .g-dot{background:#d9e0e8;box-shadow:0 0 0 3px rgba(217,224,232,.09)}
-@media(max-width:800px){.g-viewerHud .g-hudTop{left:8px;right:8px;top:8px}.g-viewerHud .g-bottom{left:8px;right:8px;bottom:8px}.g-viewerHud .g-meta{display:none}.g-viewerHud .g-hint{max-width:240px}.g-viewerHud .g-status{font-size:7px}}
+
+/* Marco de trabajo: refuerza el área útil del visor sin dibujar sobre el modelo. */
+#viewer:before,#viewer:after{content:"";position:absolute;z-index:1;pointer-events:none;opacity:.42}
+#viewer:before{inset:20px;border:1px solid rgba(112,125,143,.10);border-radius:14px;box-shadow:inset 0 0 70px rgba(0,0,0,.10)}
+#viewer:after{width:72px;height:72px;left:50%;top:50%;transform:translate(-50%,-50%);border:1px solid rgba(145,157,174,.07);border-radius:50%;box-shadow:0 0 0 18px rgba(145,157,174,.025),0 0 0 36px rgba(145,157,174,.014)}
+#viewer.g-hasModel:after{opacity:.20}
+.g-viewerHud .g-hudTitle{position:relative}
+.g-viewerHud .g-hudTitle:after{content:"";position:absolute;left:10px;bottom:-6px;width:18px;height:1px;background:#566173;opacity:.55}
+@media(max-width:800px){.g-viewerHud .g-hudTop{left:8px;right:8px;top:8px}.g-viewerHud .g-bottom{left:8px;right:8px;bottom:8px}.g-viewerHud .g-meta{display:none}.g-viewerHud .g-hint{max-width:240px}.g-viewerHud .g-status{font-size:7px}#viewer:before{inset:10px}#viewer:after{width:52px;height:52px}}
 @media(max-width:900px){.layout{grid-template-columns:315px minmax(0,1fr)!important}}
 @media(max-width:800px){header{padding:0 12px!important}.layout{display:flex!important;flex-direction:column!important}aside{order:2;max-height:none!important}.layout #viewer{order:1;min-height:62vh!important;height:62vh}.fabricationPanel{max-height:38%!important}}
 `;
@@ -88,7 +96,6 @@ function enhance(){
     hud.innerHTML=`<div class="g-hudTop"><div class="g-viewerTitle"><div class="g-viewerHud g-hudTitle"><span class="g-dot"></span><span class="g-title">Mesa de trabajo 3D</span><span class="g-subtitle">Vista de diseño</span></div></div><div class="g-meta"><span class="g-chip">X <b id="gHudX">—</b> mm</span><span class="g-chip">Y <b id="gHudY">—</b> mm</span><span class="g-chip">Z <b id="gHudZ">—</b> mm</span><span class="g-chip">Piezas <b id="gHudPieces">0</b></span></div></div><div class="g-bottom"><div class="g-hint" id="gHudHint">Generá un modelo para comenzar a trabajar en 3D.</div><div class="g-status"><strong id="gHudMode">DISEÑO</strong><br><span id="gHudStatus">Listo</span></div></div>`;
     viewer.appendChild(hud);
     hud.querySelectorAll('.g-viewerHud').forEach(el=>{if(el.classList.contains('g-viewerHud') && el.classList.contains('g-hudTitle')) el.classList.remove('g-viewerHud')});
-    const read=(id, fallback='—')=>document.getElementById(id)?.textContent||fallback;
     const sync=()=>{
       const x=document.getElementById('sx')?.textContent||'—', y=document.getElementById('sy')?.textContent||'—', z=document.getElementById('sz')?.textContent||'—', p=document.getElementById('pieces')?.textContent||'0';
       document.getElementById('gHudX').textContent=x;document.getElementById('gHudY').textContent=y;document.getElementById('gHudZ').textContent=z;document.getElementById('gHudPieces').textContent=p;
