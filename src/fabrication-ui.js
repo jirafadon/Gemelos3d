@@ -1,6 +1,7 @@
 import './ui-polish.js';
 import './layout-quality-fix.js';
 import './cost-ui.js';
+import './responsive-workspace.js';
 
 const viewer = document.getElementById('viewer');
 const aside = document.querySelector('aside');
