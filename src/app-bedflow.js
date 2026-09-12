@@ -178,13 +178,28 @@ function centerPlate(plate,c){
   if(!plate.items.length)return;const b=new THREE.Box3();plate.items.forEach(i=>b.expandByObject(i.object));const cx=-c.full.x/2+c.margin+c.p.x+c.usable.x/2,cy=-c.full.y/2+c.margin+c.usable.y/2,dx=cx-(b.min.x+b.max.x)/2,dy=cy-(b.min.y+b.max.y)/2;
   plate.items.forEach(i=>{i.object.position.x+=dx;i.object.position.y+=dy;i.object.updateMatrixWorld(true);});
 }
+function focusModel(){
+  const visibleItems=items.filter(item=>item.bed===activeBed);
+  if(!visibleItems.length)return;
+  const box=new THREE.Box3();
+  visibleItems.forEach(item=>box.expandByObject(item.object));
+  if(box.isEmpty())return;
+  const center=box.getCenter(new THREE.Vector3());
+  const size=box.getSize(new THREE.Vector3());
+  const maxSize=Math.max(size.x,size.y,size.z,20);
+  const distance=maxSize*2.6;
+  camera.position.set(center.x+distance,center.y-distance,center.z+distance);
+  camera.up.set(0,0,1);
+  controls.target.copy(center);
+  controls.update();
+}
 function pack(allowRotate=false){
   const c=bed(),gap=Math.max(0,num('spacing',4));plates=[];items.forEach(reset);
   for(const item of items){let placed=false;const angles=allowRotate?[0,Math.PI/2]:[0];
     for(let pi=0;pi<plates.length&&!placed;pi++)for(const angle of angles){const size=itemBox(item,angle),spot=findSpot(plates[pi].used,size.w,size.h,c,gap);if(!spot)continue;place(item,spot,angle,c);item.bed=pi;plates[pi].items.push(item);plates[pi].used.push(spot);placed=true;break;}
     if(!placed){const size=itemBox(item,0),spot=findSpot([],size.w,size.h,c,gap);if(!spot){status(`La pieza ${item.id} no entra en la cama útil.`,'bad');return false;}const plate={items:[],used:[]};place(item,spot,0,c);item.bed=plates.length;plate.items.push(item);plate.used.push(spot);plates.push(plate);}
   }
-  plates.forEach(p=>centerPlate(p,c));render();return true;
+  plates.forEach(p=>centerPlate(p,c));render();focusModel();return true;
 }
 function render(){items.forEach(i=>{i.object.visible=i.bed===activeBed;});drawBed();renderLists();stats();}
 function stats(){
@@ -192,7 +207,7 @@ function stats(){
   const b=new THREE.Box3();items.forEach(i=>b.expandByObject(i.object));$('sx').textContent=`${(b.max.x-b.min.x).toFixed(1)} mm`;$('sy').textContent=`${(b.max.y-b.min.y).toFixed(1)} mm`;$('sz').textContent=`${(b.max.z-b.min.z).toFixed(1)} mm`;$('pieces').textContent=String(items.length);
 }
 function renderLists(){
-  const beds=$('bedList');beds.innerHTML='';plates.forEach((p,i)=>{const card=document.createElement('div');card.className=`bedCard${i===activeBed?' active':''}`;card.innerHTML=`<div class="bedTab"><b>Cama ${i+1}</b><span>${p.items.length} pieza${p.items.length===1?'':'s'}</span></div><button>Ver esta cama</button>`;card.querySelector('button').onclick=()=>{activeBed=i;render();};beds.appendChild(card);});
+  const beds=$('bedList');beds.innerHTML='';plates.forEach((p,i)=>{const card=document.createElement('div');card.className=`bedCard${i===activeBed?' active':''}`;card.innerHTML=`<div class="bedTab"><b>Cama ${i+1}</b><span>${p.items.length} pieza${p.items.length===1?'':'s'}</span></div><button>Ver esta cama</button>`;card.querySelector('button').onclick=()=>{activeBed=i;render();focusModel();};beds.appendChild(card);});
   const pieces=$('pieceList');pieces.innerHTML='';items.forEach(i=>{const row=document.createElement('button');row.type='button';row.className=`piece${i===selectedItem?' selected':''}`;row.innerHTML=`<b>Pieza ${i.id}</b><span>Cama ${i.bed+1} · ${i.width.toFixed(1)} × ${i.height.toFixed(1)} mm</span>`;row.onclick=()=>selectItem(i);pieces.appendChild(row);});
   const panel=ensureSelectionPanel();
   if(!selectedItem)panel.innerHTML='<b>Pieza seleccionada</b><span>Elegí una pieza para ver sus datos.</span>';
@@ -227,7 +242,7 @@ function build(){
   frags.forEach((f,index)=>{const b=new THREE.Box3().setFromObject(f),item={id:index+1,object:f,bed:0,width:b.max.x-b.min.x,height:b.max.y-b.min.y,source:text,fragment:true,gridRow:f.userData.row,gridCol:f.userData.col};items.push(item);objectLayer.add(f);});
   if(pack(false))status(`Texto completo dividido físicamente en ${items.length} fragmentos y distribuido en ${plates.length} camas.`,'ok');
 }
-function centerAll(){if(!items.length){status('Primero creá el modelo.','warn');return;}plates.forEach(p=>centerPlate(p,bed()));render();status('Modelo centrado en la cama. La escala no cambió.','ok');}
+function centerAll(){if(!items.length){status('Primero creá el modelo.','warn');return;}plates.forEach(p=>centerPlate(p,bed()));render();focusModel();status('Modelo centrado en la cama. La escala no cambió.','ok');}
 function optimize(){if(!items.length){status('Primero creá el modelo.','warn');return;}if(pack(true))status(`Acomodado terminado: ${plates.length} cama${plates.length===1?'':'s'}. La escala física se mantuvo.`,'ok');}
 function exportSTL(pieces=false){
   if(!items.length){status('No hay modelo para exportar.','warn');return;}
