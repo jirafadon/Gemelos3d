@@ -134,14 +134,44 @@ function makeFragment(polys,depth,meta){
   const g=new THREE.Group();for(const poly of polys){const m=meshFromPolygon(poly,depth);if(m)g.add(m);}g.userData={role:'fragment',...meta};g.updateMatrixWorld(true);return g;
 }
 function splitWord(layout,depth){
-  const c=bed(),safeW=Math.max(1,c.usable.x-bevelSize()*2),safeH=Math.max(1,c.usable.y-bevelSize()*2),all=layout.chars.flatMap(ch=>scaledPolygons(layout,ch)),full=bounds(all);
-  const cols=Math.max(1,Math.ceil(full.w/safeW)),rows=Math.max(1,Math.ceil(full.h/safeH)),fragments=[];
-  for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){
-    const x0=full.minX+col*(full.w/cols),x1=col===cols-1?full.maxX:full.minX+(col+1)*(full.w/cols),y0=full.minY+row*(full.h/rows),y1=row===rows-1?full.maxY:full.minY+(row+1)*(full.h/rows);
-    const rect=[[[x0-.001,y0-.001],[x1+.001,y0-.001],[x1+.001,y1+.001],[x0-.001,y1+.001],[x0-.001,y0-.001]]],clipped=[];
-    for(const poly of all)try{clipped.push(...polygonClipping.intersection(poly,rect));}catch(e){console.error(e);}
-    if(clipped.length)fragments.push(makeFragment(clipped,depth,{row,col,rows,cols}));
+  const c=bed();
+  const safeW=Math.max(1,c.usable.x-bevelSize()*2);
+  const safeH=Math.max(1,c.usable.y-bevelSize()*2);
+  const chars=layout.chars.map(ch=>({ch,polys:scaledPolygons(layout,ch)}));
+  const fragments=[];
+  let group=[];
+  let groupMin=Infinity;
+  let groupMax=-Infinity;
+
+  function flushGroup(){
+    if(!group.length)return;
+    const polys=group.flatMap(v=>v.polys);
+    const b=bounds(polys);
+    const cols=Math.max(1,Math.ceil(b.w/safeW));
+    const rows=Math.max(1,Math.ceil(b.h/safeH));
+    const total=cols*rows;
+    for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){
+      const x0=b.minX+col*(b.w/cols),x1=col===cols-1?b.maxX:b.minX+(col+1)*(b.w/cols);
+      const y0=b.minY+row*(b.h/rows),y1=row===rows-1?b.maxY:b.minY+(row+1)*(b.h/rows);
+      const rect=[[[x0-.001,y0-.001],[x1+.001,y0-.001],[x1+.001,y1+.001],[x0-.001,y1+.001],[x0-.001,y0-.001]]];
+      const clipped=[];
+      for(const poly of polys)try{clipped.push(...polygonClipping.intersection(poly,rect));}catch(e){console.error(e);}
+      if(clipped.length)fragments.push(makeFragment(clipped,depth,{row,col,rows,cols,groupStart:group[0].ch.ch,groupEnd:group[group.length-1].ch.ch,total}));
+    }
+    group=[];groupMin=Infinity;groupMax=-Infinity;
   }
+
+  for(const data of chars){
+    const b=bounds(data.polys);
+    const nextMin=group.length?Math.min(groupMin,b.minX):b.minX;
+    const nextMax=group.length?Math.max(groupMax,b.maxX):b.maxX;
+    const nextW=nextMax-nextMin;
+    if(group.length&&nextW>safeW+.001)flushGroup();
+    group.push(data);
+    groupMin=Math.min(groupMin,b.minX);
+    groupMax=Math.max(groupMax,b.maxX);
+  }
+  flushGroup();
   return fragments;
 }
 function clearSelection(){
