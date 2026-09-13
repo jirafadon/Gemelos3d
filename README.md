@@ -30,3 +30,11 @@ Abrir `index.html` en un navegador moderno con conexión a Internet. Los módulo
 
 ### Regla de producto
 Gemelos 3D debe distinguir siempre entre una función visual/prototipo y una función de fabricación realmente implementada.
+
+## Correcciones recientes
+
+- La cama mantiene ahora sus dimensiones físicas completas y dibuja por separado el margen, el área útil y la reserva de purga.
+- La reserva de purga se trata como un área prohibida real durante el acomodado, evitando que una pieza se coloque encima de ella.
+- El centrado del texto se calcula dentro del área útil real, sin desplazarlo artificialmente por el ancho de la purga.
+- El ancho total se aplica al conjunto completo manteniendo la proporción entre ancho y alto; ya no se deforma el texto cuando se informa un ancho físico.
+- El avance tipográfico usa la métrica de la fuente cuando está disponible, por lo que las letras conservan mejor su separación y sus medidas visibles.
