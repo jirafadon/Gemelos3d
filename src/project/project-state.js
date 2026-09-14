@@ -3,8 +3,23 @@ const DEFAULT_PROJECT={
   name:'Proyecto sin nombre',
   source:null,
   model:{url:null,name:null,format:null,dimensions:{width:null,height:null,depth:null}},
-  configuration:{printer:null,margin:0,spacing:4},
-  fabrication:{pieces:[],beds:[]},
+  configuration:{
+    printer:null,
+    margin:0,
+    spacing:4,
+    text:'',
+    height:60,
+    width:0,
+    depth:12,
+    bed:{width:null,depth:null,height:null},
+    purge:{mode:'none',width:0,depth:0},
+    font:'helvetiker_regular',
+    curveSegments:6,
+    bevel:false,
+    bevelSize:1.2,
+    bevelSegments:2
+  },
+  fabrication:{pieces:[],beds:[],selectedPiece:null,selectedBed:0},
   workflow:{current:'crear',steps:{crear:'active',configurar:'pending',revisar:'pending',taller:'pending'}},
   meta:{createdAt:null,updatedAt:null}
 };
