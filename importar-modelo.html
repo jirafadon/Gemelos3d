@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Importar modelo — Gemelos 3D</title>
+<style>
+:root{font-family:Inter,system-ui,sans-serif;color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#0b0d11;color:#f5f7fa}header{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid #252a33;background:#0d1015}h1{font-size:19px;margin:0}header p{margin:2px 0 0;color:#7f8794;font-size:11px}.back{padding:8px 12px;text-decoration:none;border:1px solid #303641;border-radius:8px;color:#dfe4eb}.page{max-width:1200px;margin:auto;padding:24px 18px 50px}.hero,.panel{border:1px solid #303641;border-radius:14px;background:#10141a}.hero{padding:22px;margin-bottom:14px}.hero h2{margin:0 0 7px;font-size:25px}.hero p{margin:0;color:#8f98a5;line-height:1.5}.tools{display:flex;gap:8px;align-items:center;margin-top:16px;flex-wrap:wrap}.file{flex:1;min-width:240px;border:1px dashed #4a5361;border-radius:9px;padding:11px;background:#151922;color:#dfe4eb}.button{border:1px solid #343b47;background:#f5f7fa;color:#0b0d11;border-radius:8px;padding:11px 15px;font-weight:700;cursor:pointer;text-decoration:none}.button.secondary{background:#171b22;color:#fff}.panel{overflow:hidden}.panelHead{padding:13px 15px;border-bottom:1px solid #292f39;display:flex;justify-content:space-between;gap:10px}.panelHead span{font-size:11px;color:#7f8794}.viewer{height:620px;background:radial-gradient(circle at 50% 35%,#171c26 0,#0b0d11 65%);position:relative}.status{padding:12px 15px;border-top:1px solid #292f39;color:#9aa3b0;font-size:11px;line-height:1.5}.status b{color:#fff}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.meta{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}.meta div{padding:10px;border:1px solid #252a33;border-radius:8px;background:#14181f}.meta b{display:block;font-size:14px}.meta span{font-size:10px;color:#7f8794}@media(max-width:700px){.viewer{height:55vh;min-height:420px}.meta{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header><div><h1>Gemelos 3D · Importar modelo</h1><p>Archivo local → vista 3D → llevar al Taller</p></div><a class="back" href="./">← Inicio</a></header>
+<main class="page">
+<section class="hero">
+<h2>📥 Importá tu modelo 3D</h2>
+<p>Todo se procesa en tu navegador. No se sube el archivo a un servidor. Formatos: <b>STL, OBJ, GLB, GLTF y 3MF</b>.</p>
+<div class="tools"><input id="file" class="file" type="file" accept=".stl,.obj,.glb,.gltf,.3mf,model/stl,model/obj,model/gltf-binary,model/gltf+json"><button id="load" class="button">Cargar modelo</button></div>
+<div class="actions"><button id="workshop" class="button" disabled>🛠️ Llevar al Taller</button><button id="reset" class="button secondary">Limpiar</button></div>
+</section>
+<section class="panel"><div class="panelHead"><strong>Vista previa</strong><span id="format">Esperando archivo…</span></div><div id="viewer" class="viewer"></div><div id="status" class="status"><b>Listo.</b> Elegí un archivo 3D para comenzar.</div></section>
+<div id="meta" class="meta"></div>
+</main>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js';
+import {OrbitControls} from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/controls/OrbitControls.js';
+import {STLLoader} from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/loaders/STLLoader.js';
+import {OBJLoader} from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/loaders/OBJLoader.js';
+import {GLTFLoader} from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/loaders/GLTFLoader.js';
+import {ThreeMFLoader} from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/loaders/3MFLoader.js';
+import {GLTFExporter} from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/exporters/GLTFExporter.js';
+
+const viewer=document.querySelector('#viewer'),fileInput=document.querySelector('#file'),status=document.querySelector('#status'),meta=document.querySelector('#meta'),format=document.querySelector('#format'),workshop=document.querySelector('#workshop');
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0x0b0d11);
+const camera=new THREE.PerspectiveCamera(45,1,.1,100000); camera.position.set(160,120,180);
+const renderer=new THREE.WebGLRenderer({antialias:true}); renderer.setPixelRatio(Math.min(devicePixelRatio,2)); viewer.appendChild(renderer.domElement);
+const controls=new OrbitControls(camera,renderer.domElement); controls.enableDamping=true;
+scene.add(new THREE.HemisphereLight(0xffffff,0x303642,2)); const dl=new THREE.DirectionalLight(0xffffff,2); dl.position.set(120,180,100); scene.add(dl);
+const grid=new THREE.GridHelper(500,20,0x3a414d,0x20252d); scene.add(grid); let current=null;
+function resize(){const w=viewer.clientWidth,h=viewer.clientHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false)} addEventListener('resize',resize); resize();
+function clearModel(){if(current){scene.remove(current);current.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){const m=Array.isArray(o.material)?o.material:[o.material];m.forEach(x=>x.dispose?.())}})}current=null;workshop.disabled=true;meta.innerHTML=''}
+function fit(obj){const box=new THREE.Box3().setFromObject(obj),size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3());obj.position.sub(center);const max=Math.max(size.x,size.y,size.z)||1;camera.position.set(max*1.8,max*1.35,max*1.8);camera.near=Math.max(max/10000,.01);camera.far=max*100;camera.updateProjectionMatrix();controls.target.set(0,0,0);controls.update();return size}
+function showMeta(size){meta.innerHTML=`<div><b>${size.x.toFixed(1)} mm*</b><span>Ancho X</span></div><div><b>${size.y.toFixed(1)} mm*</b><span>Alto Y</span></div><div><b>${size.z.toFixed(1)} mm*</b><span>Profundidad Z</span></div><div><b>Local</b><span>Procesamiento</span></div>`}
+async function loadFile(file){clearModel();const ext=file.name.split('.').pop().toLowerCase();format.textContent=file.name;status.innerHTML='<b>Cargando…</b> Procesando el archivo en este dispositivo.';const buf=await file.arrayBuffer();let obj;
+if(ext==='stl'){const g=new STLLoader().parse(buf);g.computeVertexNormals();obj=new THREE.Mesh(g,new THREE.MeshStandardMaterial({roughness:.65,metalness:.05}));}
+else if(ext==='obj'){const text=new TextDecoder().decode(buf);obj=new OBJLoader().parse(text);obj.traverse(o=>{if(o.isMesh)o.material=new THREE.MeshStandardMaterial({roughness:.65,metalness:.05})});}
+else if(ext==='3mf'){obj=new ThreeMFLoader().parse(buf);}
+else {const gltf=await new Promise((resolve,reject)=>new GLTFLoader().parse(buf,'',resolve,reject));obj=gltf.scene;}
+obj.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});scene.add(obj);current=obj;const size=fit(obj);showMeta(size);workshop.disabled=false;status.innerHTML='<b>Modelo cargado.</b> La vista está lista. Las dimensiones son las del archivo y pueden variar según la unidad declarada.'}
+fileInput.addEventListener('change',()=>{if(fileInput.files[0])format.textContent=fileInput.files[0].name});
+document.querySelector('#load').addEventListener('click',async()=>{const f=fileInput.files[0];if(!f){status.innerHTML='<b>Elegí un archivo primero.</b>';return}try{await loadFile(f)}catch(e){console.error(e);status.innerHTML='<b>No se pudo cargar.</b> Revisá que el archivo sea un modelo válido.'}});
+document.querySelector('#reset').addEventListener('click',()=>{clearModel();fileInput.value='';format.textContent='Esperando archivo…';status.innerHTML='<b>Listo.</b> Elegí un archivo 3D para comenzar.'});
+workshop.addEventListener('click',()=>{if(!current)return;status.innerHTML='<b>Preparando…</b> Convirtiendo el modelo a GLB para el Taller.';new GLTFExporter().parse(current,(result)=>{const blob=new Blob([result],{type:'model/gltf-binary'});const reader=new FileReader();reader.onload=()=>{sessionStorage.setItem('gemelos3dAiModel',JSON.stringify({modelUrl:reader.result,prompt:fileInput.files[0]?.name||'Modelo importado',source:'local-import'}));location.href='./app.html'};reader.readAsDataURL(blob)},e=>console.error(e),{binary:true});});
+function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera)} animate();
+</script>
+</body>
+</html>
