@@ -22,6 +22,8 @@
     #workspaceTabs button.active{background:#f1f4f7;color:#0c0e12;border-color:#f1f4f7}
     #workspaceTabs button:focus-visible{outline:2px solid #aeb9c9;outline-offset:2px}
     #workspaceTabHint{margin:0 0 8px;padding:7px 9px;border:1px solid #252c36;border-radius:7px;background:#12171e;color:#7f8998;font-size:10px;line-height:1.35}
+    #mobileCreateModel{display:none}
+    @media(max-width:800px){#mobileCreateModel{display:block;position:fixed;left:12px;right:12px;bottom:12px;z-index:20;width:auto;margin:0;padding:12px;border:1px solid #f5f7fa;border-radius:10px;background:#f5f7fa;color:#0c0e12;box-shadow:0 8px 24px #0009;font-size:13px;font-weight:800}body{padding-bottom:64px}}
     @media(max-width:800px){#workspaceTabs,#workspaceTabHint{display:none!important}}
   `;
   document.head.appendChild(style);
@@ -33,6 +35,14 @@
   hint.id = 'workspaceTabHint';
   aside.insertBefore(hint, sections[0]);
   aside.insertBefore(nav, hint);
+
+  const mobileCreate = document.createElement('button');
+  mobileCreate.id = 'mobileCreateModel';
+  mobileCreate.type = 'button';
+  mobileCreate.textContent = '▶ Crear modelo';
+  mobileCreate.setAttribute('aria-label', 'Crear modelo con las medidas actuales');
+  mobileCreate.addEventListener('click', () => document.getElementById('buildTop')?.click());
+  document.body.appendChild(mobileCreate);
 
   let active = 0;
   const activate = (index, scroll = true) => {
