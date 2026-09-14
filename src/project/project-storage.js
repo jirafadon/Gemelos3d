@@ -44,9 +44,7 @@ export function saveProject(project){
 
 export function loadProject(){
   const saved=read();
-  if(saved)return hydrateProject(saved);
-  const projects=ensureCollection();
-  return projects[0]?hydrateProject(projects[0]):null;
+  return saved?hydrateProject(saved):null;
 }
 
 export function loadProjects(){
