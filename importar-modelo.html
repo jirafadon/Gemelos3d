@@ -8,7 +8,7 @@
 </style>
 </head>
 <body>
-<header><div><h1>Gemelos 3D · Importar modelo</h1><p>Archivo local → vista 3D → llevar al Taller</p></div><a class="back" href="./">← Inicio</a></header>
+<header><div><h1>Gemelos 3D · Importar modelo</h1><p>Archivo local → vista 3D → configurar → Taller</p></div><a class="back" href="./">← Inicio</a></header>
 <main class="page">
 <section class="hero">
 <h2>📥 Importá tu modelo 3D</h2>
@@ -27,6 +27,8 @@ import {OBJLoader} from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm
 import {GLTFLoader} from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/loaders/GLTFLoader.js';
 import {ThreeMFLoader} from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/loaders/3MFLoader.js';
 import {GLTFExporter} from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/exporters/GLTFExporter.js';
+import {createProject,setWorkflowStep} from './src/project/project-state.js';
+import {saveProject} from './src/project/project-storage.js';
 
 const viewer=document.querySelector('#viewer'),fileInput=document.querySelector('#file'),status=document.querySelector('#status'),meta=document.querySelector('#meta'),format=document.querySelector('#format'),workshop=document.querySelector('#workshop');
 const scene=new THREE.Scene(); scene.background=new THREE.Color(0x0b0d11);
@@ -34,9 +36,9 @@ const camera=new THREE.PerspectiveCamera(45,1,.1,100000); camera.position.set(16
 const renderer=new THREE.WebGLRenderer({antialias:true}); renderer.setPixelRatio(Math.min(devicePixelRatio,2)); viewer.appendChild(renderer.domElement);
 const controls=new OrbitControls(camera,renderer.domElement); controls.enableDamping=true;
 scene.add(new THREE.HemisphereLight(0xffffff,0x303642,2)); const dl=new THREE.DirectionalLight(0xffffff,2); dl.position.set(120,180,100); scene.add(dl);
-const grid=new THREE.GridHelper(500,20,0x3a414d,0x20252d); scene.add(grid); let current=null;
+const grid=new THREE.GridHelper(500,20,0x3a414d,0x20252d); scene.add(grid); let current=null,currentSize=null;
 function resize(){const w=viewer.clientWidth,h=viewer.clientHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false)} addEventListener('resize',resize); resize();
-function clearModel(){if(current){scene.remove(current);current.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){const m=Array.isArray(o.material)?o.material:[o.material];m.forEach(x=>x.dispose?.())}})}current=null;workshop.disabled=true;meta.innerHTML=''}
+function clearModel(){if(current){scene.remove(current);current.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){const m=Array.isArray(o.material)?o.material:[o.material];m.forEach(x=>x.dispose?.())}})}current=null;currentSize=null;workshop.disabled=true;meta.innerHTML=''}
 function fit(obj){const box=new THREE.Box3().setFromObject(obj),size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3());obj.position.sub(center);const max=Math.max(size.x,size.y,size.z)||1;camera.position.set(max*1.8,max*1.35,max*1.8);camera.near=Math.max(max/10000,.01);camera.far=max*100;camera.updateProjectionMatrix();controls.target.set(0,0,0);controls.update();return size}
 function showMeta(size){meta.innerHTML=`<div><b>${size.x.toFixed(1)} mm*</b><span>Ancho X</span></div><div><b>${size.y.toFixed(1)} mm*</b><span>Alto Y</span></div><div><b>${size.z.toFixed(1)} mm*</b><span>Profundidad Z</span></div><div><b>Local</b><span>Procesamiento</span></div>`}
 async function loadFile(file){clearModel();const ext=file.name.split('.').pop().toLowerCase();format.textContent=file.name;status.innerHTML='<b>Cargando…</b> Procesando el archivo en este dispositivo.';const buf=await file.arrayBuffer();let obj;
@@ -44,11 +46,11 @@ if(ext==='stl'){const g=new STLLoader().parse(buf);g.computeVertexNormals();obj=
 else if(ext==='obj'){const text=new TextDecoder().decode(buf);obj=new OBJLoader().parse(text);obj.traverse(o=>{if(o.isMesh)o.material=new THREE.MeshStandardMaterial({roughness:.65,metalness:.05})});}
 else if(ext==='3mf'){obj=new ThreeMFLoader().parse(buf);}
 else {const gltf=await new Promise((resolve,reject)=>new GLTFLoader().parse(buf,'',resolve,reject));obj=gltf.scene;}
-obj.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});scene.add(obj);current=obj;const size=fit(obj);showMeta(size);workshop.disabled=false;status.innerHTML='<b>Modelo cargado.</b> La vista está lista. Las dimensiones son las del archivo y pueden variar según la unidad declarada.'}
+obj.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});scene.add(obj);current=obj;currentSize=fit(obj);showMeta(currentSize);workshop.disabled=false;status.innerHTML='<b>Modelo cargado.</b> La vista está lista. Las dimensiones son las del archivo y pueden variar según la unidad declarada.'}
 fileInput.addEventListener('change',()=>{if(fileInput.files[0])format.textContent=fileInput.files[0].name});
 document.querySelector('#load').addEventListener('click',async()=>{const f=fileInput.files[0];if(!f){status.innerHTML='<b>Elegí un archivo primero.</b>';return}try{await loadFile(f)}catch(e){console.error(e);status.innerHTML='<b>No se pudo cargar.</b> Revisá que el archivo sea un modelo válido.'}});
 document.querySelector('#reset').addEventListener('click',()=>{clearModel();fileInput.value='';format.textContent='Esperando archivo…';status.innerHTML='<b>Listo.</b> Elegí un archivo 3D para comenzar.'});
-workshop.addEventListener('click',()=>{if(!current)return;status.innerHTML='<b>Preparando…</b> Convirtiendo el modelo a GLB para el Taller.';new GLTFExporter().parse(current,(result)=>{const blob=new Blob([result],{type:'model/gltf-binary'});const reader=new FileReader();reader.onload=()=>{sessionStorage.setItem('gemelos3dAiModel',JSON.stringify({modelUrl:reader.result,prompt:fileInput.files[0]?.name||'Modelo importado',source:'local-import'}));location.href='./app.html'};reader.readAsDataURL(blob)},e=>console.error(e),{binary:true});});
+workshop.addEventListener('click',()=>{if(!current)return;const sourceFile=fileInput.files[0];status.innerHTML='<b>Guardando proyecto…</b> Preparando el modelo para Configurar.';new GLTFExporter().parse(current,(result)=>{const blob=new Blob([result],{type:'model/gltf-binary'});const reader=new FileReader();reader.onload=()=>{const modelUrl=reader.result;const name=sourceFile?.name||'Modelo importado';const project=setWorkflowStep(createProject({name,source:'import',model:{url:modelUrl,name,format:'glb',dimensions:{width:currentSize?.x||null,height:currentSize?.y||null,depth:currentSize?.z||null}}}),'configurar');saveProject(project);sessionStorage.setItem('gemelos3dAiModel',JSON.stringify({modelUrl,prompt:name,source:'local-import',projectId:project.id}));location.href='./app.html'};reader.readAsDataURL(blob)},e=>{console.error(e);status.innerHTML='<b>No se pudo preparar el modelo.</b>'},{binary:true});});
 function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera)} animate();
 </script>
 </body>
