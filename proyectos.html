@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Proyectos — Gemelos 3D</title>
+<style>
+:root{font-family:Inter,system-ui,sans-serif;color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#0b0d11;color:#f5f7fa}header{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid #252a33;background:#0d1015}.back,.action{padding:9px 12px;text-decoration:none;border:1px solid #303641;border-radius:8px;color:#dfe4eb;background:#171b22;cursor:pointer}.page{max-width:1100px;margin:auto;padding:28px 18px 50px}.hero{padding:24px;border:1px solid #303641;border-radius:14px;background:#10141a;margin-bottom:14px}.hero h1{margin:0 0 7px;font-size:26px}.hero p{margin:0;color:#8f98a5}.toolbar{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:16px 0}.count{font-size:11px;color:#7f8794}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.card{border:1px solid #303641;border-radius:12px;background:#10141a;padding:16px;min-height:180px;display:flex;flex-direction:column}.source{font-size:10px;color:#7f8794;text-transform:uppercase;letter-spacing:.08em}.name{font-size:16px;font-weight:700;margin:8px 0}.info{font-size:11px;color:#9aa3b0;line-height:1.5;flex:1}.status{display:inline-block;margin-top:10px;padding:4px 7px;border-radius:6px;background:#171b22;color:#bfc6d0;font-size:10px}.actions{display:flex;gap:7px;margin-top:13px}.actions a,.actions button{flex:1;text-align:center;border:1px solid #343b47;background:#f5f7fa;color:#0b0d11;border-radius:7px;padding:8px;font-size:11px;font-weight:700;text-decoration:none;cursor:pointer}.actions .secondary{background:#171b22;color:#fff}@media(max-width:800px){.grid{grid-template-columns:1fr 1fr}}@media(max-width:540px){.grid{grid-template-columns:1fr}.toolbar{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<header><strong>Gemelos 3D · Proyectos</strong><a class="back" href="./">← Inicio</a></header>
+<main class="page">
+<section class="hero"><h1>Tus proyectos</h1><p>Modelos creados o importados que guardaste en este dispositivo.</p></section>
+<div class="toolbar"><span id="count" class="count">Cargando…</span><button id="clear" class="action">Borrar todos</button></div>
+<section id="grid" class="grid"></section>
+</main>
+<script type="module">
+import {loadProject} from './src/project/project-storage.js';
+const KEY='gemelos3dProject';const grid=document.querySelector('#grid'),count=document.querySelector('#count');
+function read(){try{return JSON.parse(localStorage.getItem(KEY)||'null')}catch{return null}}
+function esc(v=''){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function render(){const p=read();grid.innerHTML='';if(!p){count.textContent='No hay proyectos guardados todavía.';grid.innerHTML='<div class="card"><div class="name">Todavía no hay proyectos</div><div class="info">Creá un modelo, convertí un SVG o importá un archivo para que aparezca acá.</div><div class="actions"><a href="./">Crear modelo</a><a class="secondary" href="./importar-modelo.html">Importar</a></div></div>';return}count.textContent='1 proyecto guardado localmente';const d=p.model?.dimensions||{};const card=document.createElement('article');card.className='card';card.innerHTML=`<div class="source">${esc(p.source||'proyecto')}</div><div class="name">${esc(p.name||'Proyecto sin nombre')}</div><div class="info">${esc(p.model?.name||'Modelo')}<br>${d.width?`${Number(d.width).toFixed(1)} × ${Number(d.height||0).toFixed(1)} × ${Number(d.depth||0).toFixed(1)} mm`: 'Dimensiones pendientes'}</div><span class="status">Paso: ${esc(p.workflow?.current||'crear')}</span><div class="actions"><a href="./app.html">Continuar</a><button id="delete" class="secondary">Eliminar</button></div>`;grid.appendChild(card);card.querySelector('#delete').onclick=()=>{localStorage.removeItem(KEY);render()}}
+document.querySelector('#clear').onclick=()=>{if(confirm('¿Borrar el proyecto guardado en este dispositivo?')){localStorage.removeItem(KEY);render()}};render();
+</script>
+</body>
+</html>
