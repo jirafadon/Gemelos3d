@@ -11,11 +11,12 @@ const DEFAULT_PROJECT={
 
 export function createProject(overrides={}){
   const now=new Date().toISOString();
-  return hydrateProject({...overrides,id:overrides.id||crypto.randomUUID(),meta:{createdAt:now,updatedAt:now,...(overrides.meta||{})}});
+  const id=overrides.id||crypto.randomUUID();
+  return hydrateProject({...overrides,id,meta:{createdAt:now,updatedAt:now,...(overrides.meta||{})}});
 }
 
 export function hydrateProject(value={}){
-  const p=structuredClone?structuredClone(DEFAULT_PROJECT):JSON.parse(JSON.stringify(DEFAULT_PROJECT));
+  const p=typeof structuredClone==='function'?structuredClone(DEFAULT_PROJECT):JSON.parse(JSON.stringify(DEFAULT_PROJECT));
   merge(p,value);
   return p;
 }
