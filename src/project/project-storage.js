@@ -57,6 +57,13 @@ export function getProject(id){
   return loadProjects().find(project=>project.id===id)||null;
 }
 
+export function setActiveProject(id){
+  const project=getProject(id);
+  if(!project)return null;
+  localStorage.setItem(KEY,JSON.stringify(project));
+  return project;
+}
+
 export function getOrCreateProject(overrides={}){
   return loadProject()||createProject(overrides);
 }
@@ -66,9 +73,9 @@ export function clearProject(){
 }
 
 export function deleteProject(id){
+  const active=read();
   const projects=loadProjects().filter(project=>project.id!==id);
   writeCollection(projects);
-  const active=loadProject();
   if(active?.id===id){
     if(projects[0])localStorage.setItem(KEY,JSON.stringify(projects[0]));
     else localStorage.removeItem(KEY);
