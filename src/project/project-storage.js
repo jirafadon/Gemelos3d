@@ -42,6 +42,13 @@ export function saveProject(project){
   return next;
 }
 
+export function updateStoredProject(id,patch={}){
+  const current=getProject(id);
+  if(!current)return null;
+  const next=saveProject(updateProject(current,patch));
+  return next;
+}
+
 export function loadProject(){
   const saved=read();
   return saved?hydrateProject(saved):null;
