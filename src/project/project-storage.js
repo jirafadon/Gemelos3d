@@ -97,7 +97,8 @@ export function importLegacyAiHandoff(){
       source:data.source||'ai',
       model:{url:data.modelUrl,name:data.prompt||'Modelo generado',format:'glb'}
     });
-    saveProject(project);
-    return project;
+    const saved=saveProject(project);
+    sessionStorage.removeItem(LEGACY_KEY);
+    return saved;
   }catch{return null}
 }
