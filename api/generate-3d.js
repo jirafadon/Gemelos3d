@@ -25,8 +25,7 @@ module.exports = async (req, res) => {
           prompt,
           texture: false,
           pbr: false,
-          face_limit: 20000,
-          geometry_quality: 'standard'
+          face_limit: 20000
         })
       });
 
