@@ -4,6 +4,7 @@ import {STLExporter} from 'https://esm.sh/three@0.161.0/examples/jsm/exporters/S
 import {OrbitControls} from 'https://esm.sh/three@0.161.0/examples/jsm/controls/OrbitControls.js';
 import {GLTFLoader} from 'https://esm.sh/three@0.161.0/examples/jsm/loaders/GLTFLoader.js';
 import polygonClipping from 'https://esm.sh/polygon-clipping@0.15.7?bundle';
+import {getProject,setActiveProject} from './project/project-storage.js';
 
 const $=id=>document.getElementById(id);
 const viewer=$('viewer');
@@ -54,6 +55,29 @@ function schedule(){clearTimeout(timer);timer=setTimeout(build,300)}
 function exportObjects(list,name){if(!list.length)return;const root=new THREE.Group();list.forEach(o=>root.add(o.clone()));const stl=new STLExporter().parse(root),u=URL.createObjectURL(new Blob([stl],{type:'model/stl'})),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
 function exportBed(i){exportObjects(beds[i]?.items.map(x=>x.o)||[],`gemelos3d-cama-${String(i+1).padStart(2,'0')}.stl`)}
 function saveProject(){const data={app:'Gemelos 3D',version:3,text:$('text').value,printer:$('printer').value,margin:$('margin').value,height:$('height').value,widthMm:$('widthScale').value,depth:$('depth').value,spacing:$('spacing').value,font:$('fontStyle').value,curveSegments:$('curveSegments').value,bevel:$('bevel').checked,bevelSize:$('bevelSize').value,bevelSegments:$('bevelSegments').value,purgeMode:$('purgeMode').value,purgeX:$('purgeX').value,purgeY:$('purgeY').value};const u=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=u;a.download='gemelos3d-proyecto.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+
+function applyProject(project){
+  if(!project)return;
+  setActiveProject(project.id);
+  const c=project.configuration||{};
+  const set=(id,value)=>{const el=$(id);if(el&&value!==null&&value!==undefined&&value!=='')el.value=String(value)};
+  const modelName=project.model?.name||project.name||'';
+  if(project.model?.format==='glb'&&project.model?.url){sessionStorage.setItem('gemelos3dAiModel',JSON.stringify({modelUrl:project.model.url,prompt:modelName,source:project.source||'project'}));}
+  set('printer',c.printer);set('margin',c.margin);set('spacing',c.spacing);
+  const urlText=new URLSearchParams(location.search).get('text');
+  if(urlText)set('text',urlText);
+  document.title=`Gemelos 3D — ${project.name||'Taller'}`;
+  status(`✓ Proyecto cargado: ${project.name||modelName||project.id}`,'ok');
+}
+function loadProjectFromUrl(){
+  const id=new URLSearchParams(location.search).get('project');
+  if(!id)return null;
+  const project=getProject(id);
+  if(!project){status('✕ No se encontró el proyecto solicitado.','bad');return null}
+  applyProject(project);
+  return project;
+}
+
 $('build').onclick=build;
 $('buildTop').onclick=build;
 $('clearText').onclick=()=>{$('text').value='';clearModel();const b=bed();bedInfo();drawBeds(b,1);cameraFit(b,1);status('Campo limpio. Escribí algo arriba para crear el modelo.','warn');$('text').focus()};
@@ -69,10 +93,19 @@ $('bevel').onchange=()=>{$('bevelFields').hidden=!$('bevel').checked;build()};
 $('purgeFields').hidden=true;
 $('customFields').hidden=$('printer').value!=='custom';
 $('bevelFields').hidden=true;
+
+const widthLabel=[...document.querySelectorAll('label')].find(e=>e.textContent.includes('Ancho máximo por letra'));
+if(widthLabel)widthLabel.textContent='Ancho total de la palabra (mm)';
+const guideLabels=[...document.querySelectorAll('.dimensionLabel')];
+if(guideLabels[0])guideLabels[0].textContent='ANCHO TOTAL';
+const legend=document.querySelector('.sizeLegend');
+if(legend)legend.innerHTML='<b>Medida física</b><br>↔ ancho total de la palabra<br>↕ alto máximo por letra<br>↗ grosor de impresión<br><br>0 mm = ancho natural.';
+
 bedInfo();
 drawBeds(bed(),1);
 cameraFit(bed(),1);
 status('Listo. Escribí el texto arriba y tocá “Crear modelo”.','ok');
+const requestedProject=loadProjectFromUrl();
 loadAiModel();
 function resize(){const w=Math.max(1,viewer.clientWidth),h=Math.max(1,viewer.clientHeight||600);renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix()}
 addEventListener('resize',resize);
