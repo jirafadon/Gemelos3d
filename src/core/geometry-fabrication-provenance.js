@@ -3,12 +3,16 @@
  * No conserva objetos Three.js ni referencias del DOM.
  */
 
+import { createGeometryVersion } from './geometry-versioning.js';
+
 function text(value, fallback = null) {
   const normalized = String(value ?? '').trim();
   return normalized || fallback;
 }
 
 export function createGeometryProvenance(profile = {}, piece = {}) {
+  const version = createGeometryVersion(profile);
+
   return {
     geometryId: text(profile.id, text(piece.id, null)),
     geometryName: text(profile.name, text(piece.name, null)),
@@ -16,7 +20,8 @@ export function createGeometryProvenance(profile = {}, piece = {}) {
     geometryType: text(profile.type, text(piece.geometryType, 'piece')),
     profileSchemaVersion: Number.isFinite(Number(profile.schemaVersion))
       ? Number(profile.schemaVersion)
-      : 1
+      : 1,
+    geometryVersion: version
   };
 }
 
