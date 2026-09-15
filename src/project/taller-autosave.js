@@ -30,15 +30,29 @@ export function captureTallerConfiguration(){
 
 export function installTallerAutosave({delay=450}={}){
   let timer;
+  let lastSaved='';
   const save=()=>{
+    timer=undefined;
     const project=loadProject();
     if(!project?.id)return;
-    updateStoredProject(project.id,{configuration:captureTallerConfiguration()});
+    const configuration=captureTallerConfiguration();
+    const snapshot=JSON.stringify(configuration);
+    if(snapshot===lastSaved)return;
+    updateStoredProject(project.id,{configuration});
+    lastSaved=snapshot;
   };
   const schedule=()=>{clearTimeout(timer);timer=setTimeout(save,delay)};
+  const flush=()=>{clearTimeout(timer);save()};
   FIELD_IDS.forEach(id=>read(id)?.addEventListener('input',schedule));
   FIELD_IDS.forEach(id=>read(id)?.addEventListener('change',schedule));
-  return ()=>{clearTimeout(timer);FIELD_IDS.forEach(id=>read(id)?.removeEventListener('input',schedule));FIELD_IDS.forEach(id=>read(id)?.removeEventListener('change',schedule));};
+  window.addEventListener('pagehide',flush);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flush()});
+  return ()=>{
+    clearTimeout(timer);
+    FIELD_IDS.forEach(id=>read(id)?.removeEventListener('input',schedule));
+    FIELD_IDS.forEach(id=>read(id)?.removeEventListener('change',schedule));
+    window.removeEventListener('pagehide',flush);
+  };
 }
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>installTallerAutosave());
