@@ -5,19 +5,23 @@
 
 import { normalizeBed } from './bed.js';
 import { packPieces } from './pack.js';
+import { validateFabricationItems } from './fabrication-validation.js';
 
 export function createFabricationPlan(items = [], bedInput = {}, options = {}) {
+  const validation = validateFabricationItems(items);
   const bed = normalizeBed(bedInput);
-  const normalized = items.map((item, index) => ({
-    id: item.id ?? `piece-${index + 1}`,
-    name: item.name ?? item.id ?? `Pieza ${index + 1}`,
-    width: Math.max(0, Number(item.width) || 0),
-    depth: Math.max(0, Number(item.depth) || 0),
-    source: item.source ?? null
-  }));
-
-  const result = packPieces(normalized, bed, options);
+  const result = packPieces(validation.valid, bed, options);
   const placed = result.beds.flatMap(b => b.items);
+  const rejected = [
+    ...validation.rejected,
+    ...result.rejected.map(({ item, reason }) => ({
+      id: item.id,
+      name: item.name,
+      width: item.width,
+      depth: item.depth,
+      reason
+    }))
+  ];
 
   return {
     schemaVersion: 1,
@@ -36,19 +40,13 @@ export function createFabricationPlan(items = [], bedInput = {}, options = {}) {
         depth: item.depth
       }))
     })),
-    rejected: result.rejected.map(({ item, reason }) => ({
-      id: item.id,
-      name: item.name,
-      width: item.width,
-      depth: item.depth,
-      reason
-    })),
+    rejected,
     summary: {
-      requested: normalized.length,
+      requested: items.length,
       placed: placed.length,
-      rejected: result.rejected.length,
+      rejected: rejected.length,
       beds: result.beds.length,
-      complete: placed.length + result.rejected.length === normalized.length
+      complete: placed.length + rejected.length === items.length
     }
   };
 }
