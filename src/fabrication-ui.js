@@ -4,6 +4,7 @@ import './cost-ui.js';
 import './responsive-workspace.js';
 import { TALLER_PLAN_RESULT, createTallerPlanRequest } from './core/taller-fabrication-events.js';
 import { persistTallerFabricationPlan, recoverTallerFabricationState } from './core/taller-fabrication-persistence.js';
+import { getGeometryFabricationVisualStatus } from './core/geometry-fabrication-visual-status.js';
 
 const viewer = document.getElementById('viewer');
 const aside = document.querySelector('aside');
@@ -39,6 +40,8 @@ function installFabricationUI(){
       .fabPlan{margin:8px 0;padding:8px;border:1px solid #303641;border-radius:7px;background:#11151b}
       .fabPlan button{width:100%;padding:8px;font-size:10px}
       .fabPlanStatus{display:block;margin-top:6px;color:#8d96a3;font-size:9px;line-height:1.35}
+      .fabPlanStatus.isBlocked{color:#ffb4a8;border-color:#713b35}
+      .fabPlanStatus.isValid{color:#a7e8bd}
       .fabricationPanel:not(.hasBeds) .fabBedsTitle,.fabricationPanel:not(.hasBeds) #fabBeds{display:none}
       .fabricationPanel:not(.hasPieces) .fabPiecesTitle,.fabricationPanel:not(.hasPieces) #fabPieces{display:none}
     `;
@@ -71,6 +74,17 @@ function installFabricationUI(){
   const fabPlanButton = panel.querySelector('#fabPlanButton');
   const fabPlanStatus = panel.querySelector('#fabPlanStatus');
 
+  function showPlanStatus(plan, fallback){
+    const visual = getGeometryFabricationVisualStatus(plan);
+    fabPlanStatus.classList.toggle('isBlocked', visual.blocked);
+    fabPlanStatus.classList.toggle('isValid', !visual.blocked && visual.status === 'valid');
+    if (plan?.fabricationValidity || plan?.geometryFabricationValidity) {
+      fabPlanStatus.textContent = `${visual.label}: ${visual.message}`;
+      return;
+    }
+    fabPlanStatus.textContent = fallback;
+  }
+
   function readSelected(){
     const source = document.getElementById('selectedPiece');
     fabSelected.innerHTML = source ? source.innerHTML : '<b>Ninguna pieza seleccionada</b><span>Elegí una pieza para ver sus medidas y cama.</span>';
@@ -96,19 +110,19 @@ function installFabricationUI(){
 
   const recovered = recoverTallerFabricationState();
   if (recovered?.pieces?.length) {
-    fabPlanStatus.textContent = `Plan recuperado: ${recovered.placed.length} piezas colocadas, ${recovered.rejected.length} rechazadas, ${recovered.beds.length} camas.`;
+    showPlanStatus(recovered, `Plan recuperado: ${recovered.placed.length} piezas colocadas, ${recovered.rejected.length} rechazadas, ${recovered.beds.length} camas.`);
   }
 
-  fabPlanButton?.addEventListener('click',()=>{fabPlanStatus.textContent='Solicitud enviada al Taller. Esperando el plan…';window.dispatchEvent(createTallerPlanRequest());});
+  fabPlanButton?.addEventListener('click',()=>{showPlanStatus({},'Solicitud enviada al Taller. Esperando el plan…');window.dispatchEvent(createTallerPlanRequest());});
   window.addEventListener(TALLER_PLAN_RESULT,event=>{
     const plan=event.detail?.plan;
     const summary=plan?.summary;
-    if(!summary){fabPlanStatus.textContent='El Taller devolvió un resultado sin resumen.';return;}
+    if(!summary){showPlanStatus({},'El Taller devolvió un resultado sin resumen.');return;}
     try {
       persistTallerFabricationPlan(plan);
-      fabPlanStatus.textContent=`Plan guardado: ${summary.placed??0} piezas colocadas, ${summary.rejected??0} rechazadas, ${summary.beds??0} camas.`;
+      showPlanStatus(plan,`Plan guardado: ${summary.placed??0} piezas colocadas, ${summary.rejected??0} rechazadas, ${summary.beds??0} camas.`);
     } catch {
-      fabPlanStatus.textContent=`Plan recibido: ${summary.placed??0} piezas colocadas, ${summary.rejected??0} rechazadas, ${summary.beds??0} camas. No se pudo guardar.`;
+      showPlanStatus(plan,`Plan recibido: ${summary.placed??0} piezas colocadas, ${summary.rejected??0} rechazadas, ${summary.beds??0} camas. No se pudo guardar.`);
     }
   });
 
