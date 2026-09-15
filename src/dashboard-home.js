@@ -32,7 +32,7 @@ if (!projects.length) {
     const model = project.model?.name || project.model?.format?.toUpperCase() || 'Sin modelo';
     const card = document.createElement('a');
     card.className = 'home-project-card';
-    card.href = stepTarget(progress.current);
+    card.href = `./proyecto.html?id=${encodeURIComponent(project.id)}`;
     card.innerHTML = `<span class="home-project-icon">◇</span><div class="home-project-main"><strong></strong><small>${date} · ${sourceLabel(project.source)} · ${model}</small><div class="home-project-progress"><i style="width:${progress.percent}%"></i></div><em>En ${stepLabel(progress.current)} · ${progress.percent}%</em></div><b>→</b>`;
     card.querySelector('strong').textContent = name;
     card.addEventListener('click', () => setActiveProject(project.id));
