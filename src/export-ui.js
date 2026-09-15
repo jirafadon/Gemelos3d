@@ -1,6 +1,5 @@
 import './project-ui.js';
-import { evaluateFabricationExportGuard } from './core/fabrication-export-guard.js';
-import { evaluatePersistedFabricationState } from './core/fabrication-state-guard.js';
+import { evaluateFabricationExportContract } from './core/fabrication-export-contract.js';
 import { recoverTallerFabricationState } from './core/taller-fabrication-persistence.js';
 
 const aside = document.querySelector('aside');
@@ -33,12 +32,9 @@ function assertExportSafe(){
   const live=window.__gemelos3dFabricationState;
   const recovered=recoverTallerFabricationState();
   const persisted=window.__gemelos3dProject?.fabrication ?? window.gemelos3dProject?.fabrication;
-  const liveGuard=evaluateFabricationExportGuard(live ?? {});
-  const recoveredGuard=evaluatePersistedFabricationState(recovered ?? {});
-  const persistedGuard=evaluatePersistedFabricationState(persisted ?? {});
-  const blocked=[...new Set([...liveGuard.blockedPieceIds,...recoveredGuard.blockedPieceIds,...persistedGuard.blockedPieceIds])];
-  if(blocked.length){
-    alert(`Exportación bloqueada. Revisá la geometría de: ${blocked.join(', ')}.`);
+  const guard=evaluateFabricationExportContract({live,persisted:{...recovered,...persisted}});
+  if(!guard.allowed){
+    alert(`Exportación bloqueada. Revisá la geometría de: ${guard.blockedPieceIds.join(', ')}.`);
     return false;
   }
   return true;
