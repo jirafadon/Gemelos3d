@@ -2,9 +2,9 @@
 
 ## Proyecto 01 — Núcleo de fabricación
 
-Primera base funcional de Gemelos 3D.
+Base funcional de Gemelos 3D para preparar piezas 3D, acomodarlas en camas de impresión y exportarlas.
 
-### Incluye
+### Incluye actualmente
 - Selección de impresora.
 - Snapmaker U1 con volumen 270 × 270 × 270 mm.
 - Impresora personalizada.
@@ -13,28 +13,24 @@ Primera base funcional de Gemelos 3D.
 - Visualización 3D.
 - Cálculo de dimensiones X/Y/Z.
 - Detección de ajuste contra cama útil.
-- División física de geometría sobredimensionada mediante CSG (`three-bvh-csg`).
-- Generación de piezas independientes a partir de una letra que supera el ancho útil.
-- Acomodado automático en una o varias camas, con rotación de 90°.
+- División física de texto sobredimensionado mediante clipping 2D + extrusión.
+- Acomodado automático en una o varias camas.
 - Reserva configurable de área para torre de purga.
 - Exportación STL.
-- Guardado de parámetros como JSON.
+- Guardado/persistencia de proyectos y recuperación del Taller.
 
 ### Estado de la división física
-La división de piezas grandes **ya está implementada realmente**. `src/app.js` utiliza `three-bvh-csg` para intersectar la geometría con volúmenes de corte y generar piezas físicas independientes mediante `splitMeshByX()`.
+La división de texto grande está **implementada realmente** en la ruta actual del Taller. `src/app.js` genera los contornos de cada carácter, los recorta contra regiones de la cama mediante `polygon-clipping` y vuelve a extruir los fragmentos resultantes.
 
-La división profesional con búsqueda de cortes óptimos, encastres/uniones y optimización avanzada corresponde a etapas posteriores. No debe confundirse con una simple estimación por caracteres.
+Esto **no debe confundirse** con un motor general de corte CSG sobre mallas arbitrarias. La auditoría actual no encuentra una ruta ejecutable de `three-bvh-csg` en `src/app.js`, por lo que CSG general, búsqueda de cortes óptimos y encastres/uniones siguen siendo trabajo pendiente.
 
-### Cómo probar
-Abrir `index.html` en un navegador moderno con conexión a Internet. Los módulos Three.js se cargan desde CDN.
+### Acomodado y purga
+La cama útil se calcula a partir de las dimensiones de la impresora, margen y reserva de purga. El estado actual acomoda piezas por filas, pero todavía no implementa una búsqueda completa de orientación 90° ni un modelo geométrico independiente de keepout.
 
 ### Regla de producto
 Gemelos 3D debe distinguir siempre entre una función visual/prototipo y una función de fabricación realmente implementada.
 
-## Correcciones recientes
+El registro detallado de estado, evidencia y deuda técnica está en [`docs/feature-status.md`](docs/feature-status.md).
 
-- La cama mantiene ahora sus dimensiones físicas completas y dibuja por separado el margen, el área útil y la reserva de purga.
-- La reserva de purga se trata como un área prohibida real durante el acomodado, evitando que una pieza se coloque encima de ella.
-- El centrado del texto se calcula dentro del área útil real, sin desplazarlo artificialmente por el ancho de la purga.
-- El ancho total se aplica al conjunto completo manteniendo la proporción entre ancho y alto; ya no se deforma el texto cuando se informa un ancho físico.
-- El avance tipográfico usa la métrica de la fuente cuando está disponible, por lo que las letras conservan mejor su separación y sus medidas visibles.
+### Cómo probar
+Abrir `index.html` en un navegador moderno con conexión a Internet. Los módulos Three.js se cargan desde CDN.
