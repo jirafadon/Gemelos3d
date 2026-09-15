@@ -1,1 +1,0 @@
-ETAPA 42 — Biblioteca de proyectos visual: búsqueda, filtros, orden y acciones rápidas.
