@@ -1,4 +1,5 @@
 import './project-ui.js';
+import { evaluateFabricationExportGuard } from './core/fabrication-export-guard.js';
 
 const aside = document.querySelector('aside');
 
@@ -26,6 +27,16 @@ function collectProject(){
     exports:{note:'La geometría STL se genera desde el motor de Gemelos 3D al momento de exportar.'}
   };
 }
+function assertExportSafe(){
+  const state=window.__gemelos3dFabricationState;
+  const guard=evaluateFabricationExportGuard(state ?? {});
+  if(!guard.allowed){
+    const ids=guard.blockedPieceIds.join(', ');
+    alert(`Exportación bloqueada. Revisá la geometría de: ${ids}.`);
+    return false;
+  }
+  return true;
+}
 function install(){
   if(!aside || document.getElementById('exportPlusSection'))return;
   const section=document.createElement('section');section.id='exportPlusSection';
@@ -39,10 +50,11 @@ function install(){
     <div class="hint">3MF queda reservado para una integración posterior con geometría y posiciones reales de cada pieza; no se genera un archivo 3MF falso o aproximado.</div>`;
   const current=[...aside.querySelectorAll('section')].find(s=>s.querySelector('#download'));
   current ? current.after(section) : aside.appendChild(section);
-  section.querySelector('#exportFullPlus').onclick=()=>document.getElementById('download')?.click();
-  section.querySelector('#exportPiecesPlus').onclick=()=>document.getElementById('downloadPieces')?.click();
-  section.querySelector('#exportProjectPlus').onclick=()=>downloadText('gemelos3d-proyecto-completo.json',JSON.stringify(collectProject(),null,2),'application/json');
+  section.querySelector('#exportFullPlus').onclick=()=>{if(assertExportSafe())document.getElementById('download')?.click();};
+  section.querySelector('#exportPiecesPlus').onclick=()=>{if(assertExportSafe())document.getElementById('downloadPieces')?.click();};
+  section.querySelector('#exportProjectPlus').onclick=()=>{if(assertExportSafe())downloadText('gemelos3d-proyecto-completo.json',JSON.stringify(collectProject(),null,2),'application/json');};
   section.querySelector('#exportSheetPlus').onclick=()=>{
+    if(!assertExportSafe())return;
     const p=collectProject();
     const lines=['GEMELOS 3D — FICHA TÉCNICA','',`Texto: ${p.design.text || '—'}`,`Alto: ${p.design.heightMm} mm`,`Ancho total: ${p.design.widthTotalMm || 'Natural'} mm`,`Grosor: ${p.design.depthMm} mm`,`Tipografía: ${p.design.font}`,`Bisel: ${p.design.bevel?'Sí':'No'}`,'',`Impresora: ${p.printer.preset}`,`Margen: ${p.printer.marginMm} mm`,'',`Camas: ${p.fabrication.beds}`,`Piezas: ${p.fabrication.pieces.length}`,'',...p.fabrication.pieces.map(x=>`Pieza ${x.id}: cama ${x.bed}, ${x.widthMm} × ${x.heightMm} mm`),'',`Generado: ${p.createdAt}`];
     downloadText('gemelos3d-ficha-tecnica.txt',lines.join('\n'));
