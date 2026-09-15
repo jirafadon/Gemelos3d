@@ -2,6 +2,10 @@
  * Modelo puro de cama de fabricación.
  * No depende del DOM ni de Three.js.
  * Todas las medidas están expresadas en milímetros.
+ *
+ * Regla importante: el margen define el área geométrica útil.
+ * La purga es una reserva independiente (keepout) y NO se descuenta
+ * nuevamente del área útil; así evitamos doble contabilización.
  */
 
 const MIN_DIMENSION = 1;
@@ -29,8 +33,8 @@ export function normalizePurge(input = {}) {
 }
 
 /**
- * Devuelve el rectángulo real donde puede colocarse una pieza.
- * x0/x1/y0/y1 están en coordenadas de cama, con el centro en 0.
+ * Área geométrica útil después de aplicar únicamente el margen.
+ * La reserva de purga se consulta por separado con computeKeepout().
  */
 export function computeUsefulArea(input = {}) {
   const bed = normalizeBed(input);
@@ -41,24 +45,19 @@ export function computeUsefulArea(input = {}) {
   const y0 = -halfD + bed.margin;
   const y1 = halfD - bed.margin;
 
-  if (!bed.purge.enabled || bed.purge.width <= 0 || bed.purge.depth <= 0) {
-    return { x0, y0, x1, y1, width: Math.max(0, x1 - x0), depth: Math.max(0, y1 - y0) };
-  }
-
-  const purge = bed.purge;
-  const result = { x0, y0, x1, y1 };
-  if (purge.corner === 'tl' || purge.corner === 'bl') result.x0 += purge.width;
-  else result.x1 -= purge.width;
-  if (purge.corner === 'bl' || purge.corner === 'br') result.y0 += purge.depth;
-  else result.y1 -= purge.depth;
-
   return {
-    ...result,
-    width: Math.max(0, result.x1 - result.x0),
-    depth: Math.max(0, result.y1 - result.y0)
+    x0,
+    y0,
+    x1,
+    y1,
+    width: Math.max(0, x1 - x0),
+    depth: Math.max(0, y1 - y0)
   };
 }
 
+/**
+ * Devuelve la reserva física de purga dentro del área delimitada por margen.
+ */
 export function computeKeepout(input = {}) {
   const bed = normalizeBed(input);
   if (!bed.purge.enabled || bed.purge.width <= 0 || bed.purge.depth <= 0) return null;
