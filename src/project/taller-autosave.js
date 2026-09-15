@@ -30,8 +30,9 @@ export function captureTallerConfiguration(){
 
 export function installTallerAutosave({delay=450}={}){
   let timer;
-  let lastSnapshot='';
   let disposed=false;
+  const initialConfiguration=captureTallerConfiguration();
+  let lastSnapshot=JSON.stringify(initialConfiguration);
   const save=()=>{
     if(disposed)return;
     const configuration=captureTallerConfiguration();
@@ -39,8 +40,12 @@ export function installTallerAutosave({delay=450}={}){
     if(snapshot===lastSnapshot)return;
     const project=loadProject();
     if(!project?.id)return;
-    updateStoredProject(project.id,{configuration});
-    lastSnapshot=snapshot;
+    try{
+      updateStoredProject(project.id,{configuration,workflow:{current:'taller'}});
+      lastSnapshot=snapshot;
+    }catch{
+      // El autosave nunca debe bloquear el Taller si el almacenamiento no está disponible.
+    }
   };
   const schedule=()=>{clearTimeout(timer);timer=setTimeout(save,delay)};
   const flush=()=>{clearTimeout(timer);save()};
