@@ -6,6 +6,7 @@
 import { recoverFabricationState } from './fabrication-recovery.js';
 import { recoverGeometryProvenance } from './geometry-fabrication-provenance.js';
 import { compareGeometryVersion } from './geometry-versioning.js';
+import { evaluateGeometryFabricationPlan } from './geometry-fabrication-invalidation.js';
 
 export function recoverGeometryFabricationState(project, currentProfiles = []) {
   const fabrication = recoverFabricationState(project);
@@ -27,13 +28,13 @@ export function recoverGeometryFabricationState(project, currentProfiles = []) {
     };
   });
 
-  return {
+  return evaluateGeometryFabricationPlan({
     ...fabrication,
     pieces,
     placed: pieces.filter(piece => piece.status === 'placed'),
     rejected: pieces.filter(piece => piece.status === 'rejected'),
     provenance
-  };
+  });
 }
 
 export function findGeometryOrigin(project, pieceId) {
