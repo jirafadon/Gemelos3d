@@ -45,8 +45,8 @@ test('no coloca una pieza dentro de la reserva de purga', () => {
 
 test('crea varias camas cuando las piezas no comparten fila', () => {
   const result = packPieces([
-    { id: 'A', width: 200, depth: 100 },
-    { id: 'B', width: 200, depth: 100 }
+    { id: 'A', width: 205, depth: 150 },
+    { id: 'B', width: 205, depth: 150 }
   ], {
     width: 220, depth: 220, height: 250, margin: 5,
     purge: { mode: 'none' }
