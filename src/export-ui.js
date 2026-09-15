@@ -1,5 +1,6 @@
 import './project-ui.js';
 import { evaluateFabricationExportGuard } from './core/fabrication-export-guard.js';
+import { evaluatePersistedFabricationState } from './core/fabrication-state-guard.js';
 
 const aside = document.querySelector('aside');
 
@@ -28,11 +29,13 @@ function collectProject(){
   };
 }
 function assertExportSafe(){
-  const state=window.__gemelos3dFabricationState;
-  const guard=evaluateFabricationExportGuard(state ?? {});
-  if(!guard.allowed){
-    const ids=guard.blockedPieceIds.join(', ');
-    alert(`Exportación bloqueada. Revisá la geometría de: ${ids}.`);
+  const live=window.__gemelos3dFabricationState;
+  const persisted=window.__gemelos3dProject?.fabrication ?? window.gemelos3dProject?.fabrication;
+  const liveGuard=evaluateFabricationExportGuard(live ?? {});
+  const persistedGuard=evaluatePersistedFabricationState(persisted ?? {});
+  const blocked=[...new Set([...liveGuard.blockedPieceIds,...persistedGuard.blockedPieceIds])];
+  if(blocked.length){
+    alert(`Exportación bloqueada. Revisá la geometría de: ${blocked.join(', ')}.`);
     return false;
   }
   return true;
