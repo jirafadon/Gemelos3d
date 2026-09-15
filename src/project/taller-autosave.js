@@ -1,5 +1,3 @@
-import {loadProject,updateStoredProject} from './project-storage.js';
-
 const FIELD_IDS=['text','printer','margin','cx','cy','cz','purgeMode','purgeX','purgeY','height','widthScale','depth','spacing','fontStyle','curveSegments','bevel','bevelSize','bevelSegments'];
 const read=(id)=>document.getElementById(id);
 const value=(id)=>{const el=read(id);if(!el)return null;return el.type==='checkbox'?el.checked:el.value};
@@ -30,16 +28,17 @@ export function captureTallerConfiguration(){
 
 export function installTallerAutosave({delay=450}={}){
   let timer;
-  let lastSaved='';
-  const save=()=>{
-    timer=undefined;
+  let lastSnapshot='';
+  let disposed=false;
+  const save=async()=>{
+    if(disposed)return;
+    const snapshot=JSON.stringify(captureTallerConfiguration());
+    if(snapshot===lastSnapshot)return;
+    const {loadProject,updateStoredProject}=await import('./project-storage.js');
     const project=loadProject();
     if(!project?.id)return;
-    const configuration=captureTallerConfiguration();
-    const snapshot=JSON.stringify(configuration);
-    if(snapshot===lastSaved)return;
-    updateStoredProject(project.id,{configuration});
-    lastSaved=snapshot;
+    updateStoredProject(project.id,{configuration:captureTallerConfiguration()});
+    lastSnapshot=snapshot;
   };
   const schedule=()=>{clearTimeout(timer);timer=setTimeout(save,delay)};
   const flush=()=>{clearTimeout(timer);save()};
@@ -48,6 +47,7 @@ export function installTallerAutosave({delay=450}={}){
   window.addEventListener('pagehide',flush);
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flush()});
   return ()=>{
+    disposed=true;
     clearTimeout(timer);
     FIELD_IDS.forEach(id=>read(id)?.removeEventListener('input',schedule));
     FIELD_IDS.forEach(id=>read(id)?.removeEventListener('change',schedule));
