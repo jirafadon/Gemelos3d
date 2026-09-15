@@ -1,5 +1,4 @@
 import {createProject,hydrateProject,updateProject} from './project-state.js';
-import './taller-autosave.js';
 
 const KEY='gemelos3dProject';
 const COLLECTION_KEY='gemelos3dProjects';
