@@ -56,17 +56,14 @@ test('computeKeepout devuelve la reserva física de purga', () => {
   assert.deepEqual(keepout, { x0: 90, x1: 130, y0: 100, y1: 130 });
 });
 
-test('purga mayor que el área no produce dimensiones negativas en el keepout', () => {
+test('purga mayor que el área conserva una reserva independiente', () => {
   const keepout = computeKeepout({
     width: 100,
     depth: 100,
     margin: 10,
     purge: { width: 200, depth: 200, corner: 'tr' }
   });
-  assert.equal(keepout.x0, -140);
-  assert.equal(keepout.x1, 40);
-  assert.equal(keepout.y0, -140);
-  assert.equal(keepout.y1, 40);
+  assert.deepEqual(keepout, { x0: -160, x1: 40, y0: -160, y1: 40 });
 });
 
 test('valida tamaño y posición de una pieza', () => {
