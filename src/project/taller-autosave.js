@@ -1,3 +1,5 @@
+import {loadProject,updateStoredProject} from './project-storage.js';
+
 const FIELD_IDS=['text','printer','margin','cx','cy','cz','purgeMode','purgeX','purgeY','height','widthScale','depth','spacing','fontStyle','curveSegments','bevel','bevelSize','bevelSegments'];
 const read=(id)=>document.getElementById(id);
 const value=(id)=>{const el=read(id);if(!el)return null;return el.type==='checkbox'?el.checked:el.value};
@@ -30,28 +32,30 @@ export function installTallerAutosave({delay=450}={}){
   let timer;
   let lastSnapshot='';
   let disposed=false;
-  const save=async()=>{
+  const save=()=>{
     if(disposed)return;
-    const snapshot=JSON.stringify(captureTallerConfiguration());
+    const configuration=captureTallerConfiguration();
+    const snapshot=JSON.stringify(configuration);
     if(snapshot===lastSnapshot)return;
-    const {loadProject,updateStoredProject}=await import('./project-storage.js');
     const project=loadProject();
     if(!project?.id)return;
-    updateStoredProject(project.id,{configuration:captureTallerConfiguration()});
+    updateStoredProject(project.id,{configuration});
     lastSnapshot=snapshot;
   };
   const schedule=()=>{clearTimeout(timer);timer=setTimeout(save,delay)};
   const flush=()=>{clearTimeout(timer);save()};
+  const onVisibilityChange=()=>{if(document.visibilityState==='hidden')flush()};
   FIELD_IDS.forEach(id=>read(id)?.addEventListener('input',schedule));
   FIELD_IDS.forEach(id=>read(id)?.addEventListener('change',schedule));
   window.addEventListener('pagehide',flush);
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flush()});
+  document.addEventListener('visibilitychange',onVisibilityChange);
   return ()=>{
     disposed=true;
     clearTimeout(timer);
     FIELD_IDS.forEach(id=>read(id)?.removeEventListener('input',schedule));
     FIELD_IDS.forEach(id=>read(id)?.removeEventListener('change',schedule));
     window.removeEventListener('pagehide',flush);
+    document.removeEventListener('visibilitychange',onVisibilityChange);
   };
 }
 
