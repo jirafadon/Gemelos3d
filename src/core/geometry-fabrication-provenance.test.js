@@ -10,7 +10,8 @@ const profile = {
   id: 'motor-a',
   name: 'Motor A',
   source: 'imported-model',
-  type: 'piece'
+  type: 'piece',
+  dimensions: { width: 10, height: 20, depth: 30 }
 };
 
 const piece = {
@@ -22,14 +23,10 @@ const piece = {
 
 const plan = { geometry: { profiles: [profile], pieces: [piece] } };
 
-test('creates deterministic provenance from profile and piece', () => {
-  expect(createGeometryProvenance(profile, piece)).toEqual({
-    geometryId: 'motor-a',
-    geometryName: 'Motor A',
-    geometrySource: 'imported-model',
-    geometryType: 'piece',
-    profileSchemaVersion: 1
-  });
+test('creates provenance including a geometry version', () => {
+  const provenance = createGeometryProvenance(profile, piece);
+  expect(provenance.geometryId).toBe('motor-a');
+  expect(provenance.geometryVersion.signature).toBe('motor-a|imported-model|piece|10|20|30');
 });
 
 test('builds provenance keyed by fabrication piece id', () => {
