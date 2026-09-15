@@ -21,24 +21,28 @@ test('normaliza cama y evita dimensiones inválidas', () => {
   });
 });
 
-test('sin purga, área útil respeta margen', () => {
-  const area = computeUsefulArea({ width: 270, depth: 270, height: 250, margin: 5, purge: { mode: 'none' } });
+test('normaliza purga desactivada sin inventar dimensiones', () => {
+  assert.deepEqual(normalizePurge({ mode: 'none', width: 40, depth: 40 }), {
+    enabled: false,
+    width: 0,
+    depth: 0,
+    corner: 'tr'
+  });
+});
+
+test('el área útil respeta margen pero no descuenta dos veces la purga', () => {
+  const area = computeUsefulArea({
+    width: 270,
+    depth: 270,
+    height: 250,
+    margin: 5,
+    purge: { width: 40, depth: 30, corner: 'tr' }
+  });
   assert.equal(area.width, 260);
   assert.equal(area.depth, 260);
   assert.equal(area.x0, -130);
   assert.equal(area.x1, 130);
-});
-
-test('la purga recorta la esquina correcta del área útil', () => {
-  const area = computeUsefulArea({
-    width: 270,
-    depth: 270,
-    margin: 5,
-    purge: { width: 40, depth: 30, corner: 'tr' }
-  });
-  assert.equal(area.width, 220);
-  assert.equal(area.depth, 230);
-  assert.equal(area.x1, 90);
+  assert.equal(area.y0, -130);
   assert.equal(area.y1, 130);
 });
 
@@ -52,15 +56,17 @@ test('computeKeepout devuelve la reserva física de purga', () => {
   assert.deepEqual(keepout, { x0: 90, x1: 130, y0: 100, y1: 130 });
 });
 
-test('purga mayor que el área no produce dimensiones negativas', () => {
-  const area = computeUsefulArea({
+test('purga mayor que el área no produce dimensiones negativas en el keepout', () => {
+  const keepout = computeKeepout({
     width: 100,
     depth: 100,
     margin: 10,
     purge: { width: 200, depth: 200, corner: 'tr' }
   });
-  assert.equal(area.width, 0);
-  assert.equal(area.depth, 0);
+  assert.equal(keepout.x0, -140);
+  assert.equal(keepout.x1, 40);
+  assert.equal(keepout.y0, -140);
+  assert.equal(keepout.y1, 40);
 });
 
 test('valida tamaño y posición de una pieza', () => {
