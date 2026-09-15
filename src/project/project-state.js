@@ -1,4 +1,5 @@
 const DEFAULT_PROJECT={
+  schemaVersion:2,
   id:null,
   name:'Proyecto sin nombre',
   source:null,
@@ -33,6 +34,7 @@ export function createProject(overrides={}){
 export function hydrateProject(value={}){
   const p=typeof structuredClone==='function'?structuredClone(DEFAULT_PROJECT):JSON.parse(JSON.stringify(DEFAULT_PROJECT));
   merge(p,value);
+  normalize(p);
   return p;
 }
 
@@ -43,9 +45,21 @@ function merge(target,source){
   });
 }
 
+function normalize(project){
+  project.schemaVersion=2;
+  if(!Array.isArray(project.fabrication.pieces))project.fabrication.pieces=[];
+  if(!Array.isArray(project.fabrication.beds))project.fabrication.beds=[];
+  if(!Number.isInteger(project.fabrication.selectedBed)||project.fabrication.selectedBed<0)project.fabrication.selectedBed=0;
+  if(!['crear','configurar','revisar','taller'].includes(project.workflow.current))project.workflow.current='crear';
+  const order=['crear','configurar','revisar','taller'];
+  const index=order.indexOf(project.workflow.current);
+  order.forEach((name,i)=>{project.workflow.steps[name]=i<index?'complete':i===index?'active':'pending'});
+}
+
 export function updateProject(project,patch={}){
   const next=hydrateProject(project);
   merge(next,patch);
+  normalize(next);
   next.meta.updatedAt=new Date().toISOString();
   return next;
 }
