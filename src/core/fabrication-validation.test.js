@@ -23,6 +23,14 @@ test('rechaza IDs duplicados para evitar perder piezas en el mapeo', () => {
   assert.equal(result.rejected[0].reason, 'duplicate-id');
 });
 
+test('asigna IDs deterministas cuando faltan', () => {
+  const result = validateFabricationItems([
+    { width: 10, depth: 10 },
+    { width: 12, depth: 12 }
+  ]);
+  assert.deepEqual(result.valid.map(item => item.id), ['piece-1', 'piece-2']);
+});
+
 test('reconoce todos los rechazos de fabricación esperados', () => {
   assert.equal(isKnownFabricationRejectReason('invalid-dimensions'), true);
   assert.equal(isKnownFabricationRejectReason('duplicate-id'), true);
