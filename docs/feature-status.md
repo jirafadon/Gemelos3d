@@ -1,26 +1,30 @@
 # Estado real de features — Gemelos 3D
 
-> Auditoría inicial del núcleo realizada sobre el estado actual de `main`.
+> Auditoría del estado actual de `main`.
 >
 > **Regla:** una feature sólo se considera **Implementada** si existe código ejecutable que produzca el resultado físico/operativo prometido. La presencia de controles, textos o estados visuales no alcanza.
 
 ## Núcleo de fabricación
 
-| Feature | Estado | Evidencia actual | Criterio de aceptación | Observación |
-|---|---|---|---|---|
-| Selección de impresora | **Implementado** | `src/app.js` → `dims()` | Snapmaker U1 y personalizada entregan X/Y/Z utilizables | Verificar límites inválidos en QA |
-| Margen de seguridad | **Implementado** | `src/app.js` → `bed()` | El margen reduce el área útil | Falta encapsular el modelo de cama |
-| Reserva de purga | **Implementado parcialmente** | `src/app.js` → `purge()` / `bed()` | La reserva debe excluirse realmente del packing y estar representada con sus dos dimensiones | El modelo actual reduce X, pero `packNormalPieces()` no recibe una región keepout explícita |
-| Cálculo de cama útil | **Implementado parcialmente** | `src/app.js` → `bed()` | Área útil consistente con margen + purga | Debe pasar a `core/bed.js` para evitar divergencias |
-| Cálculo de dimensiones del texto | **Implementado** | `src/app.js` → `build()` | X/Y/Z visibles y coherentes con la geometría generada | Requiere casos de caracteres vacíos/raros |
-| División física de geometría sobredimensionada | **Implementado para texto** | `src/app.js` → `build()`, `polygon-clipping` | Una letra que supera la cama produce fragmentos físicos exportables | **No corresponde al `splitMeshByX()` descrito en README**; actualmente la ruta visible usa clipping 2D + extrusión |
-| CSG con `three-bvh-csg` | **Pendiente / no evidenciado en el estado actual** | No aparece en el `src/app.js` actual auditado | Booleanas robustas sobre mallas arbitrarias | No marcar como implementado hasta localizar una ruta ejecutable y verificable |
-| Acomodado automático | **Implementado parcialmente** | `packNormalPieces()` | Colocar piezas sin salir del área útil | Actualmente no implementa búsqueda general de orientación 90° |
-| Rotación 90° durante packing | **Pendiente** | No hay giro de piezas en `packNormalPieces()` | Probar ambas orientaciones y elegir una válida/mejor | El README afirma esta capacidad, pero el código auditado no la demuestra |
-| Optimización de cortes | **Pendiente** | `optimize` sólo informa que queda pausada | Elegir cortes con criterio de piezas, detalles y desperdicio | No implementar hasta estabilizar core |
-| Encastres / uniones | **Pendiente** | Sin motor de joints identificado | Generar geometría complementaria y exportable | Etapa posterior |
-| Exportación STL | **Implementado** | `exportObjects()` / `exportBed()` | STL válido por proyecto, cama y pieza | Agregar pruebas de salida y geometría vacía |
-| Guardado JSON descargable | **Implementado** | `saveProject()` | Descargar parámetros del taller | No confundir con persistencia de proyecto en `project-storage.js` |
+| Feature | Estado | Evidencia actual | Observación |
+|---|---|---|---|
+| Selección de impresora | **Implementado** | `src/app.js` → `dims()` | Snapmaker U1 y personalizada entregan X/Y/Z utilizables |
+| Margen de seguridad | **Implementado** | `src/core/bed.js` | Área útil normalizada y testeable |
+| Reserva de purga | **Implementado** | `src/core/bed.js` + `src/core/pack.js` | Se modela como keepout rectangular durante el packing |
+| Cálculo de cama útil | **Implementado** | `src/core/bed.js` | Regla centralizada para margen/purga |
+| Validación de piezas | **Implementado** | `src/core/fabrication-validation.js` | Dimensiones inválidas e IDs duplicados producen rechazos explícitos |
+| Acomodado automático | **Implementado** | `src/core/pack.js` | Motor puro con múltiples camas |
+| Rotación 90° durante packing | **Implementado** | `src/core/pack.js` | Prueba ambas orientaciones cuando corresponde |
+| Rechazo de piezas no acomodables | **Implementado** | `src/core/fabrication-plan.js` | No se pierden piezas silenciosamente; quedan con motivo |
+| Plan de fabricación serializable | **Implementado** | `src/core/fabrication-plan.js` | Incluye camas, colocaciones, rechazos y resumen |
+| Integración del plan con proyecto | **Implementado** | `src/core/fabrication-project.js` | Colocaciones y rechazos quedan persistidos en `fabrication` |
+| Recuperación de fabricación | **Implementado** | `src/core/fabrication-recovery.js` | Reconstruye camas, piezas, colocadas/rechazadas y selección |
+| Persistencia del Taller | **Implementado** | `src/core/taller-fabrication-persistence.js` | Planificación del Taller se guarda y puede recuperarse |
+| Eventos Taller ↔ Fabricación | **Implementado** | `src/core/taller-fabrication-events.js` | Contrato explícito de request/result |
+| Exportación STL | **Implementado** | `src/app.js` → `exportObjects()` / `exportBed()` | STL por proyecto, cama y pieza |
+| CSG con `three-bvh-csg` | **Pendiente** | No hay ruta ejecutable verificada en el estado auditado | No marcar como implementado hasta existir integración real y tests |
+| Optimización avanzada de cortes | **Pendiente** | El core actual usa packing determinista, no optimización global | Etapa posterior |
+| Encastres / uniones | **Pendiente** | Sin motor de joints | Etapa posterior |
 
 ## Flujo de proyecto
 
@@ -29,7 +33,7 @@
 | Proyectos persistentes | **Implementado** | `src/project/project-storage.js` |
 | Carga de proyecto por URL | **Implementado** | `src/app.js` → `loadProjectFromUrl()` |
 | Autosave del Taller | **Implementado** | `src/project/taller-autosave.js` + integración del entrypoint |
-| Recuperación de sesión | **Implementado parcialmente** | Persistencia y carga existen; falta QA automatizado de cierre/reapertura |
+| Recuperación de sesión | **Implementado** | Persistencia, carga y recuperación de fabricación; existe prueba de roundtrip |
 | Versionado/migración de sesión | **Implementado** | `src/project/project-state.js` |
 
 ## Páginas
@@ -40,25 +44,17 @@
 | Crear con IA | **Implementado parcialmente** | `crear-ia.html` | Generación local/reglas + exportación; no equivale a un modelo generativo 3D general |
 | Importar modelo | **Implementado** | `importar-modelo.html` | Loaders existentes y handoff al proyecto/taller |
 | SVG → 3D | **Implementado** | `svg-3d.html` | Conversión local + exportación/handoff |
-| Buscar modelos | **Implementado parcialmente** | `buscar-modelos.html` | Catálogo externo vía iframe; no existe todavía capa propia de proveedores/importación |
-| Taller 3D | **Implementado** | `app.html` + módulos del workspace | Núcleo actual de fabricación y exportación |
+| Buscar modelos | **Implementado parcialmente** | `buscar-modelos.html` | Catálogo externo vía iframe; todavía sin capa propia completa de proveedores/importación |
+| Taller 3D | **Implementado** | `app.html` + módulos del workspace | Núcleo actual de fabricación, persistencia y exportación |
 
-## Riesgos detectados en esta auditoría
+## Límites conocidos
 
-1. **README desactualizado respecto del código:** describe `splitMeshByX()` y `three-bvh-csg`, mientras que el `src/app.js` auditado usa `polygon-clipping` para dividir el texto en 2D antes de extruirlo.
-2. **Packing sin rotación real:** `packNormalPieces()` calcula ancho/alto y acomoda por filas, pero no prueba una orientación de 90°.
-3. **Keepout de purga no está modelado como región geométrica:** `bed()` descuenta ancho, pero el packing recibe únicamente `b.x/b.y`. Esto dificulta garantizar el comportamiento ante reservas no rectangulares o cambios futuros.
-4. **Piezas sobredimensionadas se pueden descartar silenciosamente:** `packNormalPieces()` hace `continue` cuando una pieza excede el área útil; el usuario debería recibir un resultado explícito de “no acomodable”.
-5. **Los fragmentos de un carácter dividido se convierten en grupos independientes:** esto simplifica la presentación actual, pero todavía no es un algoritmo profesional de multi-pieza/multi-cama.
-6. **`bevel` existe en UI/estado pero la ruta visible de `extrudePolygon()` fuerza `bevelEnabled:false`:** debe clasificarse como visual/configuración no aplicada hasta corregirlo o retirarlo.
-7. **`saveProject()` de `src/app.js` descarga JSON:** la persistencia de proyectos vive en `project-storage.js`; ambas funciones deben mantenerse conceptualmente separadas.
+1. El packing actual es determinista y funcional, pero todavía no es un optimizador global de desperdicio.
+2. La división de geometría avanzada y el CSG general siguen pendientes.
+3. Los encastres/uniones configurables siguen pendientes.
+4. `bevel` debe seguir considerándose una configuración visual hasta que la ruta geométrica visible lo aplique de forma verificable.
+5. La QA de navegador y las pruebas de exportación geométrica profunda son el siguiente escalón de calidad.
 
 ## Próxima acción recomendada
 
-Antes de agregar CSG, encastres o nuevos proveedores, extraer tres primitivas puras y testeables:
-
-- `computeUsefulArea(bed)`
-- `packPieces(pieces, area, {rotation:true})`
-- `validatePlacement(piece, area)`
-
-Después se puede reemplazar gradualmente la lógica equivalente de `src/app.js` sin tocar la experiencia visual del Taller.
+Con el núcleo de fabricación ya separado, testeable, persistente y recuperable, la siguiente fase debe enfocarse en **geometría avanzada y QA**, no en seguir duplicando lógica dentro del Taller.
