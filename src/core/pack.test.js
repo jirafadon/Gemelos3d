@@ -23,14 +23,14 @@ test('una pieza que no entra ni siquiera rotada queda rechazada', () => {
 });
 
 test('usa rotación 90 cuando es la única orientación posible', () => {
-  const result = packPieces([{ id: 'A', width: 90, depth: 250 }], {
-    width: 270, depth: 270, height: 250, margin: 5,
+  const result = packPieces([{ id: 'A', width: 120, depth: 100 }], {
+    width: 120, depth: 270, height: 250, margin: 5,
     purge: { mode: 'none' }
   });
   assert.equal(result.rejected.length, 0);
   assert.equal(result.beds[0].items[0].rotation, 90);
-  assert.equal(result.beds[0].items[0].width, 250);
-  assert.equal(result.beds[0].items[0].depth, 90);
+  assert.equal(result.beds[0].items[0].width, 100);
+  assert.equal(result.beds[0].items[0].depth, 120);
 });
 
 test('no coloca una pieza dentro de la reserva de purga', () => {
