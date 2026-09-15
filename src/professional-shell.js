@@ -27,8 +27,13 @@
     if (el) el.textContent = text;
   };
   const save = (quiet = false) => {
-    localStorage.setItem(KEY, JSON.stringify(readSession()));
-    setStatus(quiet ? 'Guardado local automático' : 'Sesión guardada en este dispositivo');
+    try {
+      localStorage.setItem(KEY, JSON.stringify(readSession()));
+      setStatus(quiet ? 'Guardado local automático' : 'Sesión guardada en este dispositivo');
+    } catch (error) {
+      console.warn('No se pudo guardar la sesión local.', error);
+      setStatus('No se pudo guardar la sesión local');
+    }
   };
   const restore = () => {
     try {
@@ -75,10 +80,22 @@
   });
 
   let saveTimer;
-  ids.forEach(id => document.getElementById(id)?.addEventListener('input', () => {
+  const scheduleSave = () => {
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => save(true), 900);
-  }));
+  };
+  ids.forEach(id => {
+    document.getElementById(id)?.addEventListener('input', scheduleSave);
+    document.getElementById(id)?.addEventListener('change', scheduleSave);
+  });
+  const flushSave = () => {
+    clearTimeout(saveTimer);
+    save(true);
+  };
+  window.addEventListener('pagehide', flushSave);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') flushSave();
+  });
   document.addEventListener('keydown', event => {
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
       event.preventDefault();
