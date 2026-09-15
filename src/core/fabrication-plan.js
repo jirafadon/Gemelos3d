@@ -17,7 +17,7 @@ export function createFabricationPlan(items = [], bedInput = {}, options = {}) {
   }));
 
   const result = packPieces(normalized, bed, options);
-  const placedIds = new Set(result.beds.flatMap(b => b.items.map(item => item.id)));
+  const placed = result.beds.flatMap(b => b.items);
 
   return {
     schemaVersion: 1,
@@ -45,10 +45,10 @@ export function createFabricationPlan(items = [], bedInput = {}, options = {}) {
     })),
     summary: {
       requested: normalized.length,
-      placed: placedIds.size,
+      placed: placed.length,
       rejected: result.rejected.length,
       beds: result.beds.length,
-      complete: placedIds.size + result.rejected.length === normalized.length
+      complete: placed.length + result.rejected.length === normalized.length
     }
   };
 }
