@@ -1,3 +1,5 @@
+import './ui-state.js';
+
 const main = document.querySelector('main.page');
 const flow = main?.querySelector('.flow');
 if (!main || !flow) return;
