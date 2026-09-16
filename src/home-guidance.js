@@ -12,3 +12,4 @@ style.textContent = `.home-guidance{margin-top:18px}.home-guidance-grid{display:
 document.head.appendChild(style);
 
 import './home-tips.js';
+import './home-workflow.js';
