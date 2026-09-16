@@ -1,4 +1,5 @@
 import { loadProjects, setActiveProject } from './project/project-storage.js';
+import './accessibility.js';
 
 const main = document.querySelector('main.page');
 const flow = main?.querySelector('.flow');
@@ -22,7 +23,7 @@ section.innerHTML = `<div class="section-title"><h3>Proyectos recientes</h3><spa
 const grid = section.querySelector('.home-project-grid');
 
 if (!projects.length) {
-  grid.innerHTML = `<a class="home-empty" href="./crear-ia.html"><span class="home-empty-icon">＋</span><div><strong>Creá tu primer proyecto</strong><small>Empezá con IA, importá un modelo o abrí el taller.</small></div><b>→</b></a>`;
+  grid.innerHTML = `<a class="home-empty" href="./crear-ia.html"><span class="home-empty-icon">＋</span><div><strong>Creá tu primer proyecto</strong><small>Empezá con IA, importá un modelo o abrí el taller.</small></div><b aria-hidden="true">→</b></a>`;
 } else {
   projects.slice(0, 3).forEach(project => {
     const name = project.name || project.design?.text || 'Proyecto sin nombre';
@@ -33,7 +34,8 @@ if (!projects.length) {
     const card = document.createElement('a');
     card.className = 'home-project-card';
     card.href = `./proyecto.html?id=${encodeURIComponent(project.id)}`;
-    card.innerHTML = `<span class="home-project-icon">◇</span><div class="home-project-main"><strong></strong><small>${date} · ${sourceLabel(project.source)} · ${model}</small><div class="home-project-progress"><i style="width:${progress.percent}%"></i></div><em>En ${stepLabel(progress.current)} · ${progress.percent}%</em></div><b>→</b>`;
+    card.setAttribute('aria-label', `Abrir proyecto ${name}`);
+    card.innerHTML = `<span class="home-project-icon" aria-hidden="true">◇</span><div class="home-project-main"><strong></strong><small>${date} · ${sourceLabel(project.source)} · ${model}</small><div class="home-project-progress" role="progressbar" aria-label="Progreso del proyecto" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progress.percent}"><i style="width:${progress.percent}%"></i></div><em>En ${stepLabel(progress.current)} · ${progress.percent}%</em></div><b aria-hidden="true">→</b>`;
     card.querySelector('strong').textContent = name;
     card.addEventListener('click', () => setActiveProject(project.id));
     grid.appendChild(card);
@@ -58,7 +60,7 @@ section.after(activity);
 
 const quick = document.createElement('section');
 quick.className = 'home-quick';
-quick.innerHTML = `<div class="section-title"><h3>Acciones rápidas</h3><span>Elegí cómo continuar</span></div><div class="home-quick-grid"><a href="./crear-ia.html"><b>✦</b><strong>Generar una pieza</strong><small>Describí una idea y empezá desde cero.</small><span>Empezar →</span></a><a href="./importar-modelo.html"><b>↥</b><strong>Traer un modelo</strong><small>Subí un STL, OBJ, GLB o GLTF.</small><span>Importar →</span></a><a href="./svg-3d.html"><b>⌁</b><strong>Convertir un SVG</strong><small>Transformá un vector en volumen 3D.</small><span>Convertir →</span></a><a href="./buscar-modelos.html"><b>⌕</b><strong>Encontrar una base</strong><small>Buscá modelos y repuestos gratuitos.</small><span>Explorar →</span></a></div>`;
+quick.innerHTML = `<div class="section-title"><h3>Acciones rápidas</h3><span>Elegí cómo continuar</span></div><div class="home-quick-grid"><a href="./crear-ia.html"><b aria-hidden="true">✦</b><strong>Generar una pieza</strong><small>Describí una idea y empezá desde cero.</small><span>Empezar →</span></a><a href="./importar-modelo.html"><b aria-hidden="true">↥</b><strong>Traer un modelo</strong><small>Subí un STL, OBJ, GLB o GLTF.</small><span>Importar →</span></a><a href="./svg-3d.html"><b aria-hidden="true">⌁</b><strong>Convertir un SVG</strong><small>Transformá un vector en volumen 3D.</small><span>Convertir →</span></a><a href="./buscar-modelos.html"><b aria-hidden="true">⌕</b><strong>Encontrar una base</strong><small>Buscá modelos y repuestos gratuitos.</small><span>Explorar →</span></a></div>`;
 activity.after(quick);
 
 const style = document.createElement('style');
