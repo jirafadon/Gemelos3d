@@ -28,6 +28,12 @@ export function captureTallerConfiguration(){
   };
 }
 
+function persistConfiguration(){
+  const project=loadProject();
+  if(!project?.id)return null;
+  return updateStoredProject(project.id,{configuration:captureTallerConfiguration(),workflow:{current:'taller'}});
+}
+
 export function installTallerAutosave({delay=450}={}){
   let timer;
   let disposed=false;
@@ -38,11 +44,8 @@ export function installTallerAutosave({delay=450}={}){
     const configuration=captureTallerConfiguration();
     const snapshot=JSON.stringify(configuration);
     if(snapshot===lastSnapshot)return;
-    const project=loadProject();
-    if(!project?.id)return;
     try{
-      updateStoredProject(project.id,{configuration,workflow:{current:'taller'}});
-      lastSnapshot=snapshot;
+      if(persistConfiguration())lastSnapshot=snapshot;
     }catch{
       // El autosave nunca debe bloquear el Taller si el almacenamiento no está disponible.
     }
@@ -54,6 +57,23 @@ export function installTallerAutosave({delay=450}={}){
   FIELD_IDS.forEach(id=>read(id)?.addEventListener('change',schedule));
   window.addEventListener('pagehide',flush);
   document.addEventListener('visibilitychange',onVisibilityChange);
+
+  const saveButton=read('project');
+  const onSaveClick=(event)=>{
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    try{
+      const saved=persistConfiguration();
+      const status=read('status');
+      if(status)status.innerHTML='<span class="ok">✓ Proyecto guardado en Mis proyectos.</span>';
+      if(saved)lastSnapshot=JSON.stringify(captureTallerConfiguration());
+    }catch{
+      const status=read('status');
+      if(status)status.innerHTML='<span class="bad">✕ No se pudo guardar el proyecto local.</span>';
+    }
+  };
+  saveButton?.addEventListener('click',onSaveClick,{capture:true});
+
   return ()=>{
     disposed=true;
     clearTimeout(timer);
@@ -61,6 +81,7 @@ export function installTallerAutosave({delay=450}={}){
     FIELD_IDS.forEach(id=>read(id)?.removeEventListener('change',schedule));
     window.removeEventListener('pagehide',flush);
     document.removeEventListener('visibilitychange',onVisibilityChange);
+    saveButton?.removeEventListener('click',onSaveClick,{capture:true});
   };
 }
 
