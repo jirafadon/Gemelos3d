@@ -54,6 +54,8 @@ function normalize(project){
   const order=['crear','configurar','revisar','taller'];
   const index=order.indexOf(project.workflow.current);
   order.forEach((name,i)=>{project.workflow.steps[name]=i<index?'complete':i===index?'active':'pending'});
+  project.createdAt=project.meta.createdAt;
+  project.updatedAt=project.meta.updatedAt;
 }
 
 export function updateProject(project,patch={}){
@@ -61,6 +63,7 @@ export function updateProject(project,patch={}){
   merge(next,patch);
   normalize(next);
   next.meta.updatedAt=new Date().toISOString();
+  next.updatedAt=next.meta.updatedAt;
   return next;
 }
 
