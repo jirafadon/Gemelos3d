@@ -4,6 +4,9 @@ if(!main)return;
 const style=document.createElement('style');
 style.textContent=`
 :where(a,button,input,select,textarea,[tabindex]):focus-visible{outline:2px solid var(--accent,#8bf0c5);outline-offset:3px;box-shadow:0 0 0 2px #8bf0c522}
+:where(a,button,input,select,textarea){scroll-margin-top:88px}
+:where(button:disabled,[aria-disabled="true"]){cursor:not-allowed;opacity:.58}
+button{font:inherit}
 .skip-link{position:fixed;left:12px;top:12px;z-index:1000;transform:translateY(-160%);padding:10px 13px;border-radius:9px;background:#f5f7fa;color:#0b0d11;font-size:11px;font-weight:800;text-decoration:none;box-shadow:0 8px 24px #0006}
 .skip-link:focus{transform:translateY(0)}
 [aria-busy="true"]{cursor:progress}
