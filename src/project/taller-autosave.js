@@ -28,6 +28,22 @@ export function captureTallerConfiguration(){
   };
 }
 
+function restoreConfiguration(){
+  const project=loadProject();
+  const c=project?.configuration;
+  if(!c)return;
+  const set=(id,v)=>{const el=read(id);if(!el||v===null||v===undefined)return;if(el.type==='checkbox')el.checked=Boolean(v);else el.value=String(v)};
+  set('printer',c.printer);set('margin',c.margin);set('spacing',c.spacing);set('text',c.text);
+  set('height',c.height);set('widthScale',c.width);set('depth',c.depth);
+  set('fontStyle',c.font);set('curveSegments',c.curveSegments);set('bevel',c.bevel);
+  set('bevelSize',c.bevelSize);set('bevelSegments',c.bevelSegments);
+  set('purgeMode',c.purge?.mode);set('purgeX',c.purge?.width);set('purgeY',c.purge?.depth);
+  if(c.printer==='custom'){set('cx',c.bed?.width);set('cy',c.bed?.depth);set('cz',c.bed?.height)}
+  const custom=read('customFields');if(custom)custom.hidden=c.printer!=='custom';
+  const purge=read('purgeFields');if(purge)purge.hidden=c.purge?.mode==='none';
+  const bevel=read('bevelFields');if(bevel)bevel.hidden=!c.bevel;
+}
+
 function persistConfiguration(){
   const project=loadProject();
   if(!project?.id)return null;
@@ -37,6 +53,7 @@ function persistConfiguration(){
 export function installTallerAutosave({delay=450}={}){
   let timer;
   let disposed=false;
+  restoreConfiguration();
   const initialConfiguration=captureTallerConfiguration();
   let lastSnapshot=JSON.stringify(initialConfiguration);
   const save=()=>{
