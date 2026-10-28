@@ -211,7 +211,8 @@ async function renderGenerator(id) {
     viewer.setView(b.dataset.view);
   });
 
-  const fileBase = () => `${gen.id}_${String(values.text || 'modelo').split('\n')[0]}`.replace(/[^\w\-áéíóúñÁÉÍÓÚÑ]+/g, '_').slice(0, 60);
+  const label = () => String((gen.fileName ? gen.fileName(values) : values.text) || 'modelo').split('\n')[0].trim();
+  const fileBase = () => `${gen.id}_${label()}`.replace(/[^\w\-áéíóúñÁÉÍÓÚÑ]+/g, '_').slice(0, 60);
   const guard = fn => () => { if (!parts.length) return; try { fn(); } catch (err) { status(`⚠ ${esc(err.message)}`, 'error'); } };
   $('x3mf').addEventListener('click', guard(() => download(to3MF(parts, { name: fileBase() }), `${fileBase()}.3mf`, 'model/3mf')));
   $('xstl').addEventListener('click', guard(() => download(mergedSTL(parts), `${fileBase()}.stl`, 'model/stl')));
@@ -219,7 +220,7 @@ async function renderGenerator(id) {
   $('xcalc').addEventListener('click', guard(() => {
     const e = estimate(parts), s = modelStats(parts);
     sendToCalculator({
-      name: `${gen.title}: ${String(values.text || '').split('\n')[0]}`.trim(),
+      name: `${gen.title}: ${label()}`.trim(),
       grams: e.grams, minutes: e.minutes, thumb: viewer.snapshot(),
       meta: `Gemelos 3D Lab · ${s.size.map(v => v.toFixed(0)).join(' × ')} mm · ${e.colors} color(es)`,
     });

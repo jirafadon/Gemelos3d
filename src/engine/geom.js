@@ -66,6 +66,29 @@ export function pathToPolygons(commands, tolerance = 0.05) {
 }
 
 /**
+ * Comandos de dibujo de una línea de texto.
+ * Usa el motor de opentype; si la fuente tiene reglas que opentype no soporta,
+ * arma la línea letra por letra (sin ligaduras, con interletrado).
+ */
+function layoutLine(font, line, y, size, spacing) {
+  try {
+    return font.getPath(line, 0, y, size, { kerning: true, letterSpacing: spacing }).commands;
+  } catch {
+    const k = size / font.unitsPerEm;
+    const cmds = [];
+    let x = 0, prev = null;
+    for (const ch of Array.from(line)) {
+      const glyph = font.charToGlyph(ch);
+      if (prev) { try { x += font.getKerningValue(prev, glyph) * k; } catch { /* sin kerning */ } }
+      cmds.push(...glyph.getPath(x, y, size).commands);
+      x += (glyph.advanceWidth || 0) * k + spacing * size;
+      prev = glyph;
+    }
+    return cmds;
+  }
+}
+
+/**
  * Texto → CrossSection.
  * @param font   fuente opentype ya cargada
  * @param text   admite varias líneas separadas por \n
@@ -84,8 +107,7 @@ export function textShape(font, text, opts = {}) {
   const widths = [];
   lines.forEach((line, i) => {
     if (!line.trim()) { widths.push(0); return; }
-    const path = font.getPath(line, 0, i * lineStep, size, { kerning: true, letterSpacing: spacing });
-    const polys = pathToPolygons(path.commands, 0.08);
+    const polys = pathToPolygons(layoutLine(font, line, i * lineStep, size, spacing), 0.08);
     if (!polys.length) { widths.push(0); return; }
     const cs = track(new CrossSection(polys, 'NonZero'));
     const b = cs.bounds();

@@ -51,7 +51,7 @@ Regla: cada generador es independiente. Arreglar o agregar uno nunca debe tocar 
 | Fase | Contenido |
 |---|---|
 | 0 | Motor, catálogo, visor, exportación, calculadora ✅ |
-| 1 | Texto y capas: llaveros, placas de mascota, letreros, @usuario, toppers, estacas, marcapáginas, adornos |
+| 1 | Texto y capas: llaveros, placas de mascota, colgantes, letreros, @usuario, placas con base, toppers, estacas, adornos ✅ (falta marcapáginas → fase 2, usa imagen) |
 | 2 | QR e imagen: placas QR (Mercado Pago, WiFi, redes, Google), imagen→silueta, sellos, cortadores, stencils, colorear, posavasos |
 | 3 | Paramétricos sólidos: cajas, Gridfinity, gabinetes, adaptadores, soportes, ganchos, repuestos, bottons |
 | 4 | Superficies: litofanía, bowls, vasos y lámparas en espiral, letras grandes, string art, rompecabezas, texturas |
