@@ -142,3 +142,29 @@ export const APPS = [
   { id: 'calculadora', title: 'Calculadora de presupuestos', desc: 'Arrastrá STL, 3MF o G-code y te arma el precio: material, luz, desgaste, extras y comisión.', href: 'calculadora.html' },
   { id: 'taller', title: 'Taller 3D', desc: 'Editor libre estilo Tinkercad: sumá formas, texto, imágenes o tu STL, marcá huecos y exportá.', route: '#/taller' },
 ];
+
+/**
+ * Programas: agrupan generadores parecidos en una sola entrada de la portada.
+ * Adentro de cada programa se elige qué hacer (las variantes).
+ * `items` son ids de GENERATORS; los que todavía no están listos se muestran como "próximamente".
+ */
+export const FAMILIES = [
+  { id: 'llaveros', title: 'Llaveros', desc: 'Nombre con contorno, placa, nombre y apellido o con logo.', cover: 'llavero-nombre', cat: 'nombres',
+    items: ['llavero-nombre', 'llavero-rectangular', 'llavero-nombre-completo', 'llavero-logo', 'llavero-forma', 'llavero-espejo', 'llavero-nfc', 'abrelatas'] },
+  { id: 'qr', title: 'QR y comercios', desc: 'Placas de cobro, WiFi, redes, reseñas, listas de QR y tarjetas.', cover: 'placa-qr-mp', cat: 'qr',
+    items: ['placa-qr-mp', 'placa-wifi', 'placa-redes', 'placa-google', 'placa-qr', 'lista-qr', 'tarjeta-presentacion', 'qr-3d', 'exhibidor-salon'] },
+  { id: 'letreros', title: 'Letreros', desc: 'Palabras superpuestas, @usuario, letras separadas y palabra con corazón.', cover: 'letrero-palabras', cat: 'carteles',
+    items: ['letrero-palabras', 'letrero-social', 'letras-separadas', 'palabra-corazon', 'letrero-imagen', 'letrero-multipart', 'texto-guia'] },
+  { id: 'placas', title: 'Placas y cuadros', desc: 'Placa profesional, con rayas o cuadro con marco, con base para pararla.', cover: 'cuadro-marco', cat: 'carteles',
+    items: ['placa-profesional', 'placa-rayas', 'cuadro-marco', 'trofeo'] },
+  { id: 'fiestas', title: 'Fiestas y regalos', desc: 'Toppers de torta, estacas, adornos navideños y colgantes familiares.', cover: 'topper-torta', cat: 'deco',
+    items: ['topper-torta', 'estacas', 'adorno-navidad', 'colgante-familia', 'rosa-nombre', 'marcapaginas', 'adorno-galleta'] },
+  { id: 'mascotas', title: 'Mascotas', desc: 'Placas con nombre y teléfono: hueso, pez, óvalo, corazón y más.', cover: 'placa-mascota', cat: 'nombres',
+    items: ['placa-mascota'] },
+  { id: 'cocina', title: 'Cocina y repostería', desc: 'Cortadores de galletas y sellos desde imagen o texto.', cover: 'cortador-galletas', cat: 'cocina',
+    items: ['cortador-galletas', 'sello-imagen', 'eyector', 'sello-letras', 'sello-eva', 'stencil', 'soporte-torta', 'cortador-rectangulos', 'rodillo-textura'] },
+  { id: 'imagen', title: 'Imagen a 3D', desc: 'Tu logo, dibujo o silueta convertido en pieza imprimible.', cover: 'dibujo-stl', cat: 'imagen',
+    items: ['dibujo-stl', 'line-art', 'posavasos-imagen', 'colorear', 'imagen-multipartes', 'imagen-resina', 'litofania', 'rompecabezas'] },
+];
+
+export const familyOf = id => FAMILIES.find(f => f.items.includes(id));

@@ -1,5 +1,5 @@
 import './styles.css';
-import { CATEGORIES, GENERATORS, APPS, findGenerator } from './catalog.js';
+import { CATEGORIES, GENERATORS, APPS, FAMILIES, findGenerator, familyOf } from './catalog.js';
 import { renderTaller, loadScene, saveScene } from './taller/taller.js';
 import { makeObject, solidToMeshData, groupObjects } from './taller/objects.js';
 import { icon } from './ui/icons.js';
@@ -25,8 +25,13 @@ function route() {
   if (typeof cleanup === 'function') cleanup();
   cleanup = null;
   const m = location.hash.match(/^#\/g\/([\w-]+)/);
+  const fa = location.hash.match(/^#\/app\/([\w-]+)(?:\/([\w-]+))?/);
   window.scrollTo(0, 0);
-  if (m) renderGenerator(m[1]);
+  if (fa) {
+    const fam = FAMILIES.find(f => f.id === fa[1]);
+    if (!fam) { location.hash = '#/'; return; }
+    renderGenerator(fa[2] || fam.items.find(id => findGenerator(id)?.load), fam);
+  } else if (m) renderGenerator(m[1], familyOf(m[1]));
   else if (location.hash.startsWith('#/taller')) {
     const token = Symbol();
     cleanup = token;
@@ -38,7 +43,7 @@ window.addEventListener('hashchange', route);
 function header() {
   return `<header class="top">
     <a class="brand" href="#/"><img class="logo" src="${import.meta.env.BASE_URL}brand/logo-mark.jpg" alt="Gemelos 3D" width="46" height="46"><span>Gemelos 3D <b>Lab</b></span></a>
-    <nav><a href="#/">Generadores</a><a href="#/taller">Taller 3D</a><a href="${import.meta.env.BASE_URL}calculadora.html" target="_blank">${icon('calc')} Calculadora</a></nav>
+    <nav><a href="#/">Inicio</a><a href="#/taller">Taller 3D</a><a href="${import.meta.env.BASE_URL}calculadora.html" target="_blank">${icon('calc')} Calculadora</a></nav>
   </header>`;
 }
 
@@ -48,14 +53,15 @@ const norm = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '
 
 function renderCatalog() {
   const saved = store.get('g3d_lab_filters') || {};
-  const state = { q: saved.q || '', cat: saved.cat || 'all', soon: false };
-  const ready = GENERATORS.filter(isReady);
+  const state = { q: saved.q || '', soon: false };
   const base = import.meta.env.BASE_URL;
+  const readyIn = f => f.items.filter(id => isReady(findGenerator(id) || {}));
+  const inFamily = new Set(FAMILIES.flatMap(f => f.items));
   app.innerHTML = `${header()}
   <main class="catalog">
     <section class="hero">
       <h1>Gemelos 3D Lab</h1>
-      <p>Apps y generadores para diseñar, presupuestar e imprimir en la U1.</p>
+      <p>Apps y programas para diseñar, presupuestar e imprimir en la U1.</p>
     </section>
     <section class="apps">
       ${APPS.map(a => `<a class="app-card" href="${a.href ? base + a.href : a.route}"${a.href ? ' target="_blank" rel="noopener"' : ''}>
@@ -64,57 +70,67 @@ function renderCatalog() {
       </a>`).join('')}
     </section>
     <div class="filters">
-      <label class="search">${icon('search')}<input id="q" placeholder="Buscar: llavero, QR, cortador…" value="${esc(state.q)}"></label>
+      <label class="search">${icon('search')}<input id="q" placeholder="¿Qué querés hacer? Llavero, WiFi, topper, cortador…" value="${esc(state.q)}"></label>
     </div>
-    <div class="chips" id="chips"></div>
     <div id="grid"></div>
   </main>`;
-
-  const chips = document.getElementById('chips');
   const grid = document.getElementById('grid');
-  const count = id => ready.filter(g => id === 'all' || g.cat === id).length;
-  chips.innerHTML = [{ id: 'all', name: 'Todos', icon: null }, ...CATEGORIES.filter(c => count(c.id) > 0)]
-    .map(c => `<button data-cat="${c.id}" class="${state.cat === c.id ? 'on' : ''}">${c.icon ? icon(c.icon) : ''}${esc(c.name)} <small>${count(c.id)}</small></button>`).join('');
-  if (!chips.querySelector('.on')) { state.cat = 'all'; chips.querySelector('[data-cat=all]').classList.add('on'); }
 
-  const card = (g, c) => `<a class="card ${isReady(g) ? 'ready' : 'soon'}" href="#/g/${g.id}">
+  const famCard = f => {
+    const n = readyIn(f).length;
+    return `<a class="card ready fam" href="#/app/${f.id}">
+      <div class="tile c-${f.cat}"><img src="${base}thumbs/${f.cover}.jpg" alt="" loading="lazy" onerror="this.remove()"></div>
+      <div class="card-body">
+        <div class="card-top"><h3>${esc(f.title)}</h3><span class="badge">${n} ${n === 1 ? 'opción' : 'opciones'}</span></div>
+        <p>${esc(f.desc)}</p>
+      </div>
+    </a>`;
+  };
+  const genCard = g => {
+    const f = familyOf(g.id), c = CATEGORIES.find(x => x.id === g.cat);
+    return `<a class="card ${isReady(g) ? 'ready' : 'soon'}" href="${f ? `#/app/${f.id}/${g.id}` : `#/g/${g.id}`}">
       <div class="tile c-${c.id}">${isReady(g) ? `<img src="${base}thumbs/${g.id}.jpg" alt="" loading="lazy" onerror="this.remove()">` : ''}${icon(c.icon, 'big')}</div>
       <div class="card-body">
-        <div class="card-top"><h3>${esc(g.title)}</h3>${isReady(g) ? '' : `<span class="badge">Fase ${g.phase}</span>`}</div>
+        <div class="card-top"><h3>${esc(g.title)}</h3>${isReady(g) ? (f ? `<span class="badge">${esc(f.title)}</span>` : '') : `<span class="badge">Fase ${g.phase}</span>`}</div>
         <p>${esc(g.desc)}</p>
       </div>
     </a>`;
-
-  const draw = () => {
-    store.set('g3d_lab_filters', { q: state.q, cat: state.cat });
-    const q = norm(state.q.trim());
-    const match = g => (state.cat === 'all' || g.cat === state.cat) && (!q || norm(g.title + ' ' + g.desc).includes(q));
-    const list = GENERATORS.filter(g => match(g) && isReady(g));
-    const pending = GENERATORS.filter(g => match(g) && !isReady(g));
-    const section = (items, cats) => cats.map(c => `
-      <section class="cat">
-        ${state.cat === 'all' ? `<h2>${icon(c.icon)} ${esc(c.name)}</h2>` : ''}
-        <div class="cards">${items.filter(g => g.cat === c.id).map(g => card(g, c)).join('')}</div>
-      </section>`).join('');
-    const cats = CATEGORIES.filter(c => list.some(g => g.cat === c.id));
-    grid.innerHTML = (list.length ? section(list, cats) : '<p class="empty">No hay generadores listos con esa búsqueda.</p>') +
-      (pending.length ? `<div class="soon-toggle"><button id="soonBtn">${state.soon ? 'Ocultar' : 'Ver'} los que vienen (${pending.length})</button></div>` : '') +
-      (state.soon && pending.length ? `<div class="soon-list">${section(pending, CATEGORIES.filter(c => pending.some(g => g.cat === c.id)))}</div>` : '');
-    document.getElementById('soonBtn')?.addEventListener('click', () => { state.soon = !state.soon; draw(); });
   };
 
+  const draw = () => {
+    store.set('g3d_lab_filters', { q: state.q });
+    const q = norm(state.q.trim());
+    if (q) {
+      const hits = GENERATORS.filter(g => isReady(g) && norm(g.title + ' ' + g.desc).includes(q));
+      grid.innerHTML = hits.length ? `<section class="cat"><h2>Resultados</h2><div class="cards">${hits.map(genCard).join('')}</div></section>` : '<p class="empty">No encontramos eso todavía. Probá con otra palabra o armalo en el Taller 3D.</p>';
+      return;
+    }
+    const fams = FAMILIES.filter(f => readyIn(f).length);
+    const pending = GENERATORS.filter(g => !isReady(g) && !inFamily.has(g.id));
+    grid.innerHTML = `<section class="cat"><h2>Programas</h2><div class="cards">${fams.map(famCard).join('')}</div></section>` +
+      (pending.length ? `<div class="soon-toggle"><button id="soonBtn">${state.soon ? 'Ocultar' : 'Ver'} lo que viene (${pending.length})</button></div>` : '') +
+      (state.soon ? `<div class="soon-list">${CATEGORIES.filter(c => pending.some(g => g.cat === c.id)).map(c => `<section class="cat"><h2>${icon(c.icon)} ${esc(c.name)}</h2><div class="cards">${pending.filter(g => g.cat === c.id).map(genCard).join('')}</div></section>`).join('')}</div>` : '');
+    document.getElementById('soonBtn')?.addEventListener('click', () => { state.soon = !state.soon; draw(); });
+  };
   document.getElementById('q').addEventListener('input', e => { state.q = e.target.value; draw(); });
-  chips.addEventListener('click', e => {
-    const b = e.target.closest('button'); if (!b) return;
-    state.cat = b.dataset.cat;
-    chips.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
-    draw();
-  });
   draw();
 }
 
 // ---------------- Generador ----------------
-async function renderGenerator(id) {
+/** Selector de variantes dentro de un programa (ej.: QR → WiFi, Mercado Pago, redes…). */
+function familyPicker(fam, current) {
+  const base = import.meta.env.BASE_URL;
+  const items = fam.items.map(findGenerator).filter(Boolean);
+  const ready = items.filter(isReady), soon = items.filter(g => !isReady(g));
+  return `<h1>${esc(fam.title)}</h1>
+    <p class="pick-label">¿Qué querés hacer?</p>
+    <div class="picker">${ready.map(g => `<a href="#/app/${fam.id}/${g.id}" class="${g.id === current ? 'on' : ''}" title="${esc(g.desc)}">
+      <img src="${base}thumbs/${g.id}.jpg" alt="" loading="lazy"><span>${esc(g.title)}</span></a>`).join('')}
+    ${soon.map(g => `<span class="soon" title="Próximamente (fase ${g.phase})">${esc(g.title)}<small>pronto</small></span>`).join('')}</div>
+    ${ready.length > 1 ? `<h2 class="pick-title">${esc(findGenerator(current).title)}</h2>` : ''}`;
+}
+
+async function renderGenerator(id, fam = null) {
   const entry = findGenerator(id);
   if (!entry) { location.hash = '#/'; return; }
   const cat = CATEGORIES.find(c => c.id === entry.cat);
@@ -132,8 +148,8 @@ async function renderGenerator(id) {
   app.innerHTML = `${header()}
   <main class="gen">
     <aside class="gen-params">
-      <a class="back" href="#/">${icon('back')} Generadores</a>
-      <h1>${esc(entry.title)}</h1>
+      <a class="back" href="#/">${icon('back')} Inicio</a>
+      ${fam ? familyPicker(fam, id) : `<h1>${esc(entry.title)}</h1>`}
       <p class="muted">${esc(entry.desc)}</p>
       <div id="params"><div class="loading"><span class="spin"></span> Cargando…</div></div>
       <button class="link" id="reset">Volver a los valores de fábrica</button>
