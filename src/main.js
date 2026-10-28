@@ -36,14 +36,15 @@ function header() {
 // ---------------- Catálogo ----------------
 function renderCatalog() {
   const state = { q: '', cat: 'all', onlyReady: false, ...(store.get('g3d_lab_filters') || {}) };
-  const ready = GENERATORS.filter(g => g.load).length;
+  const ready = GENERATORS.filter(g => g.load || g.href).length;
   app.innerHTML = `${header()}
   <main class="catalog">
     <section class="hero">
       <h1>Generadores para imprimir</h1>
       <p>Elegí un producto, personalizalo y bajá el 3MF con los colores separados, listo para la U1.</p>
       <div class="progress"><div style="width:${(ready / GENERATORS.length * 100).toFixed(1)}%"></div></div>
-      <small>${ready} de ${GENERATORS.length} generadores listos · el resto se va sumando por fases</small>
+      <small>${ready} de ${GENERATORS.length} listos · el resto se va sumando por fases</small>
+      <a class="calc-cta" href="${import.meta.env.BASE_URL}calculadora.html" target="_blank">${icon('calc')}<span><b>Calculadora de presupuestos</b><small>Arrastrá STL, 3MF o G-code y sacá el precio</small></span></a>
     </section>
     <div class="filters">
       <label class="search">${icon('search')}<input id="q" placeholder="Buscar: llavero, QR, cortador…" value="${esc(state.q)}"></label>
@@ -64,19 +65,19 @@ function renderCatalog() {
     const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
     const list = GENERATORS.filter(g =>
       (state.cat === 'all' || g.cat === state.cat) &&
-      (!state.onlyReady || g.load) &&
+      (!state.onlyReady || g.load || g.href) &&
       (!q || norm(g.title + ' ' + g.desc).includes(q)));
     const cats = CATEGORIES.filter(c => list.some(g => g.cat === c.id));
     grid.innerHTML = cats.length ? cats.map(c => `
       <section class="cat">
         <h2>${icon(c.icon)} ${esc(c.name)}</h2>
-        <div class="cards">${list.filter(g => g.cat === c.id).sort((a, b) => (!!b.load - !!a.load) || a.phase - b.phase).map(g => card(g, c)).join('')}</div>
+        <div class="cards">${list.filter(g => g.cat === c.id).sort((a, b) => (!!(b.load || b.href) - !!(a.load || a.href)) || a.phase - b.phase).map(g => card(g, c)).join('')}</div>
       </section>`).join('') : '<p class="empty">No hay generadores con esa búsqueda.</p>';
   };
-  const card = (g, c) => `<a class="card ${g.load ? 'ready' : 'soon'}" href="#/g/${g.id}">
-      <div class="tile c-${c.id}">${g.load ? `<img src="${import.meta.env.BASE_URL}thumbs/${g.id}.jpg" alt="" loading="lazy" onerror="this.remove()">` : ''}${icon(c.icon, 'big')}</div>
+  const card = (g, c) => `<a class="card ${g.load || g.href ? 'ready' : 'soon'}" href="${g.href ? import.meta.env.BASE_URL + g.href : `#/g/${g.id}`}"${g.href ? ' target="_blank"' : ''}>
+      <div class="tile c-${c.id}">${g.load || g.href ? `<img src="${import.meta.env.BASE_URL}thumbs/${g.id}.jpg" alt="" loading="lazy" onerror="this.remove()">` : ''}${icon(c.icon, 'big')}</div>
       <div class="card-body">
-        <div class="card-top"><h3>${esc(g.title)}</h3><span class="badge">${g.load ? 'Listo' : `Fase ${g.phase}`}</span></div>
+        <div class="card-top"><h3>${esc(g.title)}</h3><span class="badge">${g.load || g.href ? 'Listo' : `Fase ${g.phase}`}</span></div>
         <p>${esc(g.desc)}</p>
       </div>
     </a>`;

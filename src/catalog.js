@@ -18,6 +18,8 @@ export const CATEGORIES = [
 ];
 
 const g = (id, title, desc, cat, phase, load) => ({ id, title, desc, cat, phase, load: load || null });
+/** Herramienta que vive en su propia página (no es un generador 3D). */
+const page = (id, title, desc, cat, href) => ({ id, title, desc, cat, phase: 0, load: null, href });
 
 export const GENERATORS = [
   // ---------- Nombres y llaveros ----------
@@ -128,6 +130,7 @@ export const GENERATORS = [
   g('neon-flex', 'Cartel de neón flex', 'Base con canal para neón flex desde logo o dibujo.', 'letras', 5),
 
   // ---------- Herramientas STL ----------
+  page('calculadora', 'Calculadora de presupuestos', 'Arrastrá STL, 3MF o G-code y te arma el precio: material, luz, desgaste, extras y comisión.', 'herramientas', 'calculadora.html'),
   g('separar-color', 'Separar STL por color', 'Divide un modelo en piezas por color con encastres.', 'herramientas', 5),
   g('cortar-conectar', 'Cortá y conectá', 'Corta un STL y agrega encastres, bisagras o rótulas.', 'herramientas', 5),
   g('moldes-silicona', 'Moldes de silicona', 'Genera la caja del molde con llaves de registro a partir de tu pieza.', 'herramientas', 5),
