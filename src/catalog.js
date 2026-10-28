@@ -130,11 +130,15 @@ export const GENERATORS = [
   g('neon-flex', 'Cartel de neón flex', 'Base con canal para neón flex desde logo o dibujo.', 'letras', 5),
 
   // ---------- Herramientas STL ----------
-  page('foto-3d', 'Foto a modelo 3D (Berria Craft)', 'App de escritorio libre que reconstruye objetos en 3D con varias fotos o con IA desde una sola. Se abre aparte.', 'herramientas', 'https://demo.pencil-park.com/berriacraft/'),
-  page('calculadora', 'Calculadora de presupuestos', 'Arrastrá STL, 3MF o G-code y te arma el precio: material, luz, desgaste, extras y comisión.', 'herramientas', 'calculadora.html'),
   g('separar-color', 'Separar STL por color', 'Divide un modelo en piezas por color con encastres.', 'herramientas', 5),
   g('cortar-conectar', 'Cortá y conectá', 'Corta un STL y agrega encastres, bisagras o rótulas.', 'herramientas', 5),
   g('moldes-silicona', 'Moldes de silicona', 'Genera la caja del molde con llaves de registro a partir de tu pieza.', 'herramientas', 5),
 ];
 
 export const findGenerator = id => GENERATORS.find(x => x.id === id);
+
+/** Apps del Lab: herramientas completas que no son un generador (van primero). */
+export const APPS = [
+  { id: 'calculadora', title: 'Calculadora de presupuestos', desc: 'Arrastrá STL, 3MF o G-code y te arma el precio: material, luz, desgaste, extras y comisión.', href: 'calculadora.html' },
+  { id: 'taller', title: 'Taller 3D', desc: 'Editor libre estilo Tinkercad: sumá formas, texto, imágenes o tu STL, marcá huecos y exportá.', route: '#/taller' },
+];

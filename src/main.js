@@ -1,5 +1,6 @@
 import './styles.css';
-import { CATEGORIES, GENERATORS, findGenerator } from './catalog.js';
+import { CATEGORIES, GENERATORS, APPS, findGenerator } from './catalog.js';
+import { renderTaller } from './taller/taller.js';
 import { icon } from './ui/icons.js';
 import { renderParams, defaultValues } from './ui/params.js';
 import { initEngine, modelStats, loadFont, collect } from './engine/index.js';
@@ -20,36 +21,49 @@ const store = {
 let cleanup = null;
 
 function route() {
-  if (cleanup) { cleanup(); cleanup = null; }
+  if (typeof cleanup === 'function') cleanup();
+  cleanup = null;
   const m = location.hash.match(/^#\/g\/([\w-]+)/);
   window.scrollTo(0, 0);
-  if (m) renderGenerator(m[1]); else renderCatalog();
+  if (m) renderGenerator(m[1]);
+  else if (location.hash.startsWith('#/taller')) {
+    const token = Symbol();
+    cleanup = token;
+    renderTaller(app, header()).then(fn => { if (cleanup === token) cleanup = fn; else fn(); });
+  } else renderCatalog();
 }
 window.addEventListener('hashchange', route);
 
 function header() {
   return `<header class="top">
     <a class="brand" href="#/"><img class="logo" src="${import.meta.env.BASE_URL}brand/logo-mark.jpg" alt="Gemelos 3D" width="46" height="46"><span>Gemelos 3D <b>Lab</b></span></a>
-    <nav><a href="#/">Generadores</a><a href="${import.meta.env.BASE_URL}calculadora.html" target="_blank">${icon('calc')} Calculadora</a></nav>
+    <nav><a href="#/">Generadores</a><a href="#/taller">Taller 3D</a><a href="${import.meta.env.BASE_URL}calculadora.html" target="_blank">${icon('calc')} Calculadora</a></nav>
   </header>`;
 }
 
 // ---------------- Catálogo ----------------
+const isReady = g => !!(g.load || g.href);
+const norm = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+
 function renderCatalog() {
-  const state = { q: '', cat: 'all', onlyReady: false, ...(store.get('g3d_lab_filters') || {}) };
-  const ready = GENERATORS.filter(g => g.load || g.href).length;
+  const saved = store.get('g3d_lab_filters') || {};
+  const state = { q: saved.q || '', cat: saved.cat || 'all', soon: false };
+  const ready = GENERATORS.filter(isReady);
+  const base = import.meta.env.BASE_URL;
   app.innerHTML = `${header()}
   <main class="catalog">
     <section class="hero">
-      <h1>Generadores para imprimir</h1>
-      <p>Elegí un producto, personalizalo y bajá el 3MF con los colores separados, listo para la U1.</p>
-      <div class="progress"><div style="width:${(ready / GENERATORS.length * 100).toFixed(1)}%"></div></div>
-      <small>${ready} de ${GENERATORS.length} listos · el resto se va sumando por fases</small>
-      <a class="calc-cta" href="${import.meta.env.BASE_URL}calculadora.html" target="_blank">${icon('calc')}<span><b>Calculadora de presupuestos</b><small>Arrastrá STL, 3MF o G-code y sacá el precio</small></span></a>
+      <h1>Gemelos 3D Lab</h1>
+      <p>Apps y generadores para diseñar, presupuestar e imprimir en la U1.</p>
+    </section>
+    <section class="apps">
+      ${APPS.map(a => `<a class="app-card" href="${a.href ? base + a.href : a.route}"${a.href ? ' target="_blank" rel="noopener"' : ''}>
+        <img src="${base}thumbs/${a.id}.jpg" alt="" loading="lazy">
+        <div><span class="badge app">App</span><h2>${esc(a.title)}</h2><p>${esc(a.desc)}</p></div>
+      </a>`).join('')}
     </section>
     <div class="filters">
       <label class="search">${icon('search')}<input id="q" placeholder="Buscar: llavero, QR, cortador…" value="${esc(state.q)}"></label>
-      <label class="only"><input type="checkbox" id="only" ${state.onlyReady ? 'checked' : ''}> Solo listos</label>
     </div>
     <div class="chips" id="chips"></div>
     <div id="grid"></div>
@@ -57,34 +71,38 @@ function renderCatalog() {
 
   const chips = document.getElementById('chips');
   const grid = document.getElementById('grid');
-  chips.innerHTML = [{ id: 'all', name: 'Todos', icon: null }, ...CATEGORIES]
-    .map(c => `<button data-cat="${c.id}" class="${state.cat === c.id ? 'on' : ''}">${c.icon ? icon(c.icon) : ''}${esc(c.name)}</button>`).join('');
+  const count = id => ready.filter(g => id === 'all' || g.cat === id).length;
+  chips.innerHTML = [{ id: 'all', name: 'Todos', icon: null }, ...CATEGORIES.filter(c => count(c.id) > 0)]
+    .map(c => `<button data-cat="${c.id}" class="${state.cat === c.id ? 'on' : ''}">${c.icon ? icon(c.icon) : ''}${esc(c.name)} <small>${count(c.id)}</small></button>`).join('');
+  if (!chips.querySelector('.on')) { state.cat = 'all'; chips.querySelector('[data-cat=all]').classList.add('on'); }
 
-  const draw = () => {
-    store.set('g3d_lab_filters', state);
-    const q = state.q.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-    const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-    const list = GENERATORS.filter(g =>
-      (state.cat === 'all' || g.cat === state.cat) &&
-      (!state.onlyReady || g.load || g.href) &&
-      (!q || norm(g.title + ' ' + g.desc).includes(q)));
-    const cats = CATEGORIES.filter(c => list.some(g => g.cat === c.id));
-    grid.innerHTML = cats.length ? cats.map(c => `
-      <section class="cat">
-        <h2>${icon(c.icon)} ${esc(c.name)}</h2>
-        <div class="cards">${list.filter(g => g.cat === c.id).sort((a, b) => (!!(b.load || b.href) - !!(a.load || a.href)) || a.phase - b.phase).map(g => card(g, c)).join('')}</div>
-      </section>`).join('') : '<p class="empty">No hay generadores con esa búsqueda.</p>';
-  };
-  const card = (g, c) => `<a class="card ${g.load || g.href ? 'ready' : 'soon'}" href="${g.href ? (/^https?:/.test(g.href) ? g.href : import.meta.env.BASE_URL + g.href) : `#/g/${g.id}`}"${g.href ? ' target="_blank" rel="noopener"' : ''}>
-      <div class="tile c-${c.id}">${(g.load || g.href) && !/^https?:/.test(g.href || '') ? `<img src="${import.meta.env.BASE_URL}thumbs/${g.id}.jpg" alt="" loading="lazy" onerror="this.remove()">` : ''}${icon(c.icon, 'big')}</div>
+  const card = (g, c) => `<a class="card ${isReady(g) ? 'ready' : 'soon'}" href="#/g/${g.id}">
+      <div class="tile c-${c.id}">${isReady(g) ? `<img src="${base}thumbs/${g.id}.jpg" alt="" loading="lazy" onerror="this.remove()">` : ''}${icon(c.icon, 'big')}</div>
       <div class="card-body">
-        <div class="card-top"><h3>${esc(g.title)}</h3><span class="badge">${/^https?:/.test(g.href || '') ? 'Externa ↗' : g.load || g.href ? 'Listo' : `Fase ${g.phase}`}</span></div>
+        <div class="card-top"><h3>${esc(g.title)}</h3>${isReady(g) ? '' : `<span class="badge">Fase ${g.phase}</span>`}</div>
         <p>${esc(g.desc)}</p>
       </div>
     </a>`;
 
+  const draw = () => {
+    store.set('g3d_lab_filters', { q: state.q, cat: state.cat });
+    const q = norm(state.q.trim());
+    const match = g => (state.cat === 'all' || g.cat === state.cat) && (!q || norm(g.title + ' ' + g.desc).includes(q));
+    const list = GENERATORS.filter(g => match(g) && isReady(g));
+    const pending = GENERATORS.filter(g => match(g) && !isReady(g));
+    const section = (items, cats) => cats.map(c => `
+      <section class="cat">
+        ${state.cat === 'all' ? `<h2>${icon(c.icon)} ${esc(c.name)}</h2>` : ''}
+        <div class="cards">${items.filter(g => g.cat === c.id).map(g => card(g, c)).join('')}</div>
+      </section>`).join('');
+    const cats = CATEGORIES.filter(c => list.some(g => g.cat === c.id));
+    grid.innerHTML = (list.length ? section(list, cats) : '<p class="empty">No hay generadores listos con esa búsqueda.</p>') +
+      (pending.length ? `<div class="soon-toggle"><button id="soonBtn">${state.soon ? 'Ocultar' : 'Ver'} los que vienen (${pending.length})</button></div>` : '') +
+      (state.soon && pending.length ? `<div class="soon-list">${section(pending, CATEGORIES.filter(c => pending.some(g => g.cat === c.id)))}</div>` : '');
+    document.getElementById('soonBtn')?.addEventListener('click', () => { state.soon = !state.soon; draw(); });
+  };
+
   document.getElementById('q').addEventListener('input', e => { state.q = e.target.value; draw(); });
-  document.getElementById('only').addEventListener('change', e => { state.onlyReady = e.target.checked; draw(); });
   chips.addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     state.cat = b.dataset.cat;

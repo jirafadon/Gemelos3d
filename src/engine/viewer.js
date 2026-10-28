@@ -106,6 +106,53 @@ export class Viewer {
     this.render();
   }
 
+  // ---------- Modo editor (Taller 3D) ----------
+
+  /** Muestra objetos en su posición real (sin recentrar), con huecos translúcidos y selección. */
+  setObjects(objs, selectedId) {
+    for (const m of this.group.children) { m.geometry.dispose(); m.material.dispose(); }
+    this.group.clear();
+    this.group.position.set(0, 0, 0);
+    for (const o of objs) {
+      if (!o.solid) continue;
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(solidToTriangles(o.solid), 3));
+      geo.computeVertexNormals();
+      const selected = o.id === selectedId;
+      const mat = o.hole
+        ? new THREE.MeshStandardMaterial({ color: '#8d99ae', transparent: true, opacity: selected ? 0.55 : 0.35, depthWrite: false, roughness: 0.8 })
+        : new THREE.MeshStandardMaterial({ color: o.color || '#cccccc', roughness: 0.55, metalness: 0.02 });
+      if (selected) { mat.emissive = new THREE.Color('#4f9ff0'); mat.emissiveIntensity = 0.35; }
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.userData.id = o.id;
+      this.group.add(mesh);
+    }
+    if (!this.editorGrid) { this.updateGrid(180); this.editorGrid = true; this.distance = 170; this.controls.target.set(0, 0, 10); this.setView('iso'); }
+    this.render();
+  }
+
+  /** Normaliza un evento de puntero a coordenadas de la cámara. */
+  ndc(ev) {
+    const r = this.renderer.domElement.getBoundingClientRect();
+    return new THREE.Vector2(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
+  }
+
+  /** Id del objeto bajo el puntero (o null). */
+  pick(ev) {
+    const ray = new THREE.Raycaster();
+    ray.setFromCamera(this.ndc(ev), this.camera);
+    const hit = ray.intersectObjects(this.group.children, false)[0];
+    return hit ? hit.object.userData.id : null;
+  }
+
+  /** Punto del plano horizontal z = h bajo el puntero. */
+  groundPoint(ev, h = 0) {
+    const ray = new THREE.Raycaster();
+    ray.setFromCamera(this.ndc(ev), this.camera);
+    const p = new THREE.Vector3();
+    return ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 0, 1), -h), p) ? p : null;
+  }
+
   render() { this.renderer.render(this.scene, this.camera); }
 
   /** Captura cuadrada del visor para usar de miniatura. */

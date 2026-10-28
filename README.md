@@ -15,6 +15,11 @@ npm test         # pruebas del motor 3D (Node)
 npm run build    # sitio estático en dist/
 ```
 
+## Apps
+
+- **Calculadora de presupuestos** (`public/calculadora.html`): precio desde STL, 3MF o G-code.
+- **Taller 3D** (`src/taller/`, ruta `#/taller`): editor libre estilo Tinkercad con cajas, cilindros, esferas, conos, tubos, cuñas, texto, imagen y STL importado; huecos que restan, arrastre para mover y exportación 3MF por color.
+
 ## Estructura
 
 ```
