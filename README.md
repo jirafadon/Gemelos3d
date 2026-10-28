@@ -20,6 +20,17 @@ npm run build    # sitio estático en dist/
 - **Calculadora de presupuestos** (`public/calculadora.html`): precio desde STL, 3MF o G-code.
 - **Taller 3D** (`src/taller/`, ruta `#/taller`): editor estilo Tinkercad. 14 formas con parámetros (caja redondeada, cilindro, esfera, cono, techo, pirámide, media esfera, cuña, tubo, toroide, polígono, estrella, corazón, paraboloide), texto, imagen y STL. Manijas para mover/rotar/escalar, selección múltiple, grupos (los huecos restan solo dentro del grupo; multicolor o de un color), deshacer/rehacer, copiar/pegar, duplicar repitiendo el movimiento, alinear, espejar, ocultar, bloquear, grilla y medidas. Cada generador tiene "Seguir editando en el Taller 3D".
 
+## IA: "Describí tu pieza" (Taller 3D)
+
+La función `api/disenar.js` (Vercel) le pasa la descripción a Claude y devuelve formas del Taller.
+Para activarla, en Vercel → proyecto → Settings → Environment Variables:
+
+- `ANTHROPIC_API_KEY` (obligatoria): clave de https://console.anthropic.com
+- `LAB_PASSWORD` (recomendada): si la definís, la página pide esa clave una vez antes de usar la IA, así nadie más gasta tus créditos.
+- `ANTHROPIC_MODEL` (opcional): modelo a usar; por defecto `claude-sonnet-5-5`.
+
+Después de cargarlas, volvé a publicar (Deployments → Redeploy).
+
 ## Estructura
 
 ```

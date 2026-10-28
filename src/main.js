@@ -1,5 +1,5 @@
 import './styles.css';
-import { CATEGORIES, GENERATORS, APPS, FAMILIES, findGenerator, familyOf } from './catalog.js';
+import { CATEGORIES, GENERATORS, APPS, FAMILIES, SHARED_GROUPS, FAMILY_SHARE, findGenerator, familyOf } from './catalog.js';
 import { renderTaller, loadScene, saveScene } from './taller/taller.js';
 import { makeObject, solidToMeshData, groupObjects } from './taller/objects.js';
 import { icon } from './ui/icons.js';
@@ -199,6 +199,30 @@ async function renderGenerator(id, fam = null) {
 
   const saveKey = `g3d_lab_params_${id}`;
   const values = { ...defaultValues(gen.params), ...(store.get(saveKey) || {}) };
+  // Lo que escribiste en otra opción del mismo programa (nombre, letra, colores…) te sigue
+  const famKey = fam ? `g3d_lab_shared_${fam.id}` : null;
+  const shareGroups = fam ? (FAMILY_SHARE[fam.id] || []) : [];
+  const famShared = famKey ? (store.get(famKey) || {}) : {};
+  const validFor = (p, v) => {
+    if (p.type === 'segment' || p.type === 'select') return p.options.some(o => o.value === v);
+    if (p.type === 'number') return typeof v === 'number' && v >= p.min && v <= p.max;
+    return typeof v === typeof p.default;
+  };
+  for (const g of shareGroups) {
+    if (!(g in famShared)) continue;
+    for (const k of SHARED_GROUPS[g]) {
+      const p = gen.params.find(x => x.key === k);
+      if (p && validFor(p, famShared[g])) values[k] = famShared[g];
+    }
+  }
+  const rememberShared = () => {
+    if (!famKey) return;
+    for (const g of shareGroups) {
+      const k = SHARED_GROUPS[g].find(key => key in values);
+      if (k) famShared[g] = values[k];
+    }
+    store.set(famKey, famShared);
+  };
   let parts = [], token = 0, timer = null, alive = true;
   cleanup = () => { alive = false; clearTimeout(timer); viewer.renderer.dispose(); collect([]); };
 
@@ -235,11 +259,11 @@ async function renderGenerator(id, fam = null) {
     $('oParts').innerHTML = parts.map(p => `<li><i style="background:${p.color}"></i>${esc(p.name)}<span>${(p.solid.volume() / 1000).toFixed(1)} cm³</span></li>`).join('');
   };
 
-  renderParams($('params'), gen.params, values, () => { store.set(saveKey, values); schedule(); });
+  renderParams($('params'), gen.params, values, () => { store.set(saveKey, values); rememberShared(); schedule(); });
   $('reset').addEventListener('click', () => {
     Object.assign(values, defaultValues(gen.params));
     store.set(saveKey, values);
-    renderParams($('params'), gen.params, values, () => { store.set(saveKey, values); schedule(); });
+    renderParams($('params'), gen.params, values, () => { store.set(saveKey, values); rememberShared(); schedule(); });
     schedule();
   });
   document.querySelector('.views').addEventListener('click', e => {

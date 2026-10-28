@@ -60,7 +60,13 @@ const SVG = {
   unlock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/>',
   floor: '<path d="M3 20h18M12 4v11M8 11l4 4 4-4"/>',
   fit: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
+  spark: '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/>',
 };
+const SHAPE_GROUPS = [
+  ['Básicas', ['box', 'cylinder', 'sphere', 'cone', 'tube', 'wedge']],
+  ['Más formas', ['roof', 'pyramid', 'halfsphere', 'torus', 'polygon', 'star', 'heart', 'paraboloid']],
+  ['Texto, imagen y archivos', ['text', 'image', 'stl']],
+];
 const svg = (n, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${SVG[n] || ''}</svg>`;
 
 export function loadScene() {
@@ -114,19 +120,36 @@ function schemaFor(o) {
 }
 
 export async function renderTaller(app, headerHtml) {
-  const addable = Object.keys(TYPES).filter(t => !['group', 'stl'].includes(t));
   app.innerHTML = `${headerHtml}
   <main class="gen taller">
     <aside class="gen-params">
-      <a class="back" href="#/">${icon('back')} Generadores</a>
+      <a class="back" href="#/">${icon('back')} Inicio</a>
       <h1>Taller 3D</h1>
-      <p class="muted small">Sumá formas, movelas con las manijas y marcá huecos. Agrupá para que un hueco reste solo dentro del grupo.</p>
-      <h3 class="t-h">Formas</h3>
-      <div class="t-add">${addable.map(k => `<button data-add="${k}" title="Agregar ${TYPES[k].label}">${svg(k)}<span>${TYPES[k].label}</span></button>`).join('')}
-        <button data-add="stl" title="Importar un STL">${svg('stl')}<span>Importar STL</span></button></div>
-      <input type="file" id="stlFile" accept=".stl" multiple hidden>
-      <h3 class="t-h">Objetos <small class="muted">· Mayús + clic para elegir varios</small></h3>
-      <ul class="t-list" id="list"></ul>
+      <ol class="t-steps"><li>Sumá formas o pedíselas a la IA.</li><li>Movelas con las manijas y marcá huecos.</li><li>Exportá el 3MF por colores.</li></ol>
+
+      <details class="t-sec t-ai" open>
+        <summary>${svg('spark')} Describí tu pieza <small>IA</small></summary>
+        <textarea id="aiPrompt" rows="3" placeholder="Ej.: una caja de 60 × 40 × 30 mm con tapa y un agujero de 5 mm en el frente"></textarea>
+        <div class="t-ai-opts">
+          <label><input type="checkbox" id="aiScene" checked> Tener en cuenta lo que ya hay</label>
+        </div>
+        <div class="t-ai-row"><button class="primary" id="aiGo">Crear con IA</button><span id="aiMsg" class="muted small"></span></div>
+        <div class="t-ai-ideas">${['Portalápices hexagonal con mi nombre', 'Soporte de celular a 60°', 'Caja de 50 × 50 con tapa y bisagra', 'Llavero redondo con un agujero y una estrella'].map(t => `<button data-idea="${t}">${t}</button>`).join('')}</div>
+      </details>
+
+      <details class="t-sec" open>
+        <summary>${svg('box')} Formas</summary>
+        ${SHAPE_GROUPS.map(([title, list]) => `<p class="t-gtitle">${title}</p><div class="t-add">${list.map(k => k === 'stl'
+          ? `<button data-add="stl" title="Importar uno o varios STL">${svg('stl')}<span>Importar STL</span></button>`
+          : `<button data-add="${k}" title="Agregar ${TYPES[k].label}">${svg(k)}<span>${TYPES[k].label}</span></button>`).join('')}</div>`).join('')}
+        <input type="file" id="stlFile" accept=".stl" multiple hidden>
+      </details>
+
+      <details class="t-sec" open>
+        <summary>${svg('group')} Objetos <small id="objCount"></small></summary>
+        <p class="muted small">Mayús + clic para elegir varios.</p>
+        <ul class="t-list" id="list"></ul>
+      </details>
     </aside>
     <section class="gen-view">
       <div class="t-toolbar" id="toolbar">
@@ -325,6 +348,7 @@ export async function renderTaller(app, headerHtml) {
       <button data-toggle="hidden" title="${o.hidden ? 'Mostrar' : 'Ocultar'}">${svg(o.hidden ? 'eyeOff' : 'eye')}</button>
       <button data-toggle="locked" title="${o.locked ? 'Desbloquear' : 'Bloquear'}" class="${o.locked ? 'on' : ''}">${svg(o.locked ? 'lock' : 'unlock')}</button></li>`).join('')
       : '<li class="muted">Todavía no hay objetos. Elegí una forma de arriba.</li>';
+    $('objCount').textContent = state.objs.length ? `· ${state.objs.length}` : '';
     const n = state.sel.length, hasGroup = selection().some(o => o.type === 'group');
     const tb = $('toolbar');
     tb.querySelector('[data-cmd=group]').disabled = n < 2;
@@ -477,8 +501,8 @@ export async function renderTaller(app, headerHtml) {
 
   // ---------- Eventos ----------
   const main = $('viewer').closest('main');
-  main.querySelector('.t-add').addEventListener('click', e => {
-    const b = e.target.closest('button'); if (!b) return;
+  main.querySelector('.gen-params').addEventListener('click', e => {
+    const b = e.target.closest('button[data-add]'); if (!b) return;
     if (b.dataset.add === 'stl') $('stlFile').click(); else addObject(b.dataset.add);
   });
   $('stlFile').addEventListener('change', async e => {
@@ -614,6 +638,65 @@ export async function renderTaller(app, headerHtml) {
     const e = estimate(result), s = modelStats(result);
     sendToCalculator({ name: 'Diseño del Taller 3D', grams: e.grams, minutes: e.minutes, thumb: viewer.snapshot(), meta: `Taller 3D · ${s.size.map(v => v.toFixed(0)).join(' × ')} mm` });
   }));
+
+
+  // ---------- Describí tu pieza (IA) ----------
+  const aiMsg = (t, kind = '') => { $('aiMsg').className = `small ${kind || 'muted'}`; $('aiMsg').textContent = t; };
+  main.querySelector('.t-ai-ideas').addEventListener('click', e => {
+    const b = e.target.closest('button[data-idea]'); if (!b) return;
+    $('aiPrompt').value = b.dataset.idea; $('aiPrompt').focus();
+  });
+  async function askAI() {
+    const prompt = $('aiPrompt').value.trim();
+    if (!prompt) { aiMsg('Escribí qué pieza querés.', 'warn'); return; }
+    const btn = $('aiGo');
+    btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Pensando…'; aiMsg('');
+    const scene = $('aiScene').checked ? state.objs.filter(o => !o.hidden && o.type !== 'stl' && o.type !== 'image' && o.type !== 'group')
+      .map(o => ({ type: o.type, name: o.name, x: o.x, y: o.y, z: o.z, w: o.w, d: o.d, h: o.h, rx: o.rx, ry: o.ry, rz: o.rz, color: o.color, hole: o.hole, text: o.text })) : [];
+    const headers = { 'content-type': 'application/json' };
+    const pass = (() => { try { return localStorage.getItem('g3d_lab_password'); } catch { return null; } })();
+    if (pass) headers['x-lab-password'] = pass;
+    try {
+      const r = await fetch(`${import.meta.env.BASE_URL}api/disenar`, { method: 'POST', headers, body: JSON.stringify({ prompt, scene }) });
+      const data = await r.json().catch(() => ({ error: r.status === 404 ? 'La función de IA no está disponible acá (probá en la página publicada).' : `Error ${r.status}` }));
+      if (r.status === 401 && data.code === 'bad_password') {
+        const p = window.prompt('Escribí la clave del Lab (LAB_PASSWORD) para usar la IA:');
+        if (p) { try { localStorage.setItem('g3d_lab_password', p); } catch { /* sin espacio */ } return askAI(); }
+      }
+      if (!r.ok) throw new Error(data.error || `Error ${r.status}`);
+      await applyAI(data);
+      aiMsg(data.note || 'Listo.', 'ok');
+    } catch (err) {
+      aiMsg(err.message, 'warn');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Crear con IA';
+    }
+  }
+  /** Convierte la respuesta de la IA en objetos del Taller (agrupando los que comparten grupo). */
+  async function applyAI({ objects, replace }) {
+    const made = objects.map((o, i) => { const { group, ...rest } = o; const ob = makeObject(o.type, state.objs.length + i, rest); ob._g = group; return ob; });
+    const groups = new Map(), loose = [];
+    for (const o of made) { if (o._g) groups.set(o._g, [...(groups.get(o._g) || []), o]); else loose.push(o); delete o._g; }
+    const final = [...loose];
+    for (const [name, list] of groups) {
+      if (list.length === 1) { final.push(list[0]); continue; }
+      const g = await groupObjects(list, ctx, state.objs.length);
+      g.name = name.charAt(0).toUpperCase() + name.slice(1);
+      final.push(g);
+    }
+    if (replace) state.objs = [];
+    // Si se agregan, los corre a la derecha de lo que ya existe para que no se encimen
+    if (!replace && state.objs.length && !$('aiScene').checked) {
+      const all = state.objs.flatMap(x => partsById.get(x.id) || []);
+      if (all.length) { const b = partsBox(all); const minX = Math.min(...final.map(o => o.x - o.w / 2)); for (const o of final) o.x = r2(o.x + (b.max[0] + 10 - minX)); }
+    }
+    state.objs.push(...final);
+    state.sel = final.map(o => o.id);
+    changed();
+    setTimeout(() => commands.fit(), 400);
+  }
+  $('aiGo').addEventListener('click', askAI);
+  $('aiPrompt').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) askAI(); });
 
   drawList(); drawProps();
   await refresh();

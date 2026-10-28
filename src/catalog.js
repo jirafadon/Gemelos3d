@@ -168,3 +168,33 @@ export const FAMILIES = [
 ];
 
 export const familyOf = id => FAMILIES.find(f => f.items.includes(id));
+
+/**
+ * Datos que se comparten entre las opciones de un mismo programa: si escribís "Joni" en un
+ * llavero y pasás a otro estilo, el nombre, la letra y los colores te siguen.
+ * Cada grupo junta los nombres de campo que significan lo mismo en distintos generadores.
+ */
+export const SHARED_GROUPS = {
+  texto: ['text', 'line1', 'name', 'text1'],
+  texto2: ['line2', 'text2'],
+  letra: ['font', 'font1'],
+  colores: ['colors'],
+  colorBase: ['cBase'],
+  colorMedio: ['cMid'],
+  colorTexto: ['cText'],
+  colorClaro: ['cLight'],
+  colorOscuro: ['cDark'],
+  qrLink: ['link'],
+  wifi: ['ssid'], clave: ['pass'], red: ['network'], usuario: ['user'],
+  anillo: ['ring'],
+};
+export const FAMILY_SHARE = {
+  llaveros: ['texto', 'texto2', 'letra', 'colores', 'colorBase', 'colorMedio', 'colorTexto', 'anillo'],
+  letreros: ['texto', 'texto2', 'letra', 'colores', 'colorBase', 'colorMedio', 'colorTexto'],
+  qr: ['colorBase', 'colorClaro', 'colorOscuro', 'qrLink', 'wifi', 'clave', 'red', 'usuario'],
+  placas: ['colorBase'],
+  fiestas: ['texto', 'letra'],
+  cocina: [],
+  mascotas: [],
+  imagen: [],
+};
