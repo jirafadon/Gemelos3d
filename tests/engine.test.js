@@ -52,3 +52,11 @@ test('la limpieza de memoria no rompe el modelo que se muestra', async () => {
   assert.ok(to3MF(b).length > 1000);
   assert.ok(b[0].solid.volume() > 1);
 });
+
+test('el QR codifica acentos en UTF-8 y respeta el tamaño', async () => {
+  const { qrShape, wifiPayload } = await import('../src/engine/qr.js');
+  const q = qrShape('Peña ñandú', 40);
+  const b = q.shape.bounds();
+  assert.ok(Math.abs((b.max[0] - b.min[0]) - 40) < 0.2);
+  assert.equal(wifiPayload('Mi;Red', 'a:b'), String.raw`WIFI:T:WPA;S:Mi\;Red;P:a\:b;;`);
+});

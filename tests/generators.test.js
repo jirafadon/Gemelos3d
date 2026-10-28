@@ -21,7 +21,7 @@ const FONT_FILES = {
   bebas: 'bebas-neue/files/bebas-neue-latin-400-normal.woff', oswald: 'oswald/files/oswald-latin-700-normal.woff',
 };
 const fonts = {};
-const ctx = { font: async id => {
+const ctx = { image: async () => (await import('../src/engine/trace.js')).sampleMask(120), font: async id => {
   if (!fonts[id]) { const b = fs.readFileSync(`node_modules/@fontsource/${FONT_FILES[id] || FONT_FILES.pacifico}`); fonts[id] = opentype.parse(b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength)); }
   return fonts[id];
 } };
@@ -58,6 +58,7 @@ for (const entry of GENERATORS.filter(g => g.load)) {
       if (!('mode' in base) && mode === 'flush') continue;
       check(`${entry.id} ${colors}c ${mode}`, await gen.build({ ...base, colors, mode, cBase: '#111111', cMid: '#888888', cText: '#EEEEEE' }, ctx));
     }
+    if (gen.params.some(p => p.type === 'image')) check(`${entry.id} con imagen`, await gen.build({ ...base, image: 'data:fake', source: base.source }, ctx));
     for (const p of gen.params.filter(p => p.type === 'select' || (p.type === 'segment' && !['colors', 'mode'].includes(p.key)))) {
       for (const o of p.options) check(`${entry.id} ${p.key}=${o.value}`, await gen.build({ ...base, [p.key]: o.value }, ctx));
     }

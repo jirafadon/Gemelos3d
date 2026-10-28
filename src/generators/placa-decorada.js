@@ -83,7 +83,7 @@ export default {
 
     if (v.stand) {
       const pb = plate.bounds();
-      const flat = v.shape === 'circle' ? w * 0.45 : w * 0.8;
+      const flat = v.shape === 'circle' ? w * 0.45 : w; // largo de lo que entra en la ranura
       // El círculo necesita una lengüeta abajo para entrar en la ranura
       if (v.shape === 'circle') parts.push(part('Placa', v.cBase, slab(roundedRect(flat, 8, 0).translate([0, pb.min[1] - 2]), v.hBase)));
       const solid = mergeByColor(parts).reduce((acc, p) => acc ? acc.add(p.solid) : p.solid, null);

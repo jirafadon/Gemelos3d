@@ -48,3 +48,22 @@ export function preset(base, { id, title, description, defaults = {}, hide = [] 
 
 /** Nombre corto para el archivo exportado. */
 export const firstLine = (...texts) => (texts.find(t => t && String(t).trim()) || 'modelo').split('\n')[0];
+
+// ---------- Imagen ----------
+import { maskToShape, sampleMask } from '../engine/trace.js';
+
+export const imageParams = ({ label = 'Imagen', showIf } = {}) => [
+  { key: 'image', type: 'image', label, default: '', show: showIf, hint: 'Mientras no subas nada se muestra un ejemplo.' },
+  { key: 'threshold', type: 'number', label: 'Sensibilidad', default: 128, min: 20, max: 240, step: 1, unit: '', show: showIf, hint: 'Subila si faltan partes claras del dibujo; bajala si aparece el fondo.' },
+  { key: 'invert', type: 'toggle', label: 'Invertir (tomar lo claro)', default: false, show: showIf },
+  { key: 'smooth', type: 'number', label: 'Suavizado de bordes', default: 0.4, min: 0, max: 2, step: 0.1, unit: 'mm', show: showIf },
+  { key: 'detail', type: 'segment', label: 'Detalle', default: 320, show: showIf, options: [{ value: 200, label: 'Rápido' }, { value: 320, label: 'Normal' }, { value: 520, label: 'Alto' }] },
+];
+
+/** Silueta de la imagen subida (o del ejemplo) con el ancho pedido en mm. */
+export async function silhouette(v, ctx, width, { fill = false } = {}) {
+  const mask = v.image && ctx.image
+    ? await ctx.image(v.image, { threshold: v.threshold, invert: v.invert, maxPx: v.detail })
+    : sampleMask();
+  return maskToShape(mask, { width, smooth: v.smooth ?? 0.4, fill, minArea: Math.max(0.5, width * width * 0.0004) });
+}

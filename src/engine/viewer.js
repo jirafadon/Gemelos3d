@@ -87,7 +87,7 @@ export class Viewer {
     const d = span * 1.9 + 20;
     this.view = this.view || 'iso';
     this.distance = d;
-    this.controls.target.set(0, 0, height / 3);
+    this.controls.target.set(0, 0, height / 2);
     this.setView(this.view);
   }
 

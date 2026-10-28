@@ -3,6 +3,7 @@
  * Tipos: group, text, number, segment, select, toggle, color, font.
  */
 import { FONTS, registerCssFonts } from '../engine/fonts.js';
+import { fileToDataURL } from '../engine/image.js';
 
 export const PALETTE = [
   ['Blanco', '#F5F5F5'], ['Negro', '#1E1E1E'], ['Gris', '#8D99AE'], ['Plateado', '#C0C0C0'],
@@ -145,6 +146,26 @@ function fieldBody(p, values, set) {
         });
         box.appendChild(b);
       }
+      break;
+    }
+    case 'image': {
+      box.className = 'p-image';
+      const draw = () => {
+        const url = values[p.key];
+        box.innerHTML = `<label class="p-drop">${url ? `<img src="${url}" alt="">` : '<span class="p-drop-empty">Tocá o arrastrá una imagen<br><small>PNG con fondo transparente o dibujo oscuro sobre fondo claro</small></span>'}<input type="file" accept="image/*" hidden></label>${url ? '<button type="button" class="link p-clear">Quitar imagen</button>' : ''}`;
+        const input = box.querySelector('input');
+        const take = async file => {
+          if (!file) return;
+          try { set(p.key, await fileToDataURL(file)); draw(); } catch (err) { alert(err.message); }
+        };
+        input.addEventListener('change', () => take(input.files[0]));
+        const drop = box.querySelector('.p-drop');
+        drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
+        drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+        drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('over'); take(e.dataTransfer.files[0]); });
+        box.querySelector('.p-clear')?.addEventListener('click', () => { set(p.key, ''); draw(); });
+      };
+      draw();
       break;
     }
     default:

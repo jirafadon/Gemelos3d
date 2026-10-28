@@ -26,7 +26,7 @@ export const GENERATORS = [
   g('llavero-nombre', 'Llavero de nombre', 'Nombre con contorno en 1, 2 o 3 colores, superposición de letras y argolla.', 'nombres', 1, () => import('./generators/llavero-nombre.js')),
   g('llavero-nombre-completo', 'Llavero nombre y apellido', 'Dos líneas de texto sobre placa con borde.', 'nombres', 1, () => import('./generators/llavero-nombre-completo.js')),
   g('llavero-rectangular', 'Llavero rectangular', 'Placa rectangular con nombre en relieve o al ras.', 'nombres', 1, () => import('./generators/llavero-rectangular.js')),
-  g('llavero-logo', 'Llavero con nombre y logo', 'Texto más un ícono o logo desde imagen.', 'nombres', 2),
+  g('llavero-logo', 'Llavero con nombre y logo', 'Texto más un ícono o logo desde imagen.', 'nombres', 2, () => import('./generators/llavero-logo.js')),
   g('llavero-forma', 'Llavero con forma', 'Zanahoria, conejo, corazón u otra silueta con nombre encima.', 'nombres', 2),
   g('llavero-espejo', 'Llavero con espejo', 'Aro con texto para encastrar un espejo redondo.', 'nombres', 3),
   g('llavero-nfc', 'Llavero NFC', 'Llavero con alojamiento para tag NFC (cuadrado, redondo o carrete).', 'nombres', 3),
@@ -51,20 +51,20 @@ export const GENERATORS = [
   g('texto-guia', 'Texto de pared con guía', 'Letras grandes para pegar en pared, con plantilla de colocación.', 'carteles', 3),
 
   // ---------- QR y comercios ----------
-  g('placa-qr', 'Placa QR', 'QR con texto o logo sobre placa con soporte.', 'qr', 2),
-  g('placa-qr-mp', 'Placa de cobro Mercado Pago / alias', 'QR de cobro con alias y logo de tu comercio.', 'qr', 2),
-  g('placa-wifi', 'Placa QR WiFi', 'El QR conecta directo a tu WiFi, con red y clave impresas.', 'qr', 2),
-  g('placa-redes', 'Placa QR de redes', 'Instagram, TikTok, YouTube o WhatsApp con su QR.', 'qr', 2),
-  g('placa-google', 'Placa "Dejanos tu reseña"', 'QR a tu ficha de Google para pedir reseñas.', 'qr', 2),
-  g('lista-qr', 'Lista de códigos QR', 'Varios QR en una placa vertical u horizontal, en capas.', 'qr', 2),
-  g('qr-3d', 'QR 3D', 'Código QR imprimible suelto o como llavero.', 'qr', 2),
-  g('tarjeta-presentacion', 'Tarjeta de presentación', 'Tarjeta con QR, datos y soporte para exhibir.', 'qr', 2),
+  g('placa-qr', 'Placa QR', 'QR con texto o logo sobre placa con soporte.', 'qr', 2, () => import('./generators/placa-qr.js')),
+  g('placa-qr-mp', 'Placa de cobro Mercado Pago / alias', 'QR de cobro con alias y logo de tu comercio.', 'qr', 2, () => import('./generators/placa-qr-mp.js')),
+  g('placa-wifi', 'Placa QR WiFi', 'El QR conecta directo a tu WiFi, con red y clave impresas.', 'qr', 2, () => import('./generators/placa-wifi.js')),
+  g('placa-redes', 'Placa QR de redes', 'Instagram, TikTok, YouTube o WhatsApp con su QR.', 'qr', 2, () => import('./generators/placa-redes.js')),
+  g('placa-google', 'Placa "Dejanos tu reseña"', 'QR a tu ficha de Google para pedir reseñas.', 'qr', 2, () => import('./generators/placa-google.js')),
+  g('lista-qr', 'Lista de códigos QR', 'Varios QR en una placa vertical u horizontal, en capas.', 'qr', 2, () => import('./generators/lista-qr.js')),
+  g('qr-3d', 'QR 3D', 'Código QR imprimible suelto o como llavero.', 'qr', 2, () => import('./generators/qr-3d.js')),
+  g('tarjeta-presentacion', 'Tarjeta de presentación', 'Tarjeta con QR, datos y soporte para exhibir.', 'qr', 2, () => import('./generators/tarjeta-presentacion.js')),
   g('exhibidor-salon', 'Exhibidor para salón', 'Exhibidor con logo para uñas, pestañas u otros servicios.', 'qr', 3),
 
   // ---------- Cocina y repostería ----------
-  g('cortador-galletas', 'Cortador de galletas', 'Con forma, nombre o desde imagen. Con filo, refuerzo y faldón.', 'cocina', 2),
+  g('cortador-galletas', 'Cortador de galletas', 'Con forma, nombre o desde imagen. Con filo, refuerzo y faldón.', 'cocina', 2, () => import('./generators/cortador-galletas.js')),
   g('eyector', 'Eyector de masa', 'Cortador con émbolo para galletitas, caramelos y bombones.', 'cocina', 2),
-  g('sello-imagen', 'Sello desde imagen', 'Sello circular o con forma para bombones, galletitas o fondant.', 'cocina', 2),
+  g('sello-imagen', 'Sello desde imagen', 'Sello circular o con forma para bombones, galletitas o fondant.', 'cocina', 2, () => import('./generators/sello-imagen.js')),
   g('sello-letras', 'Sellos de letras y números', 'Sellos individuales con mango para escribir en masas.', 'cocina', 2),
   g('sello-eva', 'Sello para goma EVA / plastilina', 'Molde de estampado desde texto o imagen.', 'cocina', 2),
   g('topper-torta', 'Topper de torta', 'Nombre, edad y frase con púas, también circular.', 'cocina', 1, () => import('./generators/topper-torta.js')),
@@ -77,7 +77,7 @@ export const GENERATORS = [
   g('stencil', 'Stencils y plantillas', 'Plantillas de texto o formas con puentes automáticos.', 'cocina', 2),
 
   // ---------- Foto e imagen ----------
-  g('dibujo-stl', 'De dibujo a STL', 'DXF, SVG o imagen a pieza imprimible, con placa base opcional.', 'imagen', 2),
+  g('dibujo-stl', 'De dibujo a STL', 'Imagen o SVG (logo, dibujo, silueta) a pieza imprimible, con placa base opcional.', 'imagen', 2, () => import('./generators/dibujo-stl.js')),
   g('line-art', 'Placa de line art', 'Dibujo de línea fina parado sobre base con nombre.', 'imagen', 2),
   g('posavasos-imagen', 'Posavasos con imagen', 'Tu foto o logo separada en hasta 4 colores.', 'imagen', 2),
   g('litofania', 'Litofanía', 'Foto que aparece a contraluz: plana, curva o para lámpara.', 'imagen', 4),
@@ -130,6 +130,7 @@ export const GENERATORS = [
   g('neon-flex', 'Cartel de neón flex', 'Base con canal para neón flex desde logo o dibujo.', 'letras', 5),
 
   // ---------- Herramientas STL ----------
+  page('foto-3d', 'Foto a modelo 3D (Berria Craft)', 'App de escritorio libre que reconstruye objetos en 3D con varias fotos o con IA desde una sola. Se abre aparte.', 'herramientas', 'https://demo.pencil-park.com/berriacraft/'),
   page('calculadora', 'Calculadora de presupuestos', 'Arrastrá STL, 3MF o G-code y te arma el precio: material, luz, desgaste, extras y comisión.', 'herramientas', 'calculadora.html'),
   g('separar-color', 'Separar STL por color', 'Divide un modelo en piezas por color con encastres.', 'herramientas', 5),
   g('cortar-conectar', 'Cortá y conectá', 'Corta un STL y agrega encastres, bisagras o rótulas.', 'herramientas', 5),

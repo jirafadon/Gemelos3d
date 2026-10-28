@@ -6,6 +6,7 @@ import { initEngine, modelStats, loadFont, collect } from './engine/index.js';
 import { Viewer } from './engine/viewer.js';
 import { to3MF, toSTLZip, mergedSTL, download } from './engine/export.js';
 import { estimate, sendToCalculator } from './engine/cost.js';
+import { imageToMask } from './engine/image.js';
 
 const app = document.getElementById('app');
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -74,10 +75,10 @@ function renderCatalog() {
         <div class="cards">${list.filter(g => g.cat === c.id).sort((a, b) => (!!(b.load || b.href) - !!(a.load || a.href)) || a.phase - b.phase).map(g => card(g, c)).join('')}</div>
       </section>`).join('') : '<p class="empty">No hay generadores con esa búsqueda.</p>';
   };
-  const card = (g, c) => `<a class="card ${g.load || g.href ? 'ready' : 'soon'}" href="${g.href ? import.meta.env.BASE_URL + g.href : `#/g/${g.id}`}"${g.href ? ' target="_blank"' : ''}>
-      <div class="tile c-${c.id}">${g.load || g.href ? `<img src="${import.meta.env.BASE_URL}thumbs/${g.id}.jpg" alt="" loading="lazy" onerror="this.remove()">` : ''}${icon(c.icon, 'big')}</div>
+  const card = (g, c) => `<a class="card ${g.load || g.href ? 'ready' : 'soon'}" href="${g.href ? (/^https?:/.test(g.href) ? g.href : import.meta.env.BASE_URL + g.href) : `#/g/${g.id}`}"${g.href ? ' target="_blank" rel="noopener"' : ''}>
+      <div class="tile c-${c.id}">${(g.load || g.href) && !/^https?:/.test(g.href || '') ? `<img src="${import.meta.env.BASE_URL}thumbs/${g.id}.jpg" alt="" loading="lazy" onerror="this.remove()">` : ''}${icon(c.icon, 'big')}</div>
       <div class="card-body">
-        <div class="card-top"><h3>${esc(g.title)}</h3><span class="badge">${g.load || g.href ? 'Listo' : `Fase ${g.phase}`}</span></div>
+        <div class="card-top"><h3>${esc(g.title)}</h3><span class="badge">${/^https?:/.test(g.href || '') ? 'Externa ↗' : g.load || g.href ? 'Listo' : `Fase ${g.phase}`}</span></div>
         <p>${esc(g.desc)}</p>
       </div>
     </a>`;
@@ -165,7 +166,7 @@ async function renderGenerator(id) {
   let parts = [], token = 0, timer = null, alive = true;
   cleanup = () => { alive = false; clearTimeout(timer); viewer.renderer.dispose(); collect([]); };
 
-  const ctx = { font: loadFont };
+  const ctx = { font: loadFont, image: (url, opts) => imageToMask(url, opts) };
   const rebuild = async () => {
     const my = ++token;
     status('<span class="spin"></span> Generando…');
