@@ -1,6 +1,7 @@
 import './styles.css';
 import { CATEGORIES, GENERATORS, APPS, findGenerator } from './catalog.js';
-import { renderTaller } from './taller/taller.js';
+import { renderTaller, loadScene, saveScene } from './taller/taller.js';
+import { makeObject, solidToMeshData, groupObjects } from './taller/objects.js';
 import { icon } from './ui/icons.js';
 import { renderParams, defaultValues } from './ui/params.js';
 import { initEngine, modelStats, loadFont, collect } from './engine/index.js';
@@ -160,6 +161,7 @@ async function renderGenerator(id) {
         <button id="xstl">${icon('download')} STL único</button>
         <button id="xzip">${icon('download')} STL por color (.zip)</button>
         <button class="ghost" id="xcalc">${icon('calc')} Mandar a la calculadora</button>
+        <button class="ghost" id="xtaller">Seguir editando en el Taller 3D</button>
       </div>
     </aside>
   </main>`;
@@ -232,7 +234,7 @@ async function renderGenerator(id) {
 
   const label = () => String((gen.fileName ? gen.fileName(values) : values.text) || 'modelo').split('\n')[0].trim();
   const fileBase = () => `${gen.id}_${label()}`.replace(/[^\w\-áéíóúñÁÉÍÓÚÑ]+/g, '_').slice(0, 60);
-  const guard = fn => () => { if (!parts.length) return; try { fn(); } catch (err) { status(`⚠ ${esc(err.message)}`, 'error'); } };
+  const guard = fn => () => { if (!parts.length) return; Promise.resolve().then(fn).catch(err => { console.error(err); status(`⚠ ${esc(err.message)}`, 'error'); }); };
   $('x3mf').addEventListener('click', guard(() => download(to3MF(parts, { name: fileBase() }), `${fileBase()}.3mf`, 'model/3mf')));
   $('xstl').addEventListener('click', guard(() => download(mergedSTL(parts), `${fileBase()}.stl`, 'model/stl')));
   $('xzip').addEventListener('click', guard(() => download(toSTLZip(parts), `${fileBase()}_por_color.zip`, 'application/zip')));
@@ -243,6 +245,27 @@ async function renderGenerator(id) {
       grams: e.grams, minutes: e.minutes, thumb: viewer.snapshot(),
       meta: `Gemelos 3D Lab · ${s.size.map(v => v.toFixed(0)).join(' × ')} mm · ${e.colors} color(es)`,
     });
+  }));
+
+  $('xtaller').addEventListener('click', guard(async () => {
+    // Cada color pasa como una malla; juntas forman un grupo multicolor que se mueve entero
+    const kids = parts.map((p, i) => {
+      const b = p.solid.boundingBox();
+      return makeObject('stl', i, {
+        name: `${gen.title} · ${p.name}`, color: p.color, mesh: solidToMeshData(p.solid),
+        x: (b.min[0] + b.max[0]) / 2, y: (b.min[1] + b.max[1]) / 2, z: b.min[2],
+        w: b.max[0] - b.min[0], d: b.max[1] - b.min[1], h: b.max[2] - b.min[2],
+      });
+    });
+    const scene = loadScene() || { objs: [], sel: [] };
+    const item = kids.length > 1 ? await groupObjects(kids, ctx, scene.objs.length) : kids[0];
+    item.name = `${gen.title}: ${label()}`.slice(0, 60);
+    // Lo ubica al costado de lo que ya hay en el Taller
+    item.x = scene.objs.length ? Math.max(...scene.objs.map(o => o.x + o.w / 2)) + item.w / 2 + 10 : 0;
+    item.y = 0; item.z = 0;
+    scene.objs.push(item); scene.sel = [item.id]; scene.focus = true;
+    if (!saveScene(scene)) { status('⚠ El modelo es muy pesado para pasarlo al Taller. Exportalo como STL e importalo ahí.', 'error'); return; }
+    location.hash = '#/taller';
   }));
 
   rebuild();

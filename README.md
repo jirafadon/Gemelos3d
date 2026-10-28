@@ -18,7 +18,7 @@ npm run build    # sitio estático en dist/
 ## Apps
 
 - **Calculadora de presupuestos** (`public/calculadora.html`): precio desde STL, 3MF o G-code.
-- **Taller 3D** (`src/taller/`, ruta `#/taller`): editor libre estilo Tinkercad con cajas, cilindros, esferas, conos, tubos, cuñas, texto, imagen y STL importado; huecos que restan, arrastre para mover y exportación 3MF por color.
+- **Taller 3D** (`src/taller/`, ruta `#/taller`): editor estilo Tinkercad. 14 formas con parámetros (caja redondeada, cilindro, esfera, cono, techo, pirámide, media esfera, cuña, tubo, toroide, polígono, estrella, corazón, paraboloide), texto, imagen y STL. Manijas para mover/rotar/escalar, selección múltiple, grupos (los huecos restan solo dentro del grupo; multicolor o de un color), deshacer/rehacer, copiar/pegar, duplicar repitiendo el movimiento, alinear, espejar, ocultar, bloquear, grilla y medidas. Cada generador tiene "Seguir editando en el Taller 3D".
 
 ## Estructura
 

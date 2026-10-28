@@ -108,27 +108,54 @@ export class Viewer {
 
   // ---------- Modo editor (Taller 3D) ----------
 
-  /** Muestra objetos en su posición real (sin recentrar), con huecos translúcidos y selección. */
-  setObjects(objs, selectedId) {
-    for (const m of this.group.children) { m.geometry.dispose(); m.material.dispose(); }
+  /**
+   * Modo editor: cada objeto es un grupo de three.js ubicado en su pivote y con su rotación,
+   * así las manijas (TransformControls) giran y escalan alrededor del objeto.
+   * @param items [{ id, raw: [{color, solid, hole}], pivot: [x,y,z], rot: [rx,ry,rz] (grados) }]
+   */
+  setScene(items, selectedIds = []) {
+    const sel = new Set(selectedIds);
+    for (const g of this.group.children) g.traverse(m => { if (m.isMesh) { m.geometry.dispose(); m.material.dispose(); } });
     this.group.clear();
     this.group.position.set(0, 0, 0);
-    for (const o of objs) {
-      if (!o.solid) continue;
-      const geo = new THREE.BufferGeometry();
-      geo.setAttribute('position', new THREE.BufferAttribute(solidToTriangles(o.solid), 3));
-      geo.computeVertexNormals();
-      const selected = o.id === selectedId;
-      const mat = o.hole
-        ? new THREE.MeshStandardMaterial({ color: '#8d99ae', transparent: true, opacity: selected ? 0.55 : 0.35, depthWrite: false, roughness: 0.8 })
-        : new THREE.MeshStandardMaterial({ color: o.color || '#cccccc', roughness: 0.55, metalness: 0.02 });
-      if (selected) { mat.emissive = new THREE.Color('#4f9ff0'); mat.emissiveIntensity = 0.35; }
-      const mesh = new THREE.Mesh(geo, mat);
-      mesh.userData.id = o.id;
-      this.group.add(mesh);
+    this.items = new Map();
+    for (const it of items) {
+      const holder = new THREE.Group();
+      holder.position.set(...it.pivot);
+      holder.rotation.set(...(it.rot || [0, 0, 0]).map(THREE.MathUtils.degToRad), 'ZYX');
+      holder.userData.id = it.id;
+      for (const p of it.raw) {
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(solidToTriangles(p.solid), 3));
+        geo.computeVertexNormals();
+        const on = sel.has(it.id);
+        const mat = p.hole
+          ? new THREE.MeshStandardMaterial({ color: '#8d99ae', transparent: true, opacity: on ? 0.55 : 0.32, depthWrite: false, roughness: 0.8 })
+          : new THREE.MeshStandardMaterial({ color: p.color || '#cccccc', roughness: 0.55, metalness: 0.02, transparent: !!it.ghost, opacity: it.ghost ? 0.35 : 1 });
+        if (on) { mat.emissive = new THREE.Color('#4f9ff0'); mat.emissiveIntensity = 0.3; }
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.userData.id = it.id;
+        holder.add(mesh);
+      }
+      this.group.add(holder);
+      this.items.set(it.id, holder);
     }
     if (!this.editorGrid) { this.updateGrid(180); this.editorGrid = true; this.distance = 170; this.controls.target.set(0, 0, 10); this.setView('iso'); }
     this.render();
+  }
+
+  /** Compatibilidad: objetos ya ubicados en el mundo. */
+  setObjects(objs, selectedId) {
+    this.setScene(objs.filter(o => o.solid).map(o => ({ id: o.id, raw: [{ color: o.color, solid: o.solid, hole: o.hole }], pivot: [0, 0, 0] })), selectedId ? [selectedId] : []);
+  }
+
+  /** Acerca la cámara para encuadrar una caja del mundo. */
+  frame(min, max) {
+    const c = [(min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2];
+    const span = Math.max(max[0] - min[0], max[1] - min[1], max[2] - min[2], 10);
+    this.distance = span * 2.2 + 20;
+    this.controls.target.set(...c);
+    this.setView(this.view || 'iso');
   }
 
   /** Normaliza un evento de puntero a coordenadas de la cámara. */
@@ -141,7 +168,7 @@ export class Viewer {
   pick(ev) {
     const ray = new THREE.Raycaster();
     ray.setFromCamera(this.ndc(ev), this.camera);
-    const hit = ray.intersectObjects(this.group.children, false)[0];
+    const hit = ray.intersectObjects(this.group.children, true)[0];
     return hit ? hit.object.userData.id : null;
   }
 

@@ -226,7 +226,41 @@ button { font: inherit; cursor: pointer; color: inherit; }
 .t-actions button { border: 1px solid var(--line); background: var(--panel); border-radius: 9px; padding: 7px; font-size: 12.5px; font-weight: 500; }
 .t-actions button:hover { border-color: var(--brand); }
 .t-actions .danger { color: var(--bad); }
-.t-mode { position: absolute; top: 14px; right: 14px; display: flex; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 3px; box-shadow: var(--shadow); }
+.t-mode { position: absolute; bottom: 14px; left: 14px; display: flex; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 3px; box-shadow: var(--shadow); }
 .t-mode button { border: 0; background: none; padding: 6px 12px; border-radius: 7px; font-size: 13px; font-weight: 500; color: var(--muted); }
 .t-mode button.on { background: var(--brand-soft); color: var(--brand); }
-@media (max-width: 760px) { .t-mode { top: 58px; } }
+
+
+.taller .views { top: auto; bottom: 14px; left: auto; right: 14px; transform: none; }
+.taller .status { bottom: auto; top: 66px; }
+.t-toolbar { position: absolute; top: 10px; left: 10px; right: 10px; z-index: 3; display: flex; flex-wrap: wrap; align-items: center; gap: 2px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 4px; box-shadow: var(--shadow); }
+.t-toolbar button { display: grid; place-items: center; width: 34px; height: 34px; border: 0; background: none; border-radius: 8px; color: var(--text); }
+.t-toolbar button:hover:not(:disabled) { background: var(--soft); }
+.t-toolbar button:disabled { opacity: .3; cursor: default; }
+.t-toolbar button.on { background: var(--brand-soft); color: var(--brand); }
+.t-toolbar .ic { width: 19px; height: 19px; }
+.t-tools { display: flex; gap: 2px; background: var(--soft); border-radius: 9px; padding: 2px; }
+.t-sep { width: 1px; height: 22px; background: var(--line); margin: 0 4px; }
+.t-grid { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); margin-left: auto; padding: 0 4px; }
+.t-grid select { font: inherit; color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: 7px; padding: 4px 6px; }
+.t-pop { position: relative; }
+.t-menu { display: none; position: absolute; top: 40px; left: 0; z-index: 5; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); padding: 8px; min-width: 210px; }
+.t-menu.open { display: block; }
+.t-menu > div { display: flex; align-items: center; gap: 4px; margin: 2px 0; }
+.t-menu > div b { width: 18px; font-size: 12px; color: var(--muted); }
+.t-menu button { width: auto; height: auto; padding: 6px 9px; font-size: 12.5px; border: 1px solid var(--line); }
+#mirrorMenu > div { flex-direction: column; align-items: stretch; }
+.t-dims { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; background: color-mix(in srgb, var(--panel) 92%, transparent); border: 1px solid var(--line); border-radius: 10px; padding: 5px 12px; font-size: 12.5px; pointer-events: none; }
+.t-dims:empty { display: none; }
+.t-dims span { color: var(--muted); font-size: 11.5px; }
+.t-list li.off span { opacity: .45; text-decoration: line-through; }
+.t-list li button { border: 0; background: none; padding: 2px; color: var(--muted); display: grid; place-items: center; opacity: .55; }
+.t-list li:hover button, .t-list li button.on { opacity: 1; }
+.t-list li button .ic { width: 15px; height: 15px; }
+.t-list li i.multi { background: conic-gradient(#D62828, #FCBF49, #2A9D8F, #1D4ED8, #D62828); }
+.t-add { grid-template-columns: repeat(4, 1fr); }
+.t-add button span { font-size: 11px; line-height: 1.15; text-align: center; }
+.t-result, .t-help { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 12px; }
+.t-result summary, .t-help summary { cursor: pointer; font-weight: 600; font-family: Poppins, sans-serif; }
+.warn { color: var(--bad); }
+@media (max-width: 760px) { .t-grid { margin-left: 0; } .taller .gen-view { height: 62vh; } }
