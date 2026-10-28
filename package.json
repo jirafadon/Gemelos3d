@@ -1,8 +1,33 @@
 {
-  "name": "gemelos3d",
+  "name": "gemelos3d-lab",
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test src/core/*.test.js"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node --test tests/*.test.js"
+  },
+  "devDependencies": {
+    "vite": "^6.4.5"
+  },
+  "dependencies": {
+    "@fontsource/anton": "^5.3.0",
+    "@fontsource/baloo-2": "^5.3.0",
+    "@fontsource/bangers": "^5.3.0",
+    "@fontsource/bebas-neue": "^5.3.0",
+    "@fontsource/dancing-script": "^5.3.0",
+    "@fontsource/fredoka": "^5.3.0",
+    "@fontsource/great-vibes": "^5.3.0",
+    "@fontsource/lobster": "^5.3.0",
+    "@fontsource/oswald": "^5.3.0",
+    "@fontsource/pacifico": "^5.3.0",
+    "@fontsource/poppins": "^5.3.0",
+    "@fontsource/righteous": "^5.3.0",
+    "fflate": "^0.8.3",
+    "manifold-3d": "^3.5.4",
+    "opentype.js": "^2.0.0",
+    "qrcode-generator": "^2.0.4",
+    "three": "^0.186.1"
   }
 }

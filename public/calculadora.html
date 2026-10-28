@@ -1,0 +1,885 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculadora Gemelos 3D</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+:root{
+  --bg:#f5f8fc; --panel:#ffffff; --soft:#e3f1fb; --soft2:#f1f5f9; --line:#d7e3ee;
+  --text:#14202e; --muted:#5b6b7c; --brand:#1565c0; --brand-ink:#ffffff;
+  --ok:#15803d; --ok-bg:#ecfdf3; --ok-line:#a7e3bd; --warn:#b45309; --warn-bg:#fff7e6;
+  --bad:#b91c1c; --radius:14px; --shadow:0 1px 2px rgba(20,32,46,.06),0 4px 16px rgba(20,32,46,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e141b; --panel:#151d26; --soft:#16283a; --soft2:#1b2531; --line:#263443;
+    --text:#e6edf4; --muted:#93a4b5; --brand:#4b9ef0; --brand-ink:#06121f;
+    --ok:#4ade80; --ok-bg:#10241a; --ok-line:#22543a; --warn:#fbbf24; --warn-bg:#2a2210; --bad:#f87171;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e141b; --panel:#151d26; --soft:#16283a; --soft2:#1b2531; --line:#263443;
+  --text:#e6edf4; --muted:#93a4b5; --brand:#4b9ef0; --brand-ink:#06121f;
+  --ok:#4ade80; --ok-bg:#10241a; --ok-line:#22543a; --warn:#fbbf24; --warn-bg:#2a2210; --bad:#f87171;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 Inter,system-ui,sans-serif}
+h1,h2,h3{font-family:Poppins,Inter,sans-serif;margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding:24px 16px 60px}
+header.top{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between;margin-bottom:20px}
+header.top h1{font-size:30px;line-height:1.1}
+header.top p{margin:4px 0 0;color:var(--muted)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+.card + .card{margin-top:16px}
+.card h2{font-size:17px;display:flex;align-items:center;gap:8px}
+.card .sub{color:var(--muted);font-size:13.5px;margin:4px 0 14px}
+.step{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--brand);color:var(--brand-ink);font-size:12px;font-family:Inter}
+label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:4px;font-weight:500}
+.field{position:relative}
+.field .unit{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--muted);pointer-events:none}
+input,select{width:100%;font:inherit;color:var(--text);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 11px;min-width:0}
+input:focus,select:focus{outline:2px solid color-mix(in srgb,var(--brand) 40%,transparent);border-color:var(--brand)}
+.field input{padding-right:42px}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.f4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media (max-width:560px){.f3,.f4{grid-template-columns:1fr 1fr}}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);padding:9px 14px;font-weight:600}
+button:hover{border-color:var(--brand)}
+button.primary{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+button.ghost{background:transparent;border-color:transparent;color:var(--muted);padding:6px 8px}
+button.ghost:hover{color:var(--bad)}
+button.small{padding:6px 10px;font-size:13px}
+.drop{border:2px dashed color-mix(in srgb,var(--brand) 45%,var(--line));background:var(--soft);border-radius:var(--radius);padding:26px 16px;text-align:center;cursor:pointer;transition:.15s}
+.drop.over{background:color-mix(in srgb,var(--brand) 18%,var(--soft));transform:scale(1.005)}
+.drop strong{display:block;font-size:16px;margin-bottom:4px}
+.drop span{color:var(--muted);font-size:13px}
+.pieces{display:flex;flex-direction:column;gap:12px;margin-top:14px}
+.piece{display:grid;grid-template-columns:96px 1fr;gap:14px;border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--soft2)}
+@media (max-width:560px){.piece{grid-template-columns:1fr}}
+.thumb{width:96px;height:96px;border-radius:10px;background:var(--panel);border:1px solid var(--line);display:grid;place-items:center;overflow:hidden;color:var(--muted);font-size:11px;text-align:center}
+.thumb img,.thumb canvas{width:100%;height:100%;object-fit:contain}
+.piece-head{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.piece-head input{font-weight:600}
+.badge{font-size:11.5px;padding:3px 8px;border-radius:99px;white-space:nowrap;border:1px solid var(--line);color:var(--muted)}
+.badge.exact{background:var(--ok-bg);color:var(--ok);border-color:var(--ok-line)}
+.badge.est{background:var(--warn-bg);color:var(--warn);border-color:color-mix(in srgb,var(--warn) 35%,transparent)}
+.meta{font-size:12px;color:var(--muted);margin-top:8px}
+.warn{font-size:12.5px;color:var(--warn);margin-top:6px}
+.empty{color:var(--muted);font-size:13.5px;text-align:center;padding:6px 0 0}
+details.box{border-top:1px solid var(--line);padding-top:14px;margin-top:14px}
+details.box summary{cursor:pointer;font-weight:600;list-style:none;display:flex;justify-content:space-between}
+details.box summary::-webkit-details-marker{display:none}
+details.box summary::after{content:"▾";color:var(--muted)}
+details.box[open] summary::after{content:"▴"}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--soft2);border:1px solid var(--line);border-radius:10px;padding:3px;gap:3px;margin-bottom:8px}
+.seg button{border:0;background:transparent;padding:6px;font-size:13px}
+.seg button.on{background:var(--brand);color:var(--brand-ink)}
+.result{position:sticky;top:16px;background:var(--ok-bg);border-color:var(--ok-line)}
+.total-box{background:var(--panel);border:1px solid var(--ok-line);border-radius:12px;padding:16px;margin:14px 0}
+.total-line{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.total-line .big{font-family:Poppins;font-size:32px;font-weight:700}
+.total-line + .total-line{margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}
+.kv{display:flex;justify-content:space-between;padding:4px 0;font-size:14px}
+.kv span:last-child{font-variant-numeric:tabular-nums}
+.kv.strong{font-weight:600;border-top:1px solid var(--line);margin-top:4px;padding-top:8px}
+.sect{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:14px 0 4px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:4px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center}
+.stat b{display:block;font-size:16px}
+.stat small{color:var(--muted);font-size:11.5px}
+.links{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 12px}
+.links a{font-size:13px;font-weight:600;color:var(--brand);text-decoration:none;border:1px solid var(--line);border-radius:99px;padding:6px 12px;background:var(--panel)}
+.links a:hover{border-color:var(--brand)}
+.cmp{font-size:13.5px;margin-top:8px;padding:10px;border-radius:10px;background:var(--soft2)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:.2s;pointer-events:none;z-index:50}
+.toast.show{opacity:1}
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--panel);color:var(--text);padding:0;width:min(720px,calc(100vw - 32px));max-height:calc(100vh - 32px)}
+dialog::backdrop{background:rgba(10,16,24,.5)}
+.dlg-head{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px}
+.dlg-body{padding:18px 20px;overflow:auto;max-height:calc(100vh - 190px)}
+.dlg-foot{padding:14px 20px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.dlg-body h3{font-size:14px;margin:18px 0 8px}
+.dlg-body h3:first-child{margin-top:0}
+.fil-row{display:grid;grid-template-columns:1.2fr 1fr .8fr auto;gap:8px;margin-bottom:8px;align-items:center}
+.hint{font-size:12px;color:var(--muted);margin-top:6px}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--brand);border-radius:50%;animation:s .8s linear infinite;vertical-align:-2px}
+@keyframes s{to{transform:rotate(360deg)}}
+#quote{display:none}
+@media print{
+  body{background:#fff;color:#000}
+  .wrap,.toast,dialog{display:none!important}
+  #quote{display:block;padding:24px;font-family:Inter,sans-serif;color:#000}
+  #quote table{width:100%;border-collapse:collapse;margin:16px 0}
+  #quote th,#quote td{border-bottom:1px solid #ccc;padding:8px;text-align:left;font-size:13px}
+  #quote .q-total{font-size:22px;font-weight:700;text-align:right;margin-top:12px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Calculadora de presupuestos</h1>
+      <p>Arrastrá tus archivos, retocá si hace falta y listo el precio.</p>
+    </div>
+    <div class="row">
+      <a href="./" style="color:var(--brand);font-weight:600;text-decoration:none;margin-right:6px">← Gemelos 3D Lab</a>
+      <select id="profileSelect" style="width:auto" aria-label="Perfil"></select>
+      <button id="btnProfile">⚙ Perfil</button>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div>
+      <section class="card">
+        <h2><span class="step">1</span> Piezas del trabajo</h2>
+        <p class="sub">STL y 3MF se estiman por volumen. Un 3MF laminado (Orca / Bambu Studio) o un G-code traen gramos y tiempo exactos.</p>
+        <label class="drop" id="drop">
+          <input type="file" id="fileInput" multiple accept=".stl,.3mf,.gcode,.gco,.g,.bgcode" hidden>
+          <strong>Arrastrá STL, 3MF o G-code acá</strong>
+          <span>o tocá para elegir archivos · podés subir varios a la vez</span>
+        </label>
+        <div class="row" style="margin-top:10px;justify-content:space-between">
+          <button class="small" id="btnManual">+ Agregar pieza a mano</button>
+          <span id="loading" class="hint"></span>
+        </div>
+        <div class="pieces" id="pieces"></div>
+      </section>
+
+      <section class="card">
+        <h2><span class="step">2</span> Pedido y extras</h2>
+        <p class="sub">Los extras se suman después de la ganancia: no se multiplican.</p>
+        <div class="f2">
+          <div><label for="jobName">Nombre del trabajo</label><input id="jobName" placeholder="Ej: Cartel JONI"></div>
+          <div><label for="units">Unidades del pedido</label><div class="field"><input id="units" type="number" min="1" step="1" value="1"><span class="unit">u</span></div></div>
+        </div>
+        <details class="box" id="extrasBox">
+          <summary>Insumos, diseño y posprocesado</summary>
+          <div style="margin-top:12px">
+            <label for="supplies">Insumos por unidad (imanes, argollas, LED, pintura…)</label>
+            <div class="field"><input id="supplies" type="number" min="0" step="any" value="0"><span class="unit">$</span></div>
+            <div class="f2" style="margin-top:12px">
+              <div>
+                <label>Diseño y modelado (una sola vez)</label>
+                <div class="seg" data-target="design"><button data-mode="fixed">Monto fijo</button><button data-mode="hours">Por hora</button></div>
+                <div class="field"><input id="designValue" type="number" min="0" step="any" value="0"><span class="unit" id="designUnit">$</span></div>
+              </div>
+              <div>
+                <label>Posprocesado (por unidad)</label>
+                <div class="seg" data-target="post"><button data-mode="fixed">Monto fijo</button><button data-mode="hours">Por hora</button></div>
+                <div class="field"><input id="postValue" type="number" min="0" step="any" value="0"><span class="unit" id="postUnit">$</span></div>
+              </div>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <section class="card">
+        <h2><span class="step">3</span> Comparar con el mercado</h2>
+        <p class="sub">Buscá productos parecidos ya publicados y anotá un precio de referencia para ver dónde quedás.</p>
+        <label for="searchText">Qué buscar</label>
+        <input id="searchText" placeholder="Ej: llavero personalizado">
+        <div class="links" id="links"></div>
+        <label for="marketRef">Precio de referencia que encontraste (por unidad)</label>
+        <div class="field"><input id="marketRef" type="number" min="0" step="any" placeholder="0"><span class="unit">$</span></div>
+        <div id="cmp"></div>
+      </section>
+    </div>
+
+    <aside class="card result" id="result">
+      <div class="row" style="justify-content:space-between">
+        <h2>Resultado</h2>
+        <span class="badge" id="profileBadge"></span>
+      </div>
+      <div class="total-box">
+        <div class="total-line"><span style="font-weight:600">TOTAL A COBRAR</span><span class="big" id="rTotal">$ 0</span></div>
+        <div class="total-line"><span>Por unidad</span><b id="rUnit">$ 0</b></div>
+        <div class="total-line"><span id="rComLabel">Publicado con comisión</span><b id="rCom">$ 0</b></div>
+        <div class="hint" id="rProfit"></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><b id="sGrams">0 g</b><small>filamento</small></div>
+        <div class="stat"><b id="sTime">0 h</b><small>impresión</small></div>
+        <div class="stat"><b id="sPerHour">$ 0</b><small>ganás por hora</small></div>
+      </div>
+      <div class="sect">Costos base</div>
+      <div class="kv"><span>Material</span><span id="rMat"></span></div>
+      <div class="kv"><span>Electricidad</span><span id="rElec"></span></div>
+      <div class="kv"><span>Desgaste de máquina</span><span id="rWear"></span></div>
+      <div class="kv"><span id="rErrLabel">Margen de error</span><span id="rErr"></span></div>
+      <div class="kv strong"><span>Costo de producción</span><span id="rProd"></span></div>
+      <div class="kv"><span id="rMarkLabel">Ganancia</span><span id="rMark"></span></div>
+      <div class="sect">Extras</div>
+      <div class="kv"><span>Insumos</span><span id="rSup"></span></div>
+      <div class="kv"><span>Diseño</span><span id="rDes"></span></div>
+      <div class="kv"><span>Posprocesado</span><span id="rPost"></span></div>
+      <div class="row" style="margin-top:16px">
+        <button style="flex:1" id="btnCopy">Copiar para WhatsApp</button>
+        <button class="primary" style="flex:1" id="btnQuote">Cotización PDF</button>
+      </div>
+      <button class="ghost" style="width:100%;margin-top:8px" id="btnNew">Empezar presupuesto nuevo</button>
+    </aside>
+  </div>
+</div>
+
+<dialog id="dlg">
+  <div class="dlg-head">
+    <div><h2 style="font-size:18px">Perfil de impresora</h2><div class="hint" style="margin:2px 0 0">Se carga una vez y queda guardado en este navegador.</div></div>
+    <button class="ghost" id="dlgClose" aria-label="Cerrar">✕</button>
+  </div>
+  <div class="dlg-body" id="dlgBody"></div>
+  <div class="dlg-foot">
+    <div class="row">
+      <button class="small" id="pNew">Nuevo</button>
+      <button class="small" id="pDup">Duplicar</button>
+      <button class="small" id="pDel">Eliminar</button>
+      <button class="small" id="pExport">Exportar</button>
+      <button class="small" id="pImport">Importar</button>
+      <input type="file" id="pImportFile" accept=".json" hidden>
+    </div>
+    <button class="primary" id="pSave">Guardar perfil</button>
+  </div>
+</dialog>
+
+<div id="quote"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   Calculadora de presupuestos — Gemelos 3D
+   Un solo archivo, sin backend. Guarda perfiles en localStorage.
+   ============================================================ */
+
+// ---------- Storage helpers ----------
+const STORE = { profiles: 'g3d_calc_profiles', active: 'g3d_calc_active', job: 'g3d_calc_job' };
+function load(key, fallback) { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; } }
+function save(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* storage full or blocked */ } }
+
+const uid = () => Math.random().toString(36).slice(2, 10);
+
+function defaultProfile() {
+  return {
+    id: uid(), name: 'Snapmaker U1', business: 'Gemelos 3D',
+    bed: { x: 270, y: 270, z: 270 },
+    kwhPrice: 160, watts: 200, lifeHours: 5000, partsCost: 300000,
+    errorPct: 15, markup: 3, commissionPct: 15,
+    designRate: 8000, postRate: 6000, roundTo: 100, validDays: 7,
+    est: { infill: 15, walls: 3, lineWidth: 0.42, gph: 25 },
+    filaments: [
+      { name: 'PLA', price: 25000, density: 1.24 },
+      { name: 'PETG', price: 28000, density: 1.27 },
+      { name: 'TPU', price: 35000, density: 1.21 },
+      { name: 'ABS / ASA', price: 30000, density: 1.05 },
+    ],
+  };
+}
+function emptyJob() {
+  return { name: '', units: 1, pieces: [], supplies: 0, design: { mode: 'fixed', value: 0 }, post: { mode: 'fixed', value: 0 }, searchText: '', marketRef: 0 };
+}
+
+let profiles = load(STORE.profiles, null);
+const firstRun = !profiles || !profiles.length;
+if (firstRun) profiles = [defaultProfile()];
+let activeId = load(STORE.active, profiles[0].id);
+if (!profiles.find(p => p.id === activeId)) activeId = profiles[0].id;
+let job = Object.assign(emptyJob(), load(STORE.job, {}));
+
+const profile = () => profiles.find(p => p.id === activeId);
+const persistJob = () => save(STORE.job, job);
+const persistProfiles = () => { save(STORE.profiles, profiles); save(STORE.active, activeId); };
+
+// ---------- Formatting ----------
+const moneyFmt = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 });
+const money = n => moneyFmt.format(isFinite(n) ? n : 0);
+const num = v => { const n = parseFloat(String(v).replace(',', '.')); return isFinite(n) ? n : 0; };
+function fmtTime(min) { min = Math.round(min); const h = Math.floor(min / 60), m = min % 60; return h ? `${h} h ${m ? m + ' min' : ''}`.trim() : `${m} min`; }
+const $ = id => document.getElementById(id);
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2200); }
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+/* ============================================================
+   File parsing
+   ============================================================ */
+
+// --- STL (binary + ASCII) -> Float32Array of triangle vertices ---
+function parseSTL(buffer) {
+  const dv = new DataView(buffer);
+  if (buffer.byteLength >= 84) {
+    const count = dv.getUint32(80, true);
+    if (84 + count * 50 === buffer.byteLength) {
+      const out = new Float32Array(count * 9);
+      for (let i = 0; i < count; i++) {
+        const base = 84 + i * 50 + 12;
+        for (let j = 0; j < 9; j++) out[i * 9 + j] = dv.getFloat32(base + j * 4, true);
+      }
+      return out;
+    }
+  }
+  const text = new TextDecoder().decode(buffer);
+  const re = /vertex\s+([-+\d.eE]+)\s+([-+\d.eE]+)\s+([-+\d.eE]+)/g;
+  const vals = []; let m;
+  while ((m = re.exec(text))) vals.push(+m[1], +m[2], +m[3]);
+  if (!vals.length) throw new Error('El STL no tiene triángulos legibles');
+  return new Float32Array(vals);
+}
+
+// --- Mesh statistics: volume (mm³), surface (mm²), bounding box ---
+function meshStats(pos) {
+  let vol = 0, area = 0;
+  const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
+  for (let i = 0; i < pos.length; i += 9) {
+    const ax = pos[i], ay = pos[i + 1], az = pos[i + 2];
+    const bx = pos[i + 3], by = pos[i + 4], bz = pos[i + 5];
+    const cx = pos[i + 6], cy = pos[i + 7], cz = pos[i + 8];
+    vol += (ax * (by * cz - bz * cy) - ay * (bx * cz - bz * cx) + az * (bx * cy - by * cx)) / 6;
+    const ux = bx - ax, uy = by - ay, uz = bz - az, vx = cx - ax, vy = cy - ay, vz = cz - az;
+    const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+    area += Math.sqrt(nx * nx + ny * ny + nz * nz) / 2;
+    for (let k = 0; k < 9; k += 3) for (let a = 0; a < 3; a++) {
+      const v = pos[i + k + a]; if (v < min[a]) min[a] = v; if (v > max[a]) max[a] = v;
+    }
+  }
+  return { volume: Math.abs(vol), area, size: [max[0] - min[0], max[1] - min[1], max[2] - min[2]] };
+}
+
+// --- Estimate grams and minutes from geometry using profile settings ---
+function estimateFromMesh(stats, prof, filament) {
+  const { infill, walls, lineWidth, gph } = prof.est;
+  const shell = Math.min(stats.volume, stats.area * walls * lineWidth);   // walls + top/bottom approx.
+  const plastic = shell + (stats.volume - shell) * (infill / 100);       // mm³
+  const grams = plastic / 1000 * (filament?.density || 1.24);
+  const minutes = gph > 0 ? grams / gph * 60 : 0;
+  return { grams, minutes };
+}
+
+// --- 3MF: sliced info (exact) or meshes (estimated) ---
+const UNIT_SCALE = { micron: 0.001, millimeter: 1, centimeter: 10, inch: 25.4, foot: 304.8, meter: 1000 };
+const IDENTITY = [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0];
+function parseTransform(s) { if (!s) return IDENTITY; const a = s.trim().split(/\s+/).map(Number); return a.length === 12 && a.every(isFinite) ? a : IDENTITY; }
+// Row-vector convention (3MF): p' = p·L + t. compose(a,b) = apply a, then b.
+function compose(a, b) {
+  const r = new Array(12);
+  for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) r[i * 3 + j] = a[i * 3] * b[j] + a[i * 3 + 1] * b[3 + j] + a[i * 3 + 2] * b[6 + j];
+  for (let j = 0; j < 3; j++) r[9 + j] = a[9] * b[j] + a[10] * b[3 + j] + a[11] * b[6 + j] + b[9 + j];
+  return r;
+}
+
+async function parse3MF(buffer) {
+  if (typeof JSZip === 'undefined') throw new Error('No se pudo cargar el lector de 3MF (revisá la conexión)');
+  const zip = await JSZip.loadAsync(buffer);
+  const result = { exact: null, positions: null, thumb: null };
+
+  // Thumbnail (Bambu / Orca guardan una imagen de la placa)
+  const thumbFile = Object.keys(zip.files).find(n => /^Metadata\/(plate_1|thumbnail)\.png$/i.test(n)) ||
+                    Object.keys(zip.files).find(n => /^Metadata\/.*\.png$/i.test(n) && !/small|no_light|pick|top/i.test(n));
+  if (thumbFile) result.thumb = 'data:image/png;base64,' + await zip.file(thumbFile).async('base64');
+
+  // Datos de laminado (3MF exportado desde Orca/Bambu después de laminar)
+  const slice = zip.file('Metadata/slice_info.config');
+  if (slice) {
+    const doc = new DOMParser().parseFromString(await slice.async('text'), 'application/xml');
+    let grams = 0, seconds = 0, plates = 0;
+    for (const plate of doc.getElementsByTagName('plate')) {
+      const meta = {};
+      for (const m of plate.getElementsByTagName('metadata')) meta[m.getAttribute('key')] = m.getAttribute('value');
+      let w = num(meta.weight);
+      if (!w) for (const f of plate.getElementsByTagName('filament')) w += num(f.getAttribute('used_g'));
+      if (w || num(meta.prediction)) { grams += w; seconds += num(meta.prediction); plates++; }
+    }
+    if (grams > 0) result.exact = { grams, minutes: seconds / 60, plates };
+  }
+
+  // Geometría
+  const modelPaths = Object.keys(zip.files).filter(n => /\.model$/i.test(n));
+  if (modelPaths.length) {
+    const objects = {};
+    let rootPath = modelPaths.find(n => /^3D\/3dmodel\.model$/i.test(n)) || modelPaths[0];
+    let rootDoc = null, scale = 1;
+    for (const path of modelPaths) {
+      const doc = new DOMParser().parseFromString(await zip.file(path).async('text'), 'application/xml');
+      const modelEl = doc.getElementsByTagName('model')[0];
+      const s = UNIT_SCALE[modelEl?.getAttribute('unit') || 'millimeter'] || 1;
+      if (path === rootPath) { rootDoc = doc; scale = s; }
+      for (const obj of doc.getElementsByTagName('object')) {
+        const key = '/' + path + '#' + obj.getAttribute('id');
+        const meshEl = obj.getElementsByTagName('mesh')[0];
+        if (meshEl) {
+          const vEls = meshEl.getElementsByTagName('vertex');
+          const verts = new Float32Array(vEls.length * 3);
+          for (let i = 0; i < vEls.length; i++) {
+            verts[i * 3] = +vEls[i].getAttribute('x') * s; verts[i * 3 + 1] = +vEls[i].getAttribute('y') * s; verts[i * 3 + 2] = +vEls[i].getAttribute('z') * s;
+          }
+          const tEls = meshEl.getElementsByTagName('triangle');
+          const tris = new Uint32Array(tEls.length * 3);
+          for (let i = 0; i < tEls.length; i++) {
+            tris[i * 3] = +tEls[i].getAttribute('v1'); tris[i * 3 + 1] = +tEls[i].getAttribute('v2'); tris[i * 3 + 2] = +tEls[i].getAttribute('v3');
+          }
+          objects[key] = { verts, tris };
+        } else {
+          const comps = [];
+          for (const c of obj.getElementsByTagName('component')) {
+            const p = c.getAttribute('p:path') || c.getAttribute('path');
+            comps.push({ ref: (p ? (p.startsWith('/') ? p : '/' + p) : '/' + path) + '#' + c.getAttribute('objectid'), m: parseTransform(c.getAttribute('transform')) });
+          }
+          objects[key] = { comps };
+        }
+      }
+    }
+    const chunks = []; let total = 0;
+    const collect = (key, m, depth) => {
+      const o = objects[key]; if (!o || depth > 10) return;
+      if (o.verts) {
+        const out = new Float32Array(o.tris.length * 3);
+        for (let i = 0; i < o.tris.length; i++) {
+          const vi = o.tris[i] * 3, x = o.verts[vi], y = o.verts[vi + 1], z = o.verts[vi + 2];
+          out[i * 3] = x * m[0] + y * m[3] + z * m[6] + m[9];
+          out[i * 3 + 1] = x * m[1] + y * m[4] + z * m[7] + m[10];
+          out[i * 3 + 2] = x * m[2] + y * m[5] + z * m[8] + m[11];
+        }
+        chunks.push(out); total += out.length;
+      } else o.comps.forEach(c => collect(c.ref, compose(c.m, m), depth + 1));
+    };
+    const items = rootDoc ? rootDoc.getElementsByTagName('item') : [];
+    for (const it of items) collect('/' + rootPath + '#' + it.getAttribute('objectid'), parseTransform(it.getAttribute('transform')), 0);
+    if (total) {
+      const all = new Float32Array(total); let off = 0;
+      chunks.forEach(c => { all.set(c, off); off += c.length; });
+      result.positions = all;
+    }
+  }
+  if (!result.exact && !result.positions) throw new Error('El 3MF no trae ni geometría ni datos de laminado');
+  return result;
+}
+
+// --- G-code: lee los comentarios de Orca, Bambu, Prusa, Cura y Luban ---
+function parseDuration(s) {
+  if (!s) return 0;
+  s = s.trim();
+  if (/^\d+(\.\d+)?$/.test(s)) return +s;
+  let sec = 0;
+  const re = /(\d+(?:\.\d+)?)\s*(d|h|m|s)/gi; let m;
+  while ((m = re.exec(s))) sec += +m[1] * { d: 86400, h: 3600, m: 60, s: 1 }[m[2].toLowerCase()];
+  return sec;
+}
+async function parseGcode(file, density) {
+  const head = await file.slice(0, 400000).text();
+  const tail = file.size > 400000 ? await file.slice(-400000).text() : '';
+  const text = head + '\n' + tail;
+  let grams = 0, seconds = 0, m;
+  if ((m = text.match(/total filament (?:weight|used) \[g\]\s*[:=]\s*([\d.]+)/i))) grams = +m[1];
+  else if ((m = text.match(/filament used \[g\]\s*[:=]\s*([\d.,\s]+)/i))) grams = m[1].split(',').reduce((a, b) => a + num(b), 0);
+  else if ((m = text.match(/material(?:_|\s)?weight\s*[:=]\s*([\d.]+)/i))) grams = +m[1];          // Luban
+  else if ((m = text.match(/;\s*Filament used:\s*([\d.]+)\s*m/i))) {                                 // Cura (metros)
+    const mm = +m[1] * 1000, r = 1.75 / 2;
+    grams = mm * Math.PI * r * r / 1000 * density;
+  }
+  if ((m = text.match(/total estimated time:\s*([^;\n\r]+)/i))) seconds = parseDuration(m[1]);       // Bambu
+  else if ((m = text.match(/estimated printing time(?: \(normal mode\))?\s*[:=]\s*([^\n\r]+)/i))) seconds = parseDuration(m[1]);
+  else if ((m = text.match(/;TIME:(\d+)/))) seconds = +m[1];                                          // Cura
+  else if ((m = text.match(/estimated_time\(s\)\s*[:=]\s*([\d.]+)/i))) seconds = +m[1];               // Luban
+  if (!grams && !seconds) throw new Error('El G-code no trae gramos ni tiempo en los comentarios');
+  return { grams, minutes: seconds / 60 };
+}
+
+// --- Miniatura isométrica simple (sin librerías) ---
+function renderThumb(pos, size = 192) {
+  const c = document.createElement('canvas'); c.width = c.height = size;
+  const ctx = c.getContext('2d');
+  const triCount = pos.length / 9, step = Math.max(1, Math.floor(triCount / 40000));
+  const yaw = Math.PI / 4, pitch = Math.atan(1 / Math.SQRT2);
+  const cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
+  const proj = (x, y, z) => { const rx = x * cy - y * sy, ry = x * sy + y * cy; return [rx, -(z * cp - ry * sp), ry * cp + z * sp]; };
+  const tris = []; let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  for (let t = 0; t < triCount; t += step) {
+    const i = t * 9;
+    const a = proj(pos[i], pos[i + 1], pos[i + 2]), b = proj(pos[i + 3], pos[i + 4], pos[i + 5]), d = proj(pos[i + 6], pos[i + 7], pos[i + 8]);
+    const ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2], vx = d[0] - a[0], vy = d[1] - a[1], vz = d[2] - a[2];
+    const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+    const len = Math.hypot(nx, ny, nz) || 1;
+    const light = Math.abs((nx * 0.3 - ny * 0.6 - nz * 0.75) / len);
+    tris.push([a, b, d, (a[2] + b[2] + d[2]) / 3, light]);
+    for (const p of [a, b, d]) { if (p[0] < minX) minX = p[0]; if (p[0] > maxX) maxX = p[0]; if (p[1] < minY) minY = p[1]; if (p[1] > maxY) maxY = p[1]; }
+  }
+  tris.sort((p, q) => p[3] - q[3]);
+  const k = (size * 0.86) / Math.max(maxX - minX, maxY - minY, 1e-6);
+  const ox = size / 2 - (minX + maxX) / 2 * k, oy = size / 2 - (minY + maxY) / 2 * k;
+  for (const [a, b, d, , l] of tris) {
+    const v = Math.round(70 + 150 * l);
+    ctx.fillStyle = ctx.strokeStyle = `rgb(${Math.round(v * 0.45)},${Math.round(v * 0.7)},${v})`;
+    ctx.beginPath(); ctx.moveTo(a[0] * k + ox, a[1] * k + oy); ctx.lineTo(b[0] * k + ox, b[1] * k + oy); ctx.lineTo(d[0] * k + ox, d[1] * k + oy);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+  }
+  return c.toDataURL('image/png');
+}
+
+function bedWarning(size, bed) {
+  const [x, y, z] = size;
+  const fits = ((x <= bed.x && y <= bed.y) || (x <= bed.y && y <= bed.x)) && z <= bed.z;
+  if (Math.max(x, y, z) < 3) return 'La pieza mide menos de 3 mm: puede que el archivo esté en centímetros o pulgadas.';
+  if (!fits) return `No entra en una cama de ${bed.x}×${bed.y}×${bed.z} mm: vas a tener que dividirla o rotarla.`;
+  return '';
+}
+const cleanName = n => n.replace(/\.(gcode\.3mf|3mf|stl|gcode|gco|g|bgcode)$/i, '').replace(/[_-]+/g, ' ').trim();
+
+async function handleFiles(fileList) {
+  const files = [...fileList]; if (!files.length) return;
+  const prof = profile();
+  for (const file of files) {
+    $('loading').innerHTML = `<span class="spin"></span> Leyendo ${esc(file.name)}…`;
+    const piece = { id: uid(), name: cleanName(file.name), filament: 0, grams: 0, minutes: 0, qty: 1, source: 'manual', thumb: null, meta: '', warn: '' };
+    const fil = prof.filaments[0];
+    try {
+      const lower = file.name.toLowerCase();
+      let positions = null;
+      if (lower.endsWith('.stl')) {
+        positions = parseSTL(await file.arrayBuffer());
+      } else if (lower.endsWith('.3mf')) {
+        const r = await parse3MF(await file.arrayBuffer());
+        positions = r.positions; piece.thumb = r.thumb;
+        if (r.exact) {
+          Object.assign(piece, { grams: r.exact.grams, minutes: r.exact.minutes, source: 'slicer' });
+          piece.meta = `Datos del laminador${r.exact.plates > 1 ? ` · ${r.exact.plates} placas` : ''}`;
+        }
+      } else if (lower.endsWith('.bgcode')) {
+        throw new Error('El G-code binario (.bgcode) no se puede leer: exportalo como .gcode de texto');
+      } else {
+        const r = await parseGcode(file, fil.density);
+        Object.assign(piece, { grams: r.grams, minutes: r.minutes, source: 'slicer', meta: 'Datos del G-code' });
+      }
+      if (positions && positions.length) {
+        const st = meshStats(positions);
+        if (piece.source !== 'slicer') {
+          const e = estimateFromMesh(st, prof, fil);
+          Object.assign(piece, { grams: e.grams, minutes: e.minutes, source: 'mesh' });
+        }
+        piece.meta = [piece.meta, `${st.size.map(v => v.toFixed(0)).join(' × ')} mm`, `${(st.volume / 1000).toFixed(1)} cm³`].filter(Boolean).join(' · ');
+        piece.warn = bedWarning(st.size, prof.bed);
+        if (!piece.thumb) piece.thumb = renderThumb(positions);
+      }
+      piece.grams = Math.round(piece.grams * 10) / 10;
+      piece.minutes = Math.round(piece.minutes);
+      job.pieces.push(piece);
+      if (!job.searchText) job.searchText = piece.name;
+      if (!job.name) job.name = piece.name;
+    } catch (err) {
+      console.error(err);
+      toast(`${file.name}: ${err.message}`);
+    }
+  }
+  $('loading').textContent = '';
+  persistJob(); renderAll();
+}
+
+/* ============================================================
+   Cálculo
+   ============================================================ */
+function compute() {
+  const p = profile(), units = Math.max(1, Math.round(num(job.units)) || 1);
+  let grams = 0, minutes = 0, material = 0;
+  for (const pc of job.pieces) {
+    const fil = p.filaments[pc.filament] || p.filaments[0] || { price: 0 };
+    const q = Math.max(0, num(pc.qty));
+    grams += num(pc.grams) * q; minutes += num(pc.minutes) * q;
+    material += num(pc.grams) / 1000 * num(fil.price) * q;
+  }
+  grams *= units; minutes *= units; material *= units;
+  const hours = minutes / 60;
+  const electricity = hours * num(p.watts) / 1000 * num(p.kwhPrice);
+  const wear = num(p.lifeHours) > 0 ? hours * num(p.partsCost) / num(p.lifeHours) : 0;
+  const base = material + electricity + wear;
+  const error = base * num(p.errorPct) / 100;
+  const production = base + error;
+  const priced = production * Math.max(1, num(p.markup));
+  const supplies = num(job.supplies) * units;
+  const design = job.design.mode === 'hours' ? num(job.design.value) * num(p.designRate) : num(job.design.value);
+  const post = (job.post.mode === 'hours' ? num(job.post.value) * num(p.postRate) : num(job.post.value)) * units;
+  const r = Math.max(1, num(p.roundTo) || 1);
+  const total = Math.ceil((priced + supplies + design + post) / r) * r;
+  const c = Math.min(90, Math.max(0, num(p.commissionPct))) / 100;
+  const withCommission = Math.ceil(total / (1 - c) / r) * r;
+  const profit = total - production - supplies;
+  return { units, grams, minutes, material, electricity, wear, error, production, markupAmount: priced - production, supplies, design, post, total, perUnit: total / units, withCommission, profit };
+}
+
+/* ============================================================
+   Render
+   ============================================================ */
+function renderProfileSelect() {
+  $('profileSelect').innerHTML = profiles.map(p => `<option value="${p.id}" ${p.id === activeId ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
+  $('profileBadge').textContent = profile().name;
+}
+
+function renderPieces() {
+  const p = profile(), box = $('pieces');
+  if (!job.pieces.length) { box.innerHTML = '<div class="empty">Todavía no hay piezas. Arrastrá un archivo o agregala a mano.</div>'; return; }
+  box.innerHTML = job.pieces.map(pc => {
+    const badge = pc.source === 'slicer' ? '<span class="badge exact">Exacto</span>' : pc.source === 'mesh' ? '<span class="badge est" title="Estimado por volumen. Si laminás y cargás el 3MF o G-code queda exacto.">Estimado</span>' : '<span class="badge">Manual</span>';
+    const h = Math.floor(num(pc.minutes) / 60), m = Math.round(num(pc.minutes) % 60);
+    return `<div class="piece" data-id="${pc.id}">
+      <div class="thumb">${pc.thumb ? `<img src="${pc.thumb}" alt="">` : 'sin<br>vista'}</div>
+      <div>
+        <div class="piece-head">
+          <input data-k="name" value="${esc(pc.name)}" aria-label="Nombre de la pieza">
+          ${badge}
+          <button class="ghost" data-act="del" title="Quitar">✕</button>
+        </div>
+        <div class="f4">
+          <div><label>Filamento</label><select data-k="filament">${p.filaments.map((f, i) => `<option value="${i}" ${i === +pc.filament ? 'selected' : ''}>${esc(f.name)}</option>`).join('')}</select></div>
+          <div><label>Gramos</label><div class="field"><input data-k="grams" type="number" min="0" step="any" value="${pc.grams}"><span class="unit">g</span></div></div>
+          <div><label>Tiempo</label><div class="f2" style="gap:4px"><div class="field"><input data-k="h" type="number" min="0" step="1" value="${h}"><span class="unit">h</span></div><div class="field"><input data-k="m" type="number" min="0" max="59" step="1" value="${m}"><span class="unit">m</span></div></div></div>
+          <div><label>Cantidad</label><div class="field"><input data-k="qty" type="number" min="1" step="1" value="${pc.qty}"><span class="unit">u</span></div></div>
+        </div>
+        ${pc.meta ? `<div class="meta">${esc(pc.meta)}</div>` : ''}
+        ${pc.warn ? `<div class="warn">⚠ ${esc(pc.warn)}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderJobInputs() {
+  $('jobName').value = job.name; $('units').value = job.units;
+  $('supplies').value = job.supplies; $('designValue').value = job.design.value; $('postValue').value = job.post.value;
+  $('searchText').value = job.searchText; $('marketRef').value = job.marketRef || '';
+  document.querySelectorAll('.seg').forEach(seg => {
+    const mode = job[seg.dataset.target].mode;
+    seg.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.mode === mode));
+  });
+  $('designUnit').textContent = job.design.mode === 'hours' ? 'h' : '$';
+  $('postUnit').textContent = job.post.mode === 'hours' ? 'h' : '$';
+  if (num(job.supplies) || num(job.design.value) || num(job.post.value)) $('extrasBox').open = true;
+}
+
+function renderLinks() {
+  const q = (job.searchText || '').trim();
+  if (!q) { $('links').innerHTML = '<span class="hint">Escribí qué buscar para ver los atajos.</span>'; return; }
+  const enc = encodeURIComponent(q);
+  const slug = q.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const links = [
+    ['Mercado Libre', `https://listado.mercadolibre.com.ar/${slug}-impresion-3d`],
+    ['MakerWorld', `https://makerworld.com/es/search/models?keyword=${enc}`],
+    ['Printables', `https://www.printables.com/search/models?q=${enc}`],
+    ['Cults3D', `https://cults3d.com/es/b%C3%BAsqueda?q=${enc}`],
+    ['Thingiverse', `https://www.thingiverse.com/search?q=${enc}&type=things`],
+  ];
+  $('links').innerHTML = links.map(([n, u]) => `<a href="${u}" target="_blank" rel="noopener">${n} ↗</a>`).join('');
+}
+
+function renderResult() {
+  const r = compute(), p = profile();
+  $('rTotal').textContent = money(r.total);
+  $('rUnit').textContent = money(r.perUnit);
+  $('rComLabel').textContent = `Publicado con comisión (${num(p.commissionPct)}%)`;
+  $('rCom').textContent = money(r.withCommission);
+  $('rProfit').textContent = `Te queda ${money(r.profit)} de ganancia · ×${num(p.markup)} sobre el costo de producción`;
+  $('sGrams').textContent = `${Math.round(r.grams)} g`;
+  $('sTime').textContent = fmtTime(r.minutes);
+  $('sPerHour').textContent = r.minutes ? money(r.profit / (r.minutes / 60)) : '$ 0';
+  $('rMat').textContent = money(r.material); $('rElec').textContent = money(r.electricity); $('rWear').textContent = money(r.wear);
+  $('rErrLabel').textContent = `Margen de error (${num(p.errorPct)}%)`; $('rErr').textContent = money(r.error);
+  $('rProd').textContent = money(r.production);
+  $('rMarkLabel').textContent = `Ganancia (×${num(p.markup)})`; $('rMark').textContent = money(r.markupAmount);
+  $('rSup').textContent = money(r.supplies); $('rDes').textContent = money(r.design); $('rPost').textContent = money(r.post);
+
+  const ref = num(job.marketRef);
+  if (ref > 0 && r.perUnit > 0) {
+    const diff = (r.perUnit - ref) / ref * 100;
+    const msg = Math.abs(diff) < 10 ? 'Estás en línea con el mercado.' :
+      diff > 0 ? `Estás un ${diff.toFixed(0)}% por encima. Si el tuyo no tiene algo distinto (tamaño, terminación, personalización), puede costar venderlo.` :
+                 `Estás un ${Math.abs(diff).toFixed(0)}% por debajo. Tenés margen para subir el precio.`;
+    const minPrice = (r.production + r.supplies + r.post) / r.units;
+    $('cmp').innerHTML = `<div class="cmp"><b>Tu precio por unidad: ${money(r.perUnit)}</b> · mercado ${money(ref)}<br>${msg}<br><span class="hint">Debajo de ${money(minPrice)} por unidad perdés plata.</span></div>`;
+  } else $('cmp').innerHTML = '';
+}
+
+function renderAll() { renderProfileSelect(); renderPieces(); renderJobInputs(); renderLinks(); renderResult(); }
+
+/* ============================================================
+   Eventos
+   ============================================================ */
+const drop = $('drop');
+['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => handleFiles(e.dataTransfer.files));
+// También acepta archivos soltados en cualquier parte de la página
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', e => { if (!drop.contains(e.target)) { e.preventDefault(); handleFiles(e.dataTransfer.files); } });
+$('fileInput').addEventListener('change', e => { handleFiles(e.target.files); e.target.value = ''; });
+
+$('btnManual').addEventListener('click', () => {
+  job.pieces.push({ id: uid(), name: `Pieza ${job.pieces.length + 1}`, filament: 0, grams: 0, minutes: 0, qty: 1, source: 'manual', thumb: null, meta: '', warn: '' });
+  persistJob(); renderPieces(); renderResult();
+  const inputs = $('pieces').querySelectorAll('input[data-k="grams"]'); inputs[inputs.length - 1]?.focus();
+});
+
+$('pieces').addEventListener('input', e => {
+  const el = e.target, card = el.closest('.piece'); if (!card) return;
+  const pc = job.pieces.find(x => x.id === card.dataset.id); const k = el.dataset.k;
+  if (k === 'name') pc.name = el.value;
+  else if (k === 'filament') pc.filament = +el.value;
+  else if (k === 'grams') pc.grams = num(el.value);
+  else if (k === 'qty') pc.qty = Math.max(1, Math.round(num(el.value)));
+  else if (k === 'h' || k === 'm') {
+    const h = num(card.querySelector('[data-k="h"]').value), m = num(card.querySelector('[data-k="m"]').value);
+    pc.minutes = h * 60 + m;
+  }
+  persistJob(); renderResult();
+});
+$('pieces').addEventListener('click', e => {
+  if (e.target.dataset.act !== 'del') return;
+  const id = e.target.closest('.piece').dataset.id;
+  job.pieces = job.pieces.filter(x => x.id !== id); persistJob(); renderPieces(); renderResult();
+});
+
+const bindJob = (id, setter) => $(id).addEventListener('input', e => { setter(e.target.value); persistJob(); renderResult(); });
+bindJob('jobName', v => job.name = v);
+bindJob('units', v => job.units = Math.max(1, Math.round(num(v)) || 1));
+bindJob('supplies', v => job.supplies = num(v));
+bindJob('designValue', v => job.design.value = num(v));
+bindJob('postValue', v => job.post.value = num(v));
+bindJob('marketRef', v => job.marketRef = num(v));
+$('searchText').addEventListener('input', e => { job.searchText = e.target.value; persistJob(); renderLinks(); });
+document.querySelectorAll('.seg').forEach(seg => seg.addEventListener('click', e => {
+  const mode = e.target.dataset.mode; if (!mode) return;
+  job[seg.dataset.target].mode = mode; persistJob(); renderJobInputs(); renderResult();
+}));
+
+$('profileSelect').addEventListener('change', e => { activeId = e.target.value; persistProfiles(); renderAll(); });
+
+$('btnNew').addEventListener('click', () => {
+  if (job.pieces.length && !confirm('¿Borrar el presupuesto actual y empezar otro?')) return;
+  job = emptyJob(); persistJob(); renderAll();
+});
+
+function summaryText() {
+  const r = compute(), p = profile();
+  const lines = [`*Presupuesto ${p.business ? '— ' + p.business : ''}*`];
+  if (job.name) lines.push(job.name);
+  lines.push('');
+  job.pieces.forEach(pc => lines.push(`• ${pc.name}${pc.qty > 1 ? ' ×' + pc.qty : ''} (${(p.filaments[pc.filament] || {}).name || ''})`));
+  if (r.units > 1) lines.push(`Unidades: ${r.units}`);
+  lines.push('', `Tiempo de impresión: ${fmtTime(r.minutes)}`);
+  lines.push(`*Total: ${money(r.total)}*${r.units > 1 ? ` (${money(r.perUnit)} c/u)` : ''}`);
+  lines.push(`Válido por ${p.validDays} días.`);
+  return lines.join('\n');
+}
+$('btnCopy').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText(summaryText()); toast('Resumen copiado'); }
+  catch { prompt('Copiá el resumen:', summaryText()); }
+});
+
+$('btnQuote').addEventListener('click', () => {
+  const r = compute(), p = profile(), today = new Date();
+  const until = new Date(today.getTime() + p.validDays * 86400000);
+  const fmtD = d => d.toLocaleDateString('es-AR');
+  $('quote').innerHTML = `
+    <h1 style="font-family:Poppins">${esc(p.business || 'Presupuesto')}</h1>
+    <p>Presupuesto de impresión 3D · ${fmtD(today)} · válido hasta ${fmtD(until)}</p>
+    ${job.name ? `<h2 style="margin-top:16px">${esc(job.name)}</h2>` : ''}
+    <table><thead><tr><th>Pieza</th><th>Material</th><th>Cantidad</th></tr></thead><tbody>
+      ${job.pieces.map(pc => `<tr><td>${esc(pc.name)}</td><td>${esc((p.filaments[pc.filament] || {}).name || '')}</td><td>${pc.qty * r.units}</td></tr>`).join('')}
+      ${r.design ? `<tr><td>Diseño y modelado</td><td>—</td><td>1</td></tr>` : ''}
+      ${r.post ? `<tr><td>Posprocesado / terminación</td><td>—</td><td>${r.units}</td></tr>` : ''}
+    </tbody></table>
+    <p>Tiempo estimado de impresión: ${fmtTime(r.minutes)}</p>
+    ${r.units > 1 ? `<p>Precio por unidad: ${money(r.perUnit)}</p>` : ''}
+    <div class="q-total">Total: ${money(r.total)}</div>`;
+  window.print();
+});
+
+/* ---------- Diálogo de perfil ---------- */
+let draft = null;
+function fieldHTML(path, label, unit, hint) {
+  const val = path.split('.').reduce((o, k) => o[k], draft);
+  const type = typeof val === 'number' ? 'number' : 'text';
+  return `<div><label>${label}</label><div class="field"><input data-p="${path}" type="${type}" ${type === 'number' ? 'step="any" min="0"' : ''} value="${esc(val)}">${unit ? `<span class="unit">${unit}</span>` : ''}</div>${hint ? `<div class="hint">${hint}</div>` : ''}</div>`;
+}
+function renderDialog() {
+  $('dlgBody').innerHTML = `
+    <h3>Tu negocio y tu impresora</h3>
+    <div class="f2">${fieldHTML('name', 'Nombre del perfil')}${fieldHTML('business', 'Nombre del negocio (sale en la cotización)')}</div>
+    <div class="f3" style="margin-top:10px">${fieldHTML('bed.x', 'Cama X', 'mm')}${fieldHTML('bed.y', 'Cama Y', 'mm')}${fieldHTML('bed.z', 'Altura Z', 'mm')}</div>
+    <h3>Luz y desgaste</h3>
+    <div class="f2">${fieldHTML('kwhPrice', 'Precio del kWh', '$', 'Lo ves en tu factura de luz.')}${fieldHTML('watts', 'Consumo promedio', 'W', 'Promedio real imprimiendo, no el máximo de la fuente.')}</div>
+    <div class="f2" style="margin-top:10px">${fieldHTML('lifeHours', 'Vida útil estimada', 'h')}${fieldHTML('partsCost', 'Repuestos en esa vida útil', '$', 'Picos, PEI, correas, ventiladores…')}</div>
+    <h3>Precio</h3>
+    <div class="f3">${fieldHTML('errorPct', 'Margen de error', '%', 'Fallas y pruebas.')}${fieldHTML('markup', 'Multiplicador', '×', '3 = cobrás 3 veces el costo.')}${fieldHTML('commissionPct', 'Comisión de venta', '%', 'Mercado Libre, MP, etc.')}</div>
+    <div class="f4" style="margin-top:10px">${fieldHTML('designRate', 'Hora de diseño', '$')}${fieldHTML('postRate', 'Hora de posprocesado', '$')}${fieldHTML('roundTo', 'Redondear a', '$')}${fieldHTML('validDays', 'Validez', 'días')}</div>
+    <h3>Filamentos</h3>
+    <div id="filList"></div>
+    <button class="small" id="filAdd">+ Agregar filamento</button>
+    <h3>Estimación para STL y 3MF sin laminar</h3>
+    <div class="f4">${fieldHTML('est.infill', 'Relleno', '%')}${fieldHTML('est.walls', 'Paredes', '')}${fieldHTML('est.lineWidth', 'Ancho de línea', 'mm')}${fieldHTML('est.gph', 'Velocidad', 'g/h')}</div>
+    <div class="hint">Para afinar la velocidad: laminá una pieza típica, dividí los gramos por las horas que te da Orca y poné ese número.</div>`;
+  renderFilaments();
+  $('filAdd').onclick = () => { draft.filaments.push({ name: 'Nuevo', price: 25000, density: 1.24 }); renderFilaments(); };
+}
+function renderFilaments() {
+  $('filList').innerHTML = `<div class="fil-row hint" style="margin:0 0 4px"><span>Nombre</span><span>Precio por kilo</span><span>Densidad g/cm³</span><span></span></div>` +
+    draft.filaments.map((f, i) => `<div class="fil-row">
+      <input data-f="${i}" data-fk="name" value="${esc(f.name)}">
+      <div class="field"><input data-f="${i}" data-fk="price" type="number" step="any" min="0" value="${f.price}"><span class="unit">$/kg</span></div>
+      <input data-f="${i}" data-fk="density" type="number" step="0.01" min="0" value="${f.density}">
+      <button class="ghost" data-fdel="${i}" ${draft.filaments.length < 2 ? 'disabled' : ''}>✕</button></div>`).join('');
+}
+$('dlgBody').addEventListener('input', e => {
+  const el = e.target;
+  if (el.dataset.p) {
+    const keys = el.dataset.p.split('.'), last = keys.pop();
+    const obj = keys.reduce((o, k) => o[k], draft);
+    obj[last] = el.type === 'number' ? num(el.value) : el.value;
+  } else if (el.dataset.f) {
+    const f = draft.filaments[+el.dataset.f]; f[el.dataset.fk] = el.dataset.fk === 'name' ? el.value : num(el.value);
+  }
+});
+$('dlgBody').addEventListener('click', e => {
+  if (e.target.dataset.fdel === undefined) return;
+  draft.filaments.splice(+e.target.dataset.fdel, 1); renderFilaments();
+});
+function openProfile() { draft = structuredClone(profile()); renderDialog(); $('dlg').showModal(); }
+$('btnProfile').addEventListener('click', openProfile);
+$('dlgClose').addEventListener('click', () => $('dlg').close());
+$('pSave').addEventListener('click', () => {
+  const i = profiles.findIndex(p => p.id === draft.id);
+  if (i >= 0) profiles[i] = draft; else profiles.push(draft);
+  activeId = draft.id; persistProfiles();
+  job.pieces.forEach(pc => { if (pc.filament >= draft.filaments.length) pc.filament = 0; });
+  $('dlg').close(); renderAll(); toast('Perfil guardado');
+});
+$('pNew').addEventListener('click', () => { draft = defaultProfile(); draft.name = 'Perfil nuevo'; renderDialog(); });
+$('pDup').addEventListener('click', () => { draft = structuredClone(draft); draft.id = uid(); draft.name += ' (copia)'; renderDialog(); toast('Copia lista: guardala para conservarla'); });
+$('pDel').addEventListener('click', () => {
+  if (profiles.length < 2) return toast('Tiene que quedar al menos un perfil');
+  if (!confirm(`¿Eliminar el perfil "${draft.name}"?`)) return;
+  profiles = profiles.filter(p => p.id !== draft.id); activeId = profiles[0].id; persistProfiles(); $('dlg').close(); renderAll();
+});
+$('pExport').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(profiles, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'perfiles_gemelos3d.json'; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+$('pImport').addEventListener('click', () => $('pImportFile').click());
+$('pImportFile').addEventListener('change', async e => {
+  try {
+    const data = JSON.parse(await e.target.files[0].text());
+    const list = (Array.isArray(data) ? data : [data]).filter(p => p && p.filaments && p.bed);
+    if (!list.length) throw new Error();
+    list.forEach(p => { p.id = uid(); profiles.push(Object.assign(defaultProfile(), p)); });
+    activeId = profiles[profiles.length - 1].id; persistProfiles(); $('dlg').close(); renderAll(); toast(`${list.length} perfil(es) importado(s)`);
+  } catch { toast('Ese archivo no es un perfil válido'); }
+  e.target.value = '';
+});
+
+// ---------- Inicio ----------
+renderAll();
+if (firstRun) { persistProfiles(); openProfile(); }
+</script>
+</body>
+</html>

@@ -1,1 +1,0 @@
-Stable base marker. No application logic in this file.
