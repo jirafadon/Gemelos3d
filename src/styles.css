@@ -288,17 +288,6 @@ button { font: inherit; cursor: pointer; color: inherit; }
 .t-sec > summary::after { content: "▾"; margin-left: auto; color: var(--muted); font-size: 12px; }
 .t-sec[open] > summary::after { content: "▴"; }
 .t-sec > summary small { color: var(--muted); font-weight: 500; font-family: Inter, sans-serif; font-size: 12px; }
-.t-ai > summary small { background: var(--brand-soft); color: var(--brand); border-radius: 99px; padding: 1px 7px; }
-.t-ai textarea { width: 100%; margin-top: 10px; font: inherit; color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; resize: vertical; }
-.t-ai textarea:focus { outline: 2px solid color-mix(in srgb, var(--brand) 35%, transparent); border-color: var(--brand); }
-.t-ai-opts { font-size: 12.5px; color: var(--muted); margin-top: 6px; }
-.t-ai-opts label { display: flex; align-items: center; gap: 6px; }
-.t-ai-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
-.t-ai-row .primary { background: var(--brand); color: var(--brand-ink); border: 0; border-radius: 10px; padding: 9px 16px; font-weight: 600; display: inline-flex; gap: 8px; align-items: center; }
-.t-ai-row .primary:disabled { opacity: .7; }
 #aiMsg.ok { color: var(--ok); } #aiMsg.warn { color: var(--bad); }
-.t-ai-ideas { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-.t-ai-ideas button { border: 1px dashed var(--line); background: transparent; border-radius: 99px; padding: 4px 10px; font-size: 12px; color: var(--muted); }
-.t-ai-ideas button:hover { border-color: var(--brand); color: var(--brand); }
 .t-gtitle { font-size: 11.5px; color: var(--muted); font-weight: 600; margin: 10px 0 0; }
 .t-add { margin-top: 6px; }
