@@ -28,7 +28,7 @@ window.addEventListener('hashchange', route);
 
 function header() {
   return `<header class="top">
-    <a class="brand" href="#/"><span class="logo">G3</span><span>Gemelos 3D <b>Lab</b></span></a>
+    <a class="brand" href="#/"><img class="logo" src="${import.meta.env.BASE_URL}brand/logo-mark.jpg" alt="Gemelos 3D" width="46" height="46"><span>Gemelos 3D <b>Lab</b></span></a>
     <nav><a href="#/">Generadores</a><a href="${import.meta.env.BASE_URL}calculadora.html" target="_blank">${icon('calc')} Calculadora</a></nav>
   </header>`;
 }

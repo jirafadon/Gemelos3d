@@ -34,7 +34,7 @@ button { font: inherit; cursor: pointer; color: inherit; }
 .top { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 20px; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
 .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-family: Poppins, sans-serif; font-weight: 600; font-size: 17px; }
 .brand b { color: var(--brand); }
-.logo { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 9px; background: var(--brand); color: var(--brand-ink); font-size: 13px; font-weight: 700; }
+.logo { width: 46px; height: 46px; border-radius: 10px; object-fit: cover; border: 1px solid var(--line); background: #e9eaec; }
 .top nav { display: flex; gap: 6px; }
 .top nav a { display: flex; align-items: center; gap: 6px; text-decoration: none; padding: 7px 12px; border-radius: 9px; color: var(--muted); font-weight: 500; font-size: 14px; }
 .top nav a:hover { background: var(--soft); color: var(--text); }
