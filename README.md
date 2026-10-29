@@ -60,8 +60,8 @@ Regla: cada generador es independiente. Arreglar o agregar uno nunca debe tocar 
 | 0 | Motor, catálogo, visor, exportación, calculadora ✅ |
 | 1 | Texto y capas: llaveros (también con forma), placas de mascota, colgantes, letreros, @usuario, placas con base, toppers, estacas, adornos, marcapáginas ✅ |
 | 2 | QR e imagen: placas QR (Mercado Pago, WiFi, redes, Google, lista, tarjeta, QR 3D) ✅, imagen→silueta ✅, dibujo a STL ✅, cortador ✅, eyector ✅, sello ✅, sellos de letras ✅, stencils ✅, llavero con logo ✅, para colorear ✅, molde para resina ✅, cortador en cuadrícula ✅, sello EVA ✅, posavasos a color ✅, line art ✅ · faltan: multipartes |
-| 3 | Paramétricos sólidos: cubos apilables ✅, peines ✅, soporte de torta ✅, conectores ✅, llavero NFC ✅, portafotos ✅, trofeo ✅, gabinete para electrónica ✅, porta-marcadores ✅, posavasos ✅, cajas ✅, Gridfinity ✅, portalápices ✅, ganchos ✅, soporte de celular ✅, adaptadores ✅ · faltan: repuestos, bottons |
-| 4 | Superficies: litofanía ✅, bowls ✅, vasos y lámparas en espiral ✅, letra grande con nombre ✅, rompecabezas ✅, string art ✅ · faltan: texturas |
-| 5 | Avanzados: engranajes ✅, roscas (tornillo y tuerca, frasco con tapa) ✅, letras corpóreas con división por cama ✅ · faltan: neón flex, cortar por color con encastres, moldes |
+| 3 | Paramétricos sólidos: llavero con espejo ✅, exhibidor para salón ✅, tablero de metas ✅, cubos apilables ✅, peines ✅, soporte de torta ✅, conectores ✅, llavero NFC ✅, portafotos ✅, trofeo ✅, gabinete para electrónica ✅, porta-marcadores ✅, posavasos ✅, cajas ✅, Gridfinity ✅, portalápices ✅, ganchos ✅, soporte de celular ✅, adaptadores ✅ · faltan: repuestos, bottons |
+| 4 | Superficies: litofanía ✅, bowls ✅, vasos y lámparas en espiral ✅, letra grande con nombre ✅, rompecabezas ✅, string art ✅, lámpara de letra ✅, caja de luz @usuario ✅ · faltan: texturas |
+| 5 | Avanzados: engranajes ✅, roscas (tornillo y tuerca, frasco con tapa) ✅, letras corpóreas con división por cama ✅, base para neón flex ✅ · faltan: cortar por color con encastres, moldes |
 
 Los productos están inspirados en tipos de producto comunes (MakerLab, Mafagrafos, Área Maker, PROLED3D, CORTO, etc.); el código, los diseños y las imágenes son propios.
