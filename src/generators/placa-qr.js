@@ -13,6 +13,13 @@ export const NETWORKS = [
   { value: 'whatsapp', label: 'WhatsApp' }, { value: 'facebook', label: 'Facebook' }, { value: 'x', label: 'X' },
 ];
 
+/** Cómo se imprime el usuario debajo del QR: @usuario, o el número de WhatsApp. */
+export function socialLabel(network, user) {
+  const u = String(user || '').trim().replace(/^@/, '');
+  if (!u) return '';
+  return network === 'whatsapp' ? u : `@${u}`;
+}
+
 export function payloadOf(v) {
   if (v.kind === 'wifi') return wifiPayload(v.ssid, v.pass, v.security);
   if (v.kind === 'social') return socialUrl(v.network, v.user);
@@ -29,12 +36,13 @@ export function qrBlock(text, size, ecc) {
 export const contentParams = (def = 'link') => [
   { type: 'group', label: 'Contenido del QR' },
   { key: 'kind', type: 'segment', label: 'Tipo', default: def, options: [{ value: 'link', label: 'Link o texto' }, { value: 'wifi', label: 'WiFi' }, { value: 'social', label: 'Redes' }] },
-  { key: 'link', type: 'text', label: 'Link o texto', default: 'https://gemelos3d.com.ar', show: v => v.kind === 'link' },
+  { key: 'link', type: 'text', label: 'Link o texto (es lo que abre el QR)', default: 'https://gemelos3d.com.ar', show: v => v.kind === 'link' },
   { key: 'ssid', type: 'text', label: 'Nombre de la red', default: 'MiWiFi', show: v => v.kind === 'wifi' },
   { key: 'pass', type: 'text', label: 'Contraseña', default: 'clave1234', show: v => v.kind === 'wifi' && v.security !== 'nopass' },
   { key: 'security', type: 'segment', label: 'Seguridad', default: 'WPA', options: [{ value: 'WPA', label: 'WPA/WPA2' }, { value: 'WEP', label: 'WEP' }, { value: 'nopass', label: 'Abierta' }], show: v => v.kind === 'wifi' },
   { key: 'network', type: 'select', label: 'Red', default: 'instagram', options: NETWORKS, show: v => v.kind === 'social' },
-  { key: 'user', type: 'text', label: 'Usuario o número', default: '@gemelos3d', show: v => v.kind === 'social', hint: 'Para WhatsApp: número con código de país, ej. 5491155555555.' },
+  { key: 'user', type: 'text', label: 'Tu usuario (es lo que abre el QR)', default: '@gemelos3d', show: v => v.kind === 'social',
+    hint: v => `El QR abre: ${socialUrl(v.network, v.user)}${v.network === 'whatsapp' ? ' · Número con código de país, ej. 5491155555555.' : ''}` },
   { key: 'ecc', type: 'segment', label: 'Resistencia a errores', default: 'M', options: [{ value: 'L', label: 'Baja' }, { value: 'M', label: 'Media' }, { value: 'Q', label: 'Alta' }, { value: 'H', label: 'Máx.' }], hint: 'Más alta = más cuadraditos, pero se sigue leyendo aunque se raye.' },
 ];
 
@@ -48,7 +56,8 @@ export default {
     { type: 'group', label: 'Textos' },
     { key: 'title', type: 'text', label: 'Título', default: 'Escaneá y visitanos' },
     { key: 'titleFont', type: 'font', label: 'Tipografía del título', default: 'poppins' },
-    { key: 'sub', type: 'text', label: 'Texto de abajo', default: 'gemelos3d.com.ar', multiline: true },
+    { key: 'autoUser', type: 'toggle', label: 'Abajo: mostrar tu usuario', default: true, show: v => v.kind === 'social', hint: 'Así el texto impreso y el QR siempre coinciden.' },
+    { key: 'sub', type: 'text', label: 'Texto de abajo', default: 'gemelos3d.com.ar', multiline: true, show: v => !(v.kind === 'social' && v.autoUser) && !(v.kind === 'wifi' && v.autoSub) },
     { key: 'subFont', type: 'font', label: 'Tipografía del texto de abajo', default: 'poppins' },
     { key: 'autoSub', type: 'toggle', label: 'Abajo: mostrar la red y la clave', default: true, show: v => v.kind === 'wifi' },
 
@@ -77,6 +86,7 @@ export default {
     const W = qr.outer;
     let subText = v.sub || '';
     if (v.kind === 'wifi' && v.autoSub) subText = `Red: ${v.ssid}${v.security !== 'nopass' ? `\nClave: ${v.pass}` : ''}`;
+    if (v.kind === 'social' && v.autoUser) subText = socialLabel(v.network, v.user);
 
     const pieces = []; // [shape, alto] de arriba hacia abajo
     if ((v.title || '').trim()) pieces.push(fitInto(stackLines(String(v.title).split('\n').map(t => ({ font: tf, text: t, height: 10 })), 1.5), W, S * 0.22));

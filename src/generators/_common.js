@@ -39,9 +39,11 @@ export function preset(base, { id, title, description, defaults = {}, hide = [] 
   return {
     ...base,
     id, title, description: description || base.description,
+    // Los campos ocultos se mantienen (sin mostrarse) para que su valor siga existiendo:
+    // si no, los demás campos que dependen de ellos (ej.: "tipo = redes") no aparecerían.
     params: base.params
-      .filter(p => !hide.includes(p.key))
-      .map(p => (p.key && p.key in defaults ? { ...p, default: defaults[p.key] } : p)),
+      .map(p => (p.key && p.key in defaults ? { ...p, default: defaults[p.key] } : p))
+      .map(p => (hide.includes(p.key) ? { ...p, show: () => false } : p)),
     build: (v, ctx) => base.build({ ...Object.fromEntries(base.params.filter(p => p.key).map(p => [p.key, p.key in defaults ? defaults[p.key] : p.default])), ...v }, ctx),
   };
 }

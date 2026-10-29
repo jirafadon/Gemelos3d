@@ -24,7 +24,11 @@ export function renderParams(root, schema, values, onChange) {
   const wrappers = [];
 
   const updateVisibility = () => {
-    for (const { el, p } of wrappers) el.hidden = p.show ? !p.show(values) : false;
+    for (const { el, p } of wrappers) {
+      el.hidden = p.show ? !p.show(values) : false;
+      // Ayudas que dependen de lo que se escribió (ej.: a qué link lleva el QR)
+      if (typeof p.hint === 'function') el.querySelector('.p-hint').textContent = p.hint(values) || '';
+    }
     // Oculta los títulos de grupo que quedaron sin campos visibles
     root.querySelectorAll('.p-group').forEach(gr => {
       gr.hidden = ![...gr.querySelectorAll('.p-field')].some(f => !f.hidden);
@@ -46,7 +50,7 @@ export function renderParams(root, schema, values, onChange) {
     el.innerHTML = `<label class="p-label">${esc(p.label)}</label>`;
     const body = fieldBody(p, values, set);
     el.appendChild(body);
-    if (p.hint) el.insertAdjacentHTML('beforeend', `<div class="p-hint">${esc(p.hint)}</div>`);
+    if (p.hint) el.insertAdjacentHTML('beforeend', `<div class="p-hint">${typeof p.hint === 'function' ? '' : esc(p.hint)}</div>`);
     group.appendChild(el);
     wrappers.push({ el, p });
   }
