@@ -47,7 +47,7 @@ export const GENERATORS = [
   g('palabra-corazon', 'Palabra en 2 capas con corazón', 'Palabra cursiva con un corazón final, en dos capas.', 'carteles', 1, () => import('./generators/palabra-corazon.js')),
   g('letrero-imagen', 'Letrero con imagen', 'Una o dos líneas de texto más un ícono, en 2 o 3 colores.', 'carteles', 2),
   g('letrero-multipart', 'Letrero multipartes desde imagen', 'Logo o dibujo separado en capas de color para encastrar.', 'carteles', 2),
-  g('trofeo', 'Trofeo imagen + texto', 'Trofeo con logo y placa grabada.', 'carteles', 2),
+  g('trofeo', 'Trofeo imagen + texto', 'Copa, estrella, medalla o escudo con texto, sobre base con el nombre.', 'carteles', 2, () => import('./generators/trofeo.js')),
   g('texto-guia', 'Texto de pared con guía', 'Letras grandes para pegar en pared, con plantilla de colocación.', 'carteles', 3),
 
   // ---------- QR y comercios ----------
@@ -63,7 +63,7 @@ export const GENERATORS = [
 
   // ---------- Cocina y repostería ----------
   g('cortador-galletas', 'Cortador de galletas', 'Con forma, nombre o desde imagen. Con filo, refuerzo y faldón.', 'cocina', 2, () => import('./generators/cortador-galletas.js')),
-  g('eyector', 'Eyector de masa', 'Cortador con émbolo para galletitas, caramelos y bombones.', 'cocina', 2),
+  g('eyector', 'Eyector de masa', 'Cortador con émbolo y marca opcional, para galletitas, caramelos y bombones.', 'cocina', 2, () => import('./generators/eyector.js')),
   g('sello-imagen', 'Sello desde imagen', 'Sello circular o con forma para bombones, galletitas o fondant.', 'cocina', 2, () => import('./generators/sello-imagen.js')),
   g('sello-letras', 'Sellos de letras y números', 'Un sello por letra o número, con mango, para escribir en masas.', 'cocina', 2, () => import('./generators/sello-letras.js')),
   g('sello-eva', 'Sello para goma EVA / plastilina', 'Molde de estampado desde texto o imagen.', 'cocina', 2),
@@ -92,8 +92,9 @@ export const GENERATORS = [
   g('cajas', 'Cajas y organizadores', 'Caja a medida con divisiones y tapa a presión con nombre.', 'hogar', 3, () => import('./generators/cajas.js')),
   g('gridfinity', 'Gridfinity', 'Cajitas con divisiones, etiqueta e imanes, y bases de grilla de 42 mm.', 'hogar', 3, () => import('./generators/gridfinity.js')),
   g('packaging', 'Packaging', 'Bandejas, insertos, separadores y esquineros a medida.', 'hogar', 3),
+  g('posavasos', 'Posavasos', 'Redondo, cuadrado, hexagonal u ondulado, con nombre, anillos o panal.', 'hogar', 3, () => import('./generators/posavasos.js')),
   g('portalapices', 'Portalápices con nombre', 'Portalápices con el nombre al frente.', 'hogar', 3, () => import('./generators/portalapices.js')),
-  g('porta-boligrafos', 'Porta-marcadores paramétrico', 'Grilla de alojamientos para marcadores o pinceles.', 'hogar', 3),
+  g('porta-boligrafos', 'Porta-marcadores paramétrico', 'Grilla de agujeros para marcadores o pinceles, en escalones y con nombre.', 'hogar', 3, () => import('./generators/porta-boligrafos.js')),
   g('caja-figuritas', 'Caja de figuritas', 'Caja con divisiones para figuritas o pegatinas.', 'hogar', 3),
   g('estuche-labial', 'Estuche de labial', 'Estuche con tapa, nombre y argolla.', 'hogar', 3),
   g('portapeine', 'Portapeine de pestañas', 'Tubo con tapa para cepillos y peines de pestañas.', 'hogar', 3),
@@ -106,7 +107,7 @@ export const GENERATORS = [
   g('contador-rascar', 'Contador para rascar', 'Tablero de casilleros para metas o rifas.', 'hogar', 3),
 
   // ---------- Taller y repuestos ----------
-  g('caja-electronica', 'Caja para electrónica', 'Gabinetes para placas con postes, conectores y tapa.', 'taller', 3),
+  g('caja-electronica', 'Caja para electrónica', 'Caja con postes para Arduino, ESP32 o Raspberry, tapa atornillada, USB y ventilación.', 'taller', 3, () => import('./generators/caja-electronica.js')),
   g('adaptador', 'Adaptador de medidas', 'Une dos caños o mangueras redondas de distinta medida.', 'taller', 3, () => import('./generators/adaptador.js')),
   g('repara', 'Repará 3D', 'Perillas, patas, bujes, manijas, tapas y clips a medida.', 'taller', 3),
   g('mueble-salvado', 'Mueble salvado', 'Pata, tirador, cuña o pasacables con medidas simples.', 'taller', 3),
@@ -127,7 +128,7 @@ export const GENERATORS = [
 
   // ---------- Letras grandes ----------
   g('letra-grande', 'Letra grande con nombre', 'Inicial grande con el nombre en cursiva cruzándola, en 2 o 3 colores.', 'letras', 4, () => import('./generators/letra-grande.js')),
-  g('corporeas', 'Letras corpóreas', 'Carteles gigantes que se cortan solos para entrar en la cama, con conectores.', 'letras', 5),
+  g('corporeas', 'Letras corpóreas', 'Letras gruesas por separado, macizas o huecas para LED; las grandes se cortan solas con pernos.', 'letras', 5, () => import('./generators/corporeas.js')),
   g('neon-flex', 'Cartel de neón flex', 'Base con canal para neón flex desde logo o dibujo.', 'letras', 5),
 
   // ---------- Herramientas STL ----------
@@ -156,23 +157,23 @@ export const FAMILIES = [
     items: ['placa-qr-mp', 'placa-wifi', 'placa-redes', 'placa-google', 'placa-qr', 'lista-qr', 'tarjeta-presentacion', 'qr-3d', 'exhibidor-salon'] },
   { id: 'letreros', icon: 'sign', tone: 'purple', title: 'Letreros', desc: 'Palabras superpuestas, @usuario, letras separadas y palabra con corazón.', cover: 'letrero-palabras', cat: 'carteles',
     items: ['letrero-palabras', 'letrero-social', 'letras-separadas', 'palabra-corazon', 'letrero-imagen', 'letrero-multipart', 'texto-guia'] },
-  { id: 'placas', icon: 'frame', tone: 'indigo', title: 'Placas y cuadros', desc: 'Placa profesional, con rayas, cuadro con marco y portafotos, con base.', cover: 'cuadro-marco', cat: 'carteles',
+  { id: 'placas', icon: 'frame', tone: 'indigo', title: 'Placas y cuadros', desc: 'Placa profesional, cuadros, portafotos y trofeos, con base para pararlos.', cover: 'cuadro-marco', cat: 'carteles',
     items: ['placa-profesional', 'placa-rayas', 'cuadro-marco', 'portafotos', 'trofeo'] },
   { id: 'fiestas', icon: 'gift', tone: 'pink', title: 'Fiestas y regalos', desc: 'Toppers de torta, estacas, adornos navideños y colgantes familiares.', cover: 'topper-torta', cat: 'deco',
     items: ['topper-torta', 'estacas', 'adorno-navidad', 'colgante-familia', 'rosa-nombre', 'marcapaginas', 'adorno-galleta'] },
   { id: 'mascotas', icon: 'paw', tone: 'amber', title: 'Mascotas', desc: 'Placas con nombre y teléfono: hueso, pez, óvalo, corazón y más.', cover: 'placa-mascota', cat: 'nombres',
     items: ['placa-mascota'] },
-  { id: 'cocina', icon: 'cookie', tone: 'orange', title: 'Cocina y repostería', desc: 'Cortadores, sellos de imagen y de letras, y stencils.', cover: 'cortador-galletas', cat: 'cocina',
-    items: ['cortador-galletas', 'sello-imagen', 'sello-letras', 'stencil', 'eyector', 'sello-eva', 'soporte-torta', 'cortador-rectangulos', 'rodillo-textura'] },
+  { id: 'cocina', icon: 'cookie', tone: 'orange', title: 'Cocina y repostería', desc: 'Cortadores, eyectores con émbolo, sellos y stencils.', cover: 'cortador-galletas', cat: 'cocina',
+    items: ['cortador-galletas', 'eyector', 'sello-imagen', 'sello-letras', 'stencil', 'sello-eva', 'soporte-torta', 'cortador-rectangulos', 'rodillo-textura'] },
   { id: 'imagen', icon: 'image', tone: 'rose', title: 'Imagen a 3D', desc: 'Tu logo o dibujo a pieza imprimible, y litofanías de tus fotos.', cover: 'dibujo-stl', cat: 'imagen',
     items: ['dibujo-stl', 'litofania', 'rompecabezas', 'line-art', 'posavasos-imagen', 'colorear', 'imagen-multipartes', 'imagen-resina'] },
-  { id: 'hogar', icon: 'home', tone: 'green', title: 'Hogar y organización', desc: 'Cajas con divisiones, Gridfinity, portalápices, ganchos y soportes.', cover: 'cajas', cat: 'hogar',
-    items: ['cajas', 'gridfinity', 'portalapices', 'ganchos', 'soporte-celular', 'porta-boligrafos', 'caja-figuritas', 'packaging', 'soporte-universal'] },
-  { id: 'taller', icon: 'gear', tone: 'slate', title: 'Taller y repuestos', desc: 'Engranajes y adaptadores de medidas para arreglar cosas.', cover: 'engranajes', cat: 'taller',
-    items: ['engranajes', 'adaptador', 'repara', 'caja-electronica', 'jig', 'conectores', 'roscas', 'mueble-salvado'] },
+  { id: 'hogar', icon: 'home', tone: 'green', title: 'Hogar y organización', desc: 'Cajas, Gridfinity, portalápices, porta-marcadores, posavasos, ganchos y soportes.', cover: 'cajas', cat: 'hogar',
+    items: ['cajas', 'gridfinity', 'portalapices', 'porta-boligrafos', 'posavasos', 'ganchos', 'soporte-celular', 'caja-figuritas', 'packaging', 'soporte-universal'] },
+  { id: 'taller', icon: 'gear', tone: 'slate', title: 'Taller y repuestos', desc: 'Engranajes, adaptadores de medidas y gabinetes para electrónica.', cover: 'engranajes', cat: 'taller',
+    items: ['engranajes', 'adaptador', 'caja-electronica', 'repara', 'jig', 'conectores', 'roscas', 'mueble-salvado'] },
   { id: 'deco', icon: 'lamp', tone: 'yellow', title: 'Deco y lámparas', desc: 'Floreros, pantallas y bowls en espiral para modo vaso.', cover: 'vasos-espiral', cat: 'deco',
     items: ['vasos-espiral', 'bowls', 'lampara-letra', 'lampara-social', 'string-art'] },
-  { id: 'letras', icon: 'letter', tone: 'cyan', title: 'Letras grandes', desc: 'Inicial grande con nombre; pronto letras corpóreas y neón flex.', cover: 'letra-grande', cat: 'letras',
+  { id: 'letras', icon: 'letter', tone: 'cyan', title: 'Letras grandes', desc: 'Inicial grande con nombre y letras corpóreas que se cortan solas para la cama.', cover: 'letra-grande', cat: 'letras',
     items: ['letra-grande', 'corporeas', 'neon-flex'] },
 ];
 
