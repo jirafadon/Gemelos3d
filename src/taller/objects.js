@@ -64,7 +64,7 @@ export function makeObject(type, index = 0, extra = {}) {
   for (const p of SHAPE_PARAMS[type] || []) o[p.key] = p.default;
   if (type === 'text') Object.assign(o, { text: 'Hola', font: 'baloo' });
   if (type === 'image') Object.assign(o, { image: '', threshold: 128, invert: false });
-  if (type === 'sketch') Object.assign(o, { pts: [[-10, -10], [10, -10], [0, 10]], op: 'extrude', angle: 360 });
+  if (type === 'sketch') Object.assign(o, { pts: [[-10, -10], [10, -10], [0, 10]], op: 'extrude', angle: 360, round: 0, edge: 'none', edgeSize: 1 });
   return Object.assign(o, extra);
 }
 
@@ -171,14 +171,32 @@ export function sketchRaw(o) {
     if (m.isEmpty()) throw new Error('El perfil no se puede girar: dibujalo a un costado del eje');
     return m;
   }
-  const m = polygonShape(pts).extrude(1);
+  let cs = polygonShape(pts);
+  // Redondeo de esquinas (las de afuera y las de adentro)
+  const r = Math.max(0, o.round || 0);
+  if (r > 0) cs = cs.offset(-r, 'Round', 2, 32).offset(2 * r, 'Round', 2, 32).offset(-r, 'Round', 2, 32);
+  if (cs.isEmpty()) throw new Error('El redondeo es más grande que el perfil');
+  const H = Math.max(0.2, o.h || 10);
+  let m;
+  const c = Math.min(Math.max(0, o.edgeSize || 0), H * 0.95);
+  if (o.edge && o.edge !== 'none' && c > 0.05) {
+    // Borde de arriba en capas finas (0,2 mm, como imprime la U1): chaflán a 45° o redondeo
+    m = slab(cs, H - c);
+    const n = Math.max(2, Math.ceil(c / 0.2));
+    for (let i = 1; i <= n; i++) {
+      const t = i / n, inset = o.edge === 'chamfer' ? c * t : c * (1 - Math.sqrt(Math.max(0, 1 - t * t)));
+      const layer = cs.offset(-inset, 'Round', 2, 24);
+      if (layer.isEmpty()) break;
+      m = m.add(slab(layer, c / n + 0.001, H - c + c * (i - 1) / n));
+    }
+  } else m = cs.extrude(H);
   if (m.isEmpty()) throw new Error('El perfil está vacío o se cruza consigo mismo');
   return m;
 }
 
 /** Tamaño natural de un perfil (para crearlo o cuando cambia la operación). */
 export function sketchSize(o, height = 10) {
-  const b = sketchRaw(o).boundingBox();
+  const b = sketchRaw({ ...o, h: height }).boundingBox();
   const r = n => Math.round(n * 100) / 100;
   return o.op === 'revolve'
     ? { w: r(b.max[0] - b.min[0]), d: r(b.max[1] - b.min[1]), h: r(b.max[2] - b.min[2]) }

@@ -43,8 +43,8 @@ export class Viewer {
   resize() {
     const w = this.container.clientWidth || 300, h = this.container.clientHeight || 300;
     this.renderer.setSize(w, h, false);
-    this.camera.aspect = w / h;
-    this.camera.updateProjectionMatrix();
+    if (this.orthoOn) this.updateOrtho();
+    else { this.camera.aspect = w / h; this.camera.updateProjectionMatrix(); }
     this.render();
   }
 
@@ -105,6 +105,7 @@ export class Viewer {
     }[name] || [-0.55 * d, -0.75 * d, 0.55 * d];
     this.camera.position.set(t.x + pos[0], t.y + pos[1], name === 'front' || name === 'side' ? pos[2] : t.z + pos[2]);
     this.camera.lookAt(t);
+    if (this.orthoOn) this.updateOrtho();
     this.controls.update();
     this.render();
   }
@@ -188,9 +189,12 @@ export class Viewer {
     const ray = new THREE.Raycaster();
     ray.setFromCamera(this.ndc(ev), this.camera);
     const hit = ray.intersectObjects(this.group.children, true)[0];
-    if (hit) return { id: hit.object.userData.id, point: hit.point.clone() };
+    if (hit) {
+      const normal = hit.face ? hit.face.normal.clone().transformDirection(hit.object.matrixWorld).normalize() : new THREE.Vector3(0, 0, 1);
+      return { id: hit.object.userData.id, point: hit.point.clone(), normal };
+    }
     const p = this.groundPoint(ev, 0);
-    return p ? { id: null, point: p } : null;
+    return p ? { id: null, point: p, normal: new THREE.Vector3(0, 0, 1) } : null;
   }
 
   /** Coordenadas de pantalla (px, relativas a la ventana) de un punto del mundo. */
@@ -223,6 +227,52 @@ export class Viewer {
       this.overlay.add(dot);
     }
     this.render();
+  }
+
+  /** Muestra (o saca) el plano de trabajo: un cuadro con grilla apoyado en una cara. */
+  setWorkplane(wp, size = 50) {
+    if (this.wpMesh) { this.wpMesh.traverse(m => { if (m.geometry) m.geometry.dispose(); if (m.material) m.material.dispose(); }); this.scene.remove(this.wpMesh); this.wpMesh = null; }
+    if (wp) {
+      const g = new THREE.Group();
+      const plane = new THREE.Mesh(new THREE.PlaneGeometry(size, size), new THREE.MeshBasicMaterial({ color: '#4f9ff0', transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false }));
+      const grid = new THREE.GridHelper(size, Math.round(size / 5), 0x4f9ff0, 0x4f9ff0);
+      grid.rotation.x = Math.PI / 2; grid.material.transparent = true; grid.material.opacity = 0.5;
+      g.add(plane, grid);
+      g.position.set(...wp.point);
+      g.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), new THREE.Vector3(...wp.normal));
+      g.translateZ(0.05);
+      this.wpMesh = g;
+      this.scene.add(g);
+    }
+    this.render();
+  }
+
+  /** Cambia entre perspectiva y vista ortogonal (sin deformación, mejor para medir). */
+  setOrtho(on) {
+    if (!!on === !!this.orthoOn) return;
+    this.orthoOn = !!on;
+    const old = this.camera;
+    let cam;
+    if (on) {
+      cam = new THREE.OrthographicCamera(-1, 1, 1, -1, -5000, 5000);
+    } else {
+      cam = new THREE.PerspectiveCamera(35, 1, 0.1, 5000);
+    }
+    cam.up.set(0, 0, 1);
+    cam.position.copy(old.position);
+    this.camera = cam;
+    this.controls.object = cam;
+    this.resize();
+    this.setView(this.view || 'iso');
+    if (this.onCamera) this.onCamera(cam);
+  }
+  updateOrtho() {
+    if (!this.orthoOn) return;
+    const w = this.container.clientWidth || 300, h = this.container.clientHeight || 300;
+    const half = (this.distance || 120) * Math.tan(THREE.MathUtils.degToRad(35 / 2));
+    this.camera.left = -half * w / h; this.camera.right = half * w / h; this.camera.top = half; this.camera.bottom = -half;
+    this.camera.zoom = 1;
+    this.camera.updateProjectionMatrix();
   }
 
   render() { this.renderer.render(this.scene, this.camera); }

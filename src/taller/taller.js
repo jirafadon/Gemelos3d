@@ -50,6 +50,7 @@ const SVG = {
   pattern: '<rect x="3" y="9" width="5" height="6" rx="1"/><rect x="10" y="9" width="5" height="6" rx="1"/><rect x="17" y="9" width="4" height="6" rx="1"/><path d="M3 5h18M18 3l3 2-3 2"/>',
   ruler: '<path d="M3 17L17 3l4 4L7 21z"/><path d="M7 13l2 2M10 10l2 2M13 7l2 2"/>',
   sketch: '<path d="M4 18l4-10 5 6 3-9 4 13z"/><circle cx="4" cy="18" r="1.3"/><circle cx="8" cy="8" r="1.3"/><circle cx="13" cy="14" r="1.3"/><circle cx="16" cy="5" r="1.3"/><circle cx="20" cy="18" r="1.3"/>',
+  workplane: '<path d="M3 15l9-5 9 5-9 5z"/><path d="M12 10V3M9 6l3-3 3 3"/>',
   revolve: '<ellipse cx="12" cy="18" rx="7" ry="2.5"/><path d="M12 3v15M12 4c4 2 5 6 4 14"/><path d="M19 9a8 3 0 0 1-3 2"/>',
   undo: '<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>',
   redo: '<path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/>',
@@ -131,6 +132,9 @@ function schemaFor(o) {
   if (o.type === 'sketch') p.push(
     { key: 'op', type: 'segment', label: 'Operación', default: 'extrude', options: [{ value: 'extrude', label: 'Extruir' }, { value: 'revolve', label: 'Revolucionar' }] },
     { key: 'angle', type: 'number', label: 'Ángulo de giro', default: 360, min: 1, max: 360, step: 1, unit: '°', show: v => v.op === 'revolve' },
+    { key: 'round', type: 'number', label: 'Redondeo de esquinas', default: 0, min: 0, max: 30, step: 0.5, unit: 'mm' },
+    { key: 'edge', type: 'segment', label: 'Borde de arriba', default: 'none', options: [{ value: 'none', label: 'Recto' }, { value: 'chamfer', label: 'Chaflán' }, { value: 'fillet', label: 'Redondeado' }], show: v => v.op !== 'revolve' },
+    { key: 'edgeSize', type: 'number', label: 'Tamaño del borde', default: 1, min: 0.2, max: 20, step: 0.2, unit: 'mm', show: v => v.op !== 'revolve' && v.edge !== 'none' },
     { key: 'ptsText', type: 'text', label: 'Puntos del perfil (x, y en mm, uno por línea)', default: '', multiline: true, hint: 'Podés corregir cualquier punto a mano.' });
   if (o.type === 'text') p.push({ key: 'text', type: 'text', label: 'Texto', default: 'Hola', multiline: true }, { key: 'font', type: 'font', label: 'Tipografía', default: 'baloo' });
   if (o.type === 'image') p.push(
@@ -190,6 +194,7 @@ export async function renderTaller(app, headerHtml) {
           <button data-tool="rotate" title="Rotar (2)">${svg('rotate')}</button>
           <button data-tool="scale" title="Escalar (3)">${svg('scale')}</button>
           <button data-tool="measure" title="Regla: tocá dos puntos para medir (R)">${svg('ruler')}</button>
+          <button data-tool="workplane" title="Plano de trabajo: tocá una cara y lo nuevo se apoya ahí (W)">${svg('workplane')}</button>
         </div>
         <span class="t-sep"></span>
         <button data-cmd="undo" title="Deshacer (Ctrl+Z)">${svg('undo')}</button>
@@ -232,7 +237,9 @@ export async function renderTaller(app, headerHtml) {
       <div class="viewer" id="viewer"></div>
       <div class="views">
         <button data-view="iso" class="on">3D</button><button data-view="top">Arriba</button><button data-view="front">Frente</button><button data-view="side">Costado</button>
+        <button data-ortho title="Vista sin perspectiva: las medidas no se deforman">Ortogonal</button>
       </div>
+      <div class="t-wp" id="wpchip" hidden><span id="wpText"></span><button id="wpReset">Volver a la cama</button></div>
       <div class="t-mode"><button data-mode="edit" class="on">Piezas</button><button data-mode="result">Resultado</button></div>
       <div class="t-dims" id="dims"></div>
       <div class="t-sketchbar" id="sketchbar" hidden>
@@ -268,7 +275,7 @@ export async function renderTaller(app, headerHtml) {
       </details>
       <details class="t-help">
         <summary>Atajos de teclado</summary>
-        <p class="muted small">1 / 2 / 3: mover, rotar, escalar · R: regla · P: dibujar perfil · Mayús + arrastrar: elegir con recuadro · Flechas: mover (Mayús ×10) · Re Pág / Av Pág: subir y bajar ·
+        <p class="muted small">1 / 2 / 3: mover, rotar, escalar · R: regla · W: plano de trabajo · P: dibujar perfil · Mayús + arrastrar: elegir con recuadro · Flechas: mover (Mayús ×10) · Re Pág / Av Pág: subir y bajar ·
         Ctrl+Z / Ctrl+Y: deshacer y rehacer · Ctrl+C / Ctrl+V: copiar y pegar · Ctrl+D: duplicar (repite el último movimiento) ·
         Ctrl+G / Ctrl+Mayús+G: agrupar y desagrupar · H: hueco · S: sólido · D: apoyar en la cama · F: encuadrar · Supr: borrar · Esc: soltar.</p>
       </details>
@@ -294,6 +301,7 @@ export async function renderTaller(app, headerHtml) {
   let mode = 'edit', tool = 'translate', snap = 1;
   let special = null; // 'measure' | 'sketch'
   let rulerPts = [], sk = null, rectSel = null;
+  let wp = null; // plano de trabajo: { point, normal, name }
   const cache = new Map(); // id → { key, data }
   let partsById = new Map(), result = [], timer = null, alive = true, busy = false, again = false;
   let clipboard = null, dupInfo = null;
@@ -447,14 +455,14 @@ export async function renderTaller(app, headerHtml) {
     $('props').innerHTML = `<h2>Propiedades</h2>${o.meshLost ? '<p class="warn small">Esta malla era muy pesada para guardarse; volvé a importar el STL.</p>' : ''}<div id="single"></div>`;
     renderParams($('single'), schemaFor(o), o, async (v, key) => {
       if (['name', 'hole', 'color', 'multicolor'].includes(key)) drawList();
-      if (o.type === 'sketch' && ['ptsText', 'op', 'angle'].includes(key)) {
+      if (o.type === 'sketch' && ['ptsText', 'op', 'angle', 'round'].includes(key)) {
         if (key === 'ptsText') {
           const pts = String(o.ptsText).split('\n').map(l => l.split(/[,;\s]+/).filter(Boolean).map(Number)).filter(a => a.length >= 2 && a.every(Number.isFinite)).map(a => [a[0], a[1]]);
           if (pts.length < 3) { status('⚠ El perfil necesita al menos 3 puntos', 'error'); return; }
           o.pts = pts;
         }
         try { Object.assign(o, sketchSize(o, o.op === 'extrude' && key === 'op' ? 10 : o.h)); } catch (err) { status(`⚠ ${esc(err.message)}`, 'error'); return; }
-        if (key !== 'ptsText') drawProps();
+        if (key === 'op' || key === 'angle') drawProps();
       }
       if (o.type === 'group' && key === 'op') {
         // El tamaño del grupo pasa a ser el de su nuevo resultado
@@ -499,9 +507,12 @@ export async function renderTaller(app, headerHtml) {
 
   function addObject(type, extra = {}) {
     const o = makeObject(type, state.objs.length, extra);
-    // Lo ubica a la derecha de lo que ya hay, para que no quede tapado
-    const all = state.objs.flatMap(x => partsById.get(x.id) || []);
-    if (all.length) { const b = partsBox(all); o.x = r2(Math.ceil(b.max[0] + 6 + o.w / 2)); o.y = r2(Math.round(b.center[1])); }
+    if (wp) placeOnWorkplane(o);
+    else {
+      // Lo ubica a la derecha de lo que ya hay, para que no quede tapado
+      const all = state.objs.flatMap(x => partsById.get(x.id) || []);
+      if (all.length) { const b = partsBox(all); o.x = r2(Math.ceil(b.max[0] + 6 + o.w / 2)); o.y = r2(Math.round(b.center[1])); }
+    }
     state.objs.push(o);
     state.sel = [o.id];
     changed();
@@ -585,6 +596,27 @@ export async function renderTaller(app, headerHtml) {
     changed();
   }
 
+  // ---------- Plano de trabajo ----------
+  /** Apoya un objeto nuevo sobre el plano: su base toca la cara y queda girado según ella. */
+  function placeOnWorkplane(o) {
+    const n = new THREE.Vector3(...wp.normal).normalize();
+    const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), n);
+    const e = new THREE.Euler().setFromQuaternion(q, 'ZYX');
+    o.rx = r2(THREE.MathUtils.radToDeg(e.x)); o.ry = r2(THREE.MathUtils.radToDeg(e.y)); o.rz = r2(THREE.MathUtils.radToDeg(e.z));
+    const m = new THREE.Matrix4().makeRotationFromQuaternion(q).elements;
+    const hz = Math.abs(m[2]) * o.w / 2 + Math.abs(m[6]) * o.d / 2 + Math.abs(m[10]) * o.h / 2;
+    const c = new THREE.Vector3(...wp.point).addScaledVector(n, o.h / 2);
+    o.x = r2(c.x); o.y = r2(c.y); o.z = r2(c.z - hz);
+  }
+  function setWorkplane(next) {
+    wp = next;
+    viewer.setWorkplane(wp ? { point: wp.point, normal: wp.normal } : null, 50);
+    $('wpchip').hidden = !wp;
+    if (wp) $('wpText').textContent = `Plano de trabajo: sobre ${wp.name}${Math.abs(wp.normal[2]) > 0.99 ? '' : ' (cara inclinada)'}`;
+  }
+  /** Altura donde se dibujan los perfiles: arriba de la cara elegida si es horizontal. */
+  const sketchZ = () => (wp && wp.normal[2] > 0.99 ? wp.point[2] : 0);
+
   // ---------- Operaciones booleanas ----------
   async function boolean(op) {
     const s = selection(); if (s.length < 2) return;
@@ -665,24 +697,25 @@ export async function renderTaller(app, headerHtml) {
       ? 'Dibujá medio perfil: gira alrededor de su borde izquierdo (línea punteada). Lo que dibujes hacia "arriba" en la grilla será el alto.'
       : 'Tocá la grilla para poner puntos. Cerrá tocando el primero, con doble clic o Enter.';
     $('skHwrap').hidden = op === 'revolve';
-    viewer.setView('top'); main.querySelectorAll('.views button').forEach(x => x.classList.toggle('on', x.dataset.view === 'top'));
+    viewer.setView('top'); main.querySelectorAll('.views button[data-view]').forEach(x => x.classList.toggle('on', x.dataset.view === 'top'));
     drawSketch();
   }
   const snapPt = p => [Math.round(p.x / snap) * snap, Math.round(p.y / snap) * snap];
   function drawSketch() {
     if (!sk) return;
-    const P = sk.pts.map(([x, y]) => [x, y, 0.05]);
+    const zz = sketchZ() + 0.05;
+    const P = sk.pts.map(([x, y]) => [x, y, zz]);
     const lines = [];
     for (let i = 1; i < P.length; i++) lines.push([P[i - 1], P[i]]);
-    if (sk.hover && P.length) lines.push([P[P.length - 1], [sk.hover[0], sk.hover[1], 0.05]]);
+    if (sk.hover && P.length) lines.push([P[P.length - 1], [sk.hover[0], sk.hover[1], zz]]);
     if (P.length > 2) lines.push([P[P.length - 1], P[0]]);
     const extra = [];
     if (sk.op === 'revolve' && (P.length || sk.hover)) {
       const all = [...sk.pts, ...(sk.hover ? [sk.hover] : [])];
       const minX = Math.min(...all.map(p => p[0])), y0 = Math.min(...all.map(p => p[1])) - 10, y1 = Math.max(...all.map(p => p[1])) + 10;
-      for (let y = y0; y < y1; y += 4) extra.push([[minX, y, 0.05], [minX, Math.min(y + 2, y1), 0.05]]);
+      for (let y = y0; y < y1; y += 4) extra.push([[minX, y, zz], [minX, Math.min(y + 2, y1), zz]]);
     }
-    viewer.setOverlay({ lines: [...lines, ...extra], points: [...P, ...(sk.hover ? [[sk.hover[0], sk.hover[1], 0.05]] : [])], color: '#1d6fd8' });
+    viewer.setOverlay({ lines: [...lines, ...extra], points: [...P, ...(sk.hover ? [[sk.hover[0], sk.hover[1], zz]] : [])], color: '#1d6fd8' });
   }
   function finishSketch() {
     if (!sk) return;
@@ -699,10 +732,10 @@ export async function renderTaller(app, headerHtml) {
     try { Object.assign(o, sketchSize(o, Math.max(0.2, +$('skH').value || 10))); }
     catch (err) { status(`⚠ ${esc(err.message)}`, 'error'); return; }
     // Extruido: queda donde lo dibujaste. Revolucionado: el eje pasa por el borde izquierdo
-    o.x = r2(sk.op === 'revolve' ? minX : cx); o.y = r2(cy); o.z = 0;
+    o.x = r2(sk.op === 'revolve' ? minX : cx); o.y = r2(cy); o.z = r2(sketchZ());
     state.objs.push(o); state.sel = [o.id];
     setSpecial(null);
-    viewer.setView('iso'); main.querySelectorAll('.views button').forEach(x => x.classList.toggle('on', x.dataset.view === 'iso'));
+    viewer.setView('iso'); main.querySelectorAll('.views button[data-view]').forEach(x => x.classList.toggle('on', x.dataset.view === 'iso'));
     changed();
   }
 
@@ -736,6 +769,7 @@ export async function renderTaller(app, headerHtml) {
   $('toolbar').addEventListener('click', async e => {
     const b = e.target.closest('button'); if (!b || b.disabled) return;
     if (b.dataset.tool === 'measure') { setSpecial(special === 'measure' ? null : 'measure'); if (special) drawRuler(); return; }
+    if (b.dataset.tool === 'workplane') { setSpecial(special === 'workplane' ? null : 'workplane'); if (special) status('Tocá la cara donde querés trabajar (o la cama para volver al piso)'); return; }
     if (b.dataset.bool) { await boolean(b.dataset.bool); return; }
     if (b.dataset.pk) {
       patternKind = b.dataset.pk;
@@ -780,9 +814,12 @@ export async function renderTaller(app, headerHtml) {
     if (state.objs.length && !confirm('¿Borrar todo y empezar un diseño nuevo? (Podés deshacerlo)')) return;
     state.objs = []; state.sel = []; changed();
   });
+  $('wpReset').addEventListener('click', () => setWorkplane(null));
+  viewer.onCamera = cam => { tc.camera = cam; attachGizmo(); };
   main.querySelector('.views').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
-    main.querySelectorAll('.views button').forEach(x => x.classList.toggle('on', x === b));
+    if (b.hasAttribute('data-ortho')) { viewer.setOrtho(!viewer.orthoOn); b.classList.toggle('on', viewer.orthoOn); return; }
+    main.querySelectorAll('.views button[data-view]').forEach(x => x.classList.toggle('on', x === b));
     viewer.setView(b.dataset.view);
     if (special === 'measure' && rulerPts.length === 2) drawRuler();
   });
@@ -803,11 +840,17 @@ export async function renderTaller(app, headerHtml) {
       if (rulerPts.length >= 2) rulerPts = [];
       rulerPts.push(hit.point); drawRuler(); return;
     }
+    if (special === 'workplane') {
+      const hit = viewer.pickPoint(ev); if (!hit) return;
+      const o = hit.id ? byId(hit.id) : null;
+      setWorkplane(o ? { point: [r2(hit.point.x), r2(hit.point.y), r2(hit.point.z)], normal: [hit.normal.x, hit.normal.y, hit.normal.z].map(v => Math.round(v * 1e4) / 1e4), name: o.name } : null);
+      status(''); setSpecial(null); return;
+    }
     if (special === 'sketch' && sk) {
-      const p = viewer.groundPoint(ev, 0); if (!p) return;
+      const p = viewer.groundPoint(ev, sketchZ()); if (!p) return;
       const q = snapPt(p);
       if (sk.pts.length >= 3) {
-        const f = viewer.project(sk.pts[0][0], sk.pts[0][1], 0);
+        const f = viewer.project(sk.pts[0][0], sk.pts[0][1], sketchZ());
         if (Math.hypot(f.x - ev.clientX, f.y - ev.clientY) < 12) { finishSketch(); return; }
       }
       sk.pts.push(q); drawSketch(); return;
@@ -834,7 +877,7 @@ export async function renderTaller(app, headerHtml) {
     canvas.setPointerCapture(ev.pointerId);
   });
   canvas.addEventListener('pointermove', ev => {
-    if (special === 'sketch' && sk) { const p = viewer.groundPoint(ev, 0); sk.hover = p ? snapPt(p) : null; drawSketch(); return; }
+    if (special === 'sketch' && sk) { const p = viewer.groundPoint(ev, sketchZ()); sk.hover = p ? snapPt(p) : null; drawSketch(); return; }
     if (rectSel) {
       rectSel.x1 = ev.clientX; rectSel.y1 = ev.clientY;
       const r = view.getBoundingClientRect(), el = $('rect');
@@ -892,6 +935,8 @@ export async function renderTaller(app, headerHtml) {
     if (special === 'measure' && k === 'escape') { setSpecial(null); return; }
     if (!ctrl && k === 'r') { $('toolbar').querySelector('[data-tool=measure]').click(); return; }
     if (!ctrl && k === 'p') { startSketch('extrude'); return; }
+    if (!ctrl && k === 'w') { $('toolbar').querySelector('[data-tool=workplane]').click(); return; }
+    if (special === 'workplane' && k === 'escape') { setSpecial(null); status(''); return; }
     if (ctrl && k === 'z' && !e.shiftKey) { e.preventDefault(); commands.undo(); return; }
     if (ctrl && (k === 'y' || (k === 'z' && e.shiftKey))) { e.preventDefault(); commands.redo(); return; }
     if (ctrl && k === 'c') { e.preventDefault(); commands.copy(); return; }

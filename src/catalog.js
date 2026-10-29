@@ -29,7 +29,7 @@ export const GENERATORS = [
   g('llavero-logo', 'Llavero con nombre y logo', 'Texto más un ícono o logo desde imagen.', 'nombres', 2, () => import('./generators/llavero-logo.js')),
   g('llavero-forma', 'Llavero con forma', 'Corazón, estrella, huella, hueso u ondulado, con el nombre adentro.', 'nombres', 2, () => import('./generators/llavero-forma.js')),
   g('llavero-espejo', 'Llavero con espejo', 'Aro con texto para encastrar un espejo redondo.', 'nombres', 3),
-  g('llavero-nfc', 'Llavero NFC', 'Llavero con alojamiento para tag NFC (cuadrado, redondo o carrete).', 'nombres', 3),
+  g('llavero-nfc', 'Llavero NFC', 'Llavero con un hueco escondido para el tag NFC (se pone con una pausa).', 'nombres', 3, () => import('./generators/llavero-nfc.js')),
   g('placa-mascota', 'Placa de mascota', 'Hueso, pez, ovalada, ondulada o con la forma que quieras, con nombre y teléfono.', 'nombres', 1, () => import('./generators/placa-mascota.js')),
   g('colgante-familia', 'Colgante de nombres familiares', 'Cadena de corazones o patitas con un nombre en cada uno.', 'nombres', 1, () => import('./generators/colgante-familia.js')),
   g('rosa-nombre', 'Rosa con nombre', 'Rosa con el nombre en letra cursiva unido al tallo.', 'nombres', 2),
@@ -84,8 +84,8 @@ export const GENERATORS = [
   g('colorear', 'Para colorear', 'Dibujo con bordes en relieve para pintar con marcadores.', 'imagen', 2),
   g('imagen-multipartes', 'Imagen multipartes', 'Imagen dividida en piezas de color que encastran.', 'imagen', 2),
   g('imagen-resina', 'Imagen con bordes altos para resina', 'Molde abierto para rellenar con resina o glitter.', 'imagen', 2),
-  g('rompecabezas', 'Rompecabezas', 'Foto o dibujo a rompecabezas, con marco y piezas de colores.', 'imagen', 4),
-  g('portafotos', 'Portafotos', 'Portafotos colgante o de mesa con texto.', 'imagen', 3),
+  g('rompecabezas', 'Rompecabezas', 'Piezas con encastre, marco y un nombre repartido entre las piezas.', 'imagen', 4, () => import('./generators/rompecabezas.js')),
+  g('portafotos', 'Portafotos', 'Marco de mesa para foto, con tapa a presión, texto y base.', 'imagen', 3, () => import('./generators/portafotos.js')),
   g('botton', 'Accesorios para botton', 'Imán, llavero y adorno con borde para chapitas, y test de tamaño.', 'imagen', 3),
 
   // ---------- Hogar y organización ----------
@@ -126,7 +126,7 @@ export const GENERATORS = [
   g('thermoform', 'Texturas tipo tela', 'Piezas con textura de malla o tela para imprimir sobre tela.', 'deco', 4),
 
   // ---------- Letras grandes ----------
-  g('letra-grande', 'Letra grande con nombre', 'Inicial grande con nombre encima: hundido, con textura, borde, floral o brillo.', 'letras', 4),
+  g('letra-grande', 'Letra grande con nombre', 'Inicial grande con el nombre en cursiva cruzándola, en 2 o 3 colores.', 'letras', 4, () => import('./generators/letra-grande.js')),
   g('corporeas', 'Letras corpóreas', 'Carteles gigantes que se cortan solos para entrar en la cama, con conectores.', 'letras', 5),
   g('neon-flex', 'Cartel de neón flex', 'Base con canal para neón flex desde logo o dibujo.', 'letras', 5),
 
@@ -156,8 +156,8 @@ export const FAMILIES = [
     items: ['placa-qr-mp', 'placa-wifi', 'placa-redes', 'placa-google', 'placa-qr', 'lista-qr', 'tarjeta-presentacion', 'qr-3d', 'exhibidor-salon'] },
   { id: 'letreros', icon: 'sign', tone: 'purple', title: 'Letreros', desc: 'Palabras superpuestas, @usuario, letras separadas y palabra con corazón.', cover: 'letrero-palabras', cat: 'carteles',
     items: ['letrero-palabras', 'letrero-social', 'letras-separadas', 'palabra-corazon', 'letrero-imagen', 'letrero-multipart', 'texto-guia'] },
-  { id: 'placas', icon: 'frame', tone: 'indigo', title: 'Placas y cuadros', desc: 'Placa profesional, con rayas o cuadro con marco, con base para pararla.', cover: 'cuadro-marco', cat: 'carteles',
-    items: ['placa-profesional', 'placa-rayas', 'cuadro-marco', 'trofeo'] },
+  { id: 'placas', icon: 'frame', tone: 'indigo', title: 'Placas y cuadros', desc: 'Placa profesional, con rayas, cuadro con marco y portafotos, con base.', cover: 'cuadro-marco', cat: 'carteles',
+    items: ['placa-profesional', 'placa-rayas', 'cuadro-marco', 'portafotos', 'trofeo'] },
   { id: 'fiestas', icon: 'gift', tone: 'pink', title: 'Fiestas y regalos', desc: 'Toppers de torta, estacas, adornos navideños y colgantes familiares.', cover: 'topper-torta', cat: 'deco',
     items: ['topper-torta', 'estacas', 'adorno-navidad', 'colgante-familia', 'rosa-nombre', 'marcapaginas', 'adorno-galleta'] },
   { id: 'mascotas', icon: 'paw', tone: 'amber', title: 'Mascotas', desc: 'Placas con nombre y teléfono: hueso, pez, óvalo, corazón y más.', cover: 'placa-mascota', cat: 'nombres',
@@ -165,13 +165,15 @@ export const FAMILIES = [
   { id: 'cocina', icon: 'cookie', tone: 'orange', title: 'Cocina y repostería', desc: 'Cortadores, sellos de imagen y de letras, y stencils.', cover: 'cortador-galletas', cat: 'cocina',
     items: ['cortador-galletas', 'sello-imagen', 'sello-letras', 'stencil', 'eyector', 'sello-eva', 'soporte-torta', 'cortador-rectangulos', 'rodillo-textura'] },
   { id: 'imagen', icon: 'image', tone: 'rose', title: 'Imagen a 3D', desc: 'Tu logo o dibujo a pieza imprimible, y litofanías de tus fotos.', cover: 'dibujo-stl', cat: 'imagen',
-    items: ['dibujo-stl', 'litofania', 'line-art', 'posavasos-imagen', 'colorear', 'imagen-multipartes', 'imagen-resina', 'rompecabezas'] },
+    items: ['dibujo-stl', 'litofania', 'rompecabezas', 'line-art', 'posavasos-imagen', 'colorear', 'imagen-multipartes', 'imagen-resina'] },
   { id: 'hogar', icon: 'home', tone: 'green', title: 'Hogar y organización', desc: 'Cajas con divisiones, Gridfinity, portalápices, ganchos y soportes.', cover: 'cajas', cat: 'hogar',
     items: ['cajas', 'gridfinity', 'portalapices', 'ganchos', 'soporte-celular', 'porta-boligrafos', 'caja-figuritas', 'packaging', 'soporte-universal'] },
   { id: 'taller', icon: 'gear', tone: 'slate', title: 'Taller y repuestos', desc: 'Engranajes y adaptadores de medidas para arreglar cosas.', cover: 'engranajes', cat: 'taller',
     items: ['engranajes', 'adaptador', 'repara', 'caja-electronica', 'jig', 'conectores', 'roscas', 'mueble-salvado'] },
   { id: 'deco', icon: 'lamp', tone: 'yellow', title: 'Deco y lámparas', desc: 'Floreros, pantallas y bowls en espiral para modo vaso.', cover: 'vasos-espiral', cat: 'deco',
     items: ['vasos-espiral', 'bowls', 'lampara-letra', 'lampara-social', 'string-art'] },
+  { id: 'letras', icon: 'letter', tone: 'cyan', title: 'Letras grandes', desc: 'Inicial grande con nombre; pronto letras corpóreas y neón flex.', cover: 'letra-grande', cat: 'letras',
+    items: ['letra-grande', 'corporeas', 'neon-flex'] },
 ];
 
 export const familyOf = id => FAMILIES.find(f => f.items.includes(id));
@@ -207,4 +209,5 @@ export const FAMILY_SHARE = {
   hogar: ['texto', 'letra'],
   taller: [],
   deco: [],
+  letras: ['letra'],
 };

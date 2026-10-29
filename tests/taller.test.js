@@ -169,3 +169,16 @@ test('perfil revolucionado: gira alrededor del borde izquierdo', async () => {
   assert.ok(Math.abs((await objectSolid(half, ctx)).volume() - Math.PI * 100 * 10) < 40);
   assert.throws(() => sketchSize(makeObject('sketch', 2, { pts: [[0, 0], [1, 1]] })), /3 puntos/);
 });
+
+test('perfil con chaflán y redondeo: mantiene el alto y achica arriba', async () => {
+  const base = { pts: [[-10, -10], [10, -10], [10, 10], [-10, 10]], op: 'extrude' };
+  const plain = makeObject('sketch', 0, base); Object.assign(plain, sketchSize(plain, 10));
+  const ch = makeObject('sketch', 1, { ...base, edge: 'chamfer', edgeSize: 2 }); Object.assign(ch, sketchSize(ch, 10));
+  const fi = makeObject('sketch', 2, { ...base, edge: 'fillet', edgeSize: 2 }); Object.assign(fi, sketchSize(fi, 10));
+  const [vp, vc, vf] = await Promise.all([plain, ch, fi].map(async o => (await objectSolid(o, ctx)).volume()));
+  assert.ok(Math.abs(ch.h - 10) < 0.02 && Math.abs(fi.h - 10) < 0.02, 'el alto no cambia');
+  assert.ok(vc < vp && vf < vp && vc < vf, `volúmenes ${vp} ${vf} ${vc}`);
+  const rounded = makeObject('sketch', 3, { ...base, round: 4 }); Object.assign(rounded, sketchSize(rounded, 10));
+  const vr = (await objectSolid(rounded, ctx)).volume();
+  assert.ok(Math.abs(vr - (400 - (16 - Math.PI * 4) * 4) * 10) < 15, `redondeo ${vr}`);
+});
