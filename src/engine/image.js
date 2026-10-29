@@ -65,3 +65,21 @@ export async function imageToMask(url, { threshold = 128, invert = false, maxPx 
   }
   return { width: w, height: h, data, usedAlpha: useAlpha };
 }
+
+/**
+ * Convierte una imagen en una grilla de grises (0 = negro, 1 = blanco), para litofanías.
+ * @param opts.cols  cantidad de columnas (el alto sale proporcional)
+ */
+export async function imageToGray(url, { cols = 250 } = {}) {
+  const img = await loadImage(url);
+  const w = Math.max(2, Math.round(cols)), h = Math.max(2, Math.round(cols * img.height / img.width));
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  const g = c.getContext('2d', { willReadFrequently: true });
+  g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); // lo transparente cuenta como blanco (fino)
+  g.drawImage(img, 0, 0, w, h);
+  const px = g.getImageData(0, 0, w, h).data;
+  const data = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i++) data[i] = (0.299 * px[i * 4] + 0.587 * px[i * 4 + 1] + 0.114 * px[i * 4 + 2]) / 255;
+  return { width: w, height: h, data };
+}

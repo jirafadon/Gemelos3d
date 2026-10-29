@@ -8,7 +8,7 @@ import { initEngine, modelStats, loadFont, collect } from './engine/index.js';
 import { Viewer } from './engine/viewer.js';
 import { to3MF, toSTLZip, mergedSTL, download } from './engine/export.js';
 import { estimate, sendToCalculator } from './engine/cost.js';
-import { imageToMask } from './engine/image.js';
+import { imageToMask, imageToGray } from './engine/image.js';
 
 const app = document.getElementById('app');
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -36,22 +36,31 @@ function route() {
     const token = Symbol();
     cleanup = token;
     renderTaller(app, header()).then(fn => { if (cleanup === token) cleanup = fn; else fn(); });
-  } else renderCatalog();
+  } else renderCatalog(location.hash.startsWith('#/buscar'));
 }
 window.addEventListener('hashchange', route);
 
 function header() {
+  const base = import.meta.env.BASE_URL;
+  const h = location.hash || '#/';
+  const on = test => (test ? ' class="on"' : '');
   return `<header class="top">
-    <a class="brand" href="#/"><img class="logo" src="${import.meta.env.BASE_URL}brand/logo-mark.jpg" alt="Gemelos 3D" width="46" height="46"><span>Gemelos 3D <b>Lab</b></span></a>
-    <nav><a href="#/">Inicio</a><a href="#/taller">Taller 3D</a><a href="${import.meta.env.BASE_URL}calculadora.html" target="_blank">${icon('calc')} Calculadora</a></nav>
-  </header>`;
+    <a class="brand" href="#/"><img class="logo" src="${base}brand/logo-mark.jpg" alt="Gemelos 3D" width="46" height="46"><span>Gemelos 3D <b>Lab</b></span></a>
+    <nav><a href="#/">Inicio</a><a href="#/taller">Taller 3D</a><a href="${base}calculadora.html" target="_blank">${icon('calc')} Calculadora</a></nav>
+  </header>
+  <nav class="tabbar" aria-label="Navegación">
+    <a href="#/"${on(h === '#/' || h === '#')}>${icon('home')}<span>Inicio</span></a>
+    <a href="#/buscar"${on(h.startsWith('#/buscar'))}>${icon('search')}<span>Buscar</span></a>
+    <a href="#/taller"${on(h.startsWith('#/taller'))}>${icon('cube')}<span>Taller 3D</span></a>
+    <a href="${base}calculadora.html" target="_blank">${icon('calc')}<span>Calculadora</span></a>
+  </nav>`;
 }
 
 // ---------------- Catálogo ----------------
 const isReady = g => !!(g.load || g.href);
 const norm = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 
-function renderCatalog() {
+function renderCatalog(focusSearch = false) {
   const saved = store.get('g3d_lab_filters') || {};
   const state = { q: saved.q || '', soon: false };
   const base = import.meta.env.BASE_URL;
@@ -63,14 +72,16 @@ function renderCatalog() {
       <h1>Gemelos 3D Lab</h1>
       <p>Apps y programas para diseñar, presupuestar e imprimir en la U1.</p>
     </section>
+    <h2 class="sec-title">Apps</h2>
     <section class="apps">
       ${APPS.map(a => `<a class="app-card" href="${a.href ? base + a.href : a.route}"${a.href ? ' target="_blank" rel="noopener"' : ''}>
         <img src="${base}thumbs/${a.id}.jpg" alt="" loading="lazy">
+        <span class="sq tone-${a.tone}">${icon(a.icon)}</span>
         <div><span class="badge app">App</span><h2>${esc(a.title)}</h2><p>${esc(a.desc)}</p></div>
       </a>`).join('')}
     </section>
     <div class="filters">
-      <label class="search">${icon('search')}<input id="q" placeholder="¿Qué querés hacer? Llavero, WiFi, topper, cortador…" value="${esc(state.q)}"></label>
+      <label class="search">${icon('search')}<input id="q" placeholder="Buscar: llavero, WiFi, caja, engranaje…" value="${esc(state.q)}"></label>
     </div>
     <div id="grid"></div>
   </main>`;
@@ -80,6 +91,7 @@ function renderCatalog() {
     const n = readyIn(f).length;
     return `<a class="card ready fam" href="#/app/${f.id}">
       <div class="tile c-${f.cat}"><img src="${base}thumbs/${f.cover}.jpg" alt="" loading="lazy" onerror="this.remove()"></div>
+      <span class="sq tone-${f.tone}">${icon(f.icon)}</span>
       <div class="card-body">
         <div class="card-top"><h3>${esc(f.title)}</h3><span class="badge">${n} ${n === 1 ? 'opción' : 'opciones'}</span></div>
         <p>${esc(f.desc)}</p>
@@ -112,8 +124,10 @@ function renderCatalog() {
       (state.soon ? `<div class="soon-list">${CATEGORIES.filter(c => pending.some(g => g.cat === c.id)).map(c => `<section class="cat"><h2>${icon(c.icon)} ${esc(c.name)}</h2><div class="cards">${pending.filter(g => g.cat === c.id).map(genCard).join('')}</div></section>`).join('')}</div>` : '');
     document.getElementById('soonBtn')?.addEventListener('click', () => { state.soon = !state.soon; draw(); });
   };
-  document.getElementById('q').addEventListener('input', e => { state.q = e.target.value; draw(); });
+  const q = document.getElementById('q');
+  q.addEventListener('input', e => { state.q = e.target.value; draw(); });
   draw();
+  if (focusSearch) { q.scrollIntoView({ block: 'center' }); q.focus(); }
 }
 
 // ---------------- Generador ----------------
@@ -226,7 +240,7 @@ async function renderGenerator(id, fam = null) {
   let parts = [], token = 0, timer = null, alive = true;
   cleanup = () => { alive = false; clearTimeout(timer); viewer.renderer.dispose(); collect([]); };
 
-  const ctx = { font: loadFont, image: (url, opts) => imageToMask(url, opts) };
+  const ctx = { font: loadFont, image: (url, opts) => imageToMask(url, opts), gray: (url, opts) => imageToGray(url, opts) };
   const rebuild = async () => {
     const my = ++token;
     status('<span class="spin"></span> Generando…');

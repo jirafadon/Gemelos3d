@@ -291,3 +291,61 @@ button { font: inherit; cursor: pointer; color: inherit; }
 #aiMsg.ok { color: var(--ok); } #aiMsg.warn { color: var(--bad); }
 .t-gtitle { font-size: 11.5px; color: var(--muted); font-weight: 600; margin: 10px 0 0; }
 .t-add { margin-top: 6px; }
+
+/* ---------- Íconos cuadrados y barra inferior (celular) ---------- */
+.sec-title { font-size: 18px; margin: 26px 0 12px; }
+.sq { display: none; width: 44px; height: 44px; border-radius: 12px; place-items: center; background: var(--tb); color: var(--t); flex: none; }
+.sq .ic { width: 22px; height: 22px; }
+.tone-blue { --t: #2563eb; --tb: #e6efff; }
+.tone-teal { --t: #0d9488; --tb: #dcf5f1; }
+.tone-purple { --t: #7c3aed; --tb: #efe7ff; }
+.tone-indigo { --t: #4f46e5; --tb: #e8e8ff; }
+.tone-pink { --t: #db2777; --tb: #fde7f1; }
+.tone-amber { --t: #d97706; --tb: #fdf0d9; }
+.tone-orange { --t: #ea580c; --tb: #ffead9; }
+.tone-rose { --t: #e11d48; --tb: #ffe4e9; }
+.tone-green { --t: #16a34a; --tb: #dff5e6; }
+.tone-slate { --t: #475569; --tb: #e7ebf0; }
+.tone-yellow { --t: #ca8a04; --tb: #fdf4cf; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) [class*="tone-"] { --tb: color-mix(in srgb, var(--t) 22%, transparent); }
+}
+:root[data-theme="dark"] [class*="tone-"] { --tb: color-mix(in srgb, var(--t) 22%, transparent); }
+
+.tabbar { display: none; }
+
+@media (max-width: 640px) {
+  .top nav { display: none; }
+  .hero h1 { font-size: 26px; }
+  .hero p { font-size: 14.5px; margin-bottom: 4px; }
+
+  /* Apps y programas: tarjetas cuadradas con ícono, de a dos */
+  .apps, .catalog .cards { grid-template-columns: 1fr 1fr; gap: 12px; margin: 0; }
+  .app-card, .card.fam { display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 16px; min-height: 124px; border-radius: 16px; box-shadow: 0 1px 2px rgba(19, 32, 46, .04); }
+  .app-card img, .app-card p, .app-card .badge, .card.fam .tile, .card.fam p { display: none; }
+  .app-card > div, .card.fam .card-body { padding: 0; }
+  .app-card h2 { font-size: 16px; margin: 0; line-height: 1.25; }
+  .sq { display: grid; }
+  .card.fam .card-top { flex-direction: column; gap: 4px; }
+  .card.fam h3 { font-size: 16px; }
+  .card.fam .badge { background: none; padding: 0; color: var(--muted); font-weight: 500; font-size: 12px; }
+  .card.ready.fam .badge { background: none; color: var(--muted); }
+  .cat { margin-top: 22px; }
+  .cat h2 { font-size: 18px; margin-bottom: 12px; }
+
+  /* Resultados de búsqueda y "lo que viene": filas compactas */
+  .catalog .cards .card:not(.fam) { flex-direction: row; align-items: center; grid-column: 1 / -1; }
+  .catalog .cards .card:not(.fam) .tile, .catalog .card.ready:not(.fam) .tile { width: 76px; height: 76px; flex: none; }
+  .catalog .card:not(.fam) .tile .ic.big { width: 26px; height: 26px; }
+  .catalog .card:not(.fam) .card-body { padding: 10px 12px; }
+  .catalog .card:not(.fam) p { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 12.5px; }
+
+  /* Barra de navegación abajo, como una app */
+  .tabbar { display: grid; grid-template-columns: repeat(4, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--panel); border-top: 1px solid var(--line); padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); }
+  .tabbar a { display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; color: var(--muted); font-size: 11.5px; font-weight: 500; padding: 4px 0; }
+  .tabbar a .ic { width: 22px; height: 22px; }
+  .tabbar a.on { color: var(--brand); }
+  body { padding-bottom: calc(66px + env(safe-area-inset-bottom)); }
+  body:has(.taller) .tabbar { display: none; }
+  body:has(.taller) { padding-bottom: 0; }
+}

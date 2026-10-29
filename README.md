@@ -56,10 +56,10 @@ Regla: cada generador es independiente. Arreglar o agregar uno nunca debe tocar 
 | Fase | Contenido |
 |---|---|
 | 0 | Motor, catálogo, visor, exportación, calculadora ✅ |
-| 1 | Texto y capas: llaveros, placas de mascota, colgantes, letreros, @usuario, placas con base, toppers, estacas, adornos ✅ (falta marcapáginas → fase 2, usa imagen) |
-| 2 | QR e imagen: placas QR (Mercado Pago, WiFi, redes, Google, lista, tarjeta, QR 3D) ✅, imagen→silueta ✅, dibujo a STL ✅, cortador ✅, sello ✅, llavero con logo ✅ · faltan: eyector, sellos de letras/EVA, stencils, colorear, posavasos a color, line art, multipartes, marcapáginas |
-| 3 | Paramétricos sólidos: cajas, Gridfinity, gabinetes, adaptadores, soportes, ganchos, repuestos, bottons |
-| 4 | Superficies: litofanía, bowls, vasos y lámparas en espiral, letras grandes, string art, rompecabezas, texturas |
-| 5 | Avanzados: letras corpóreas con división por cama, neón flex, cortar por color con encastres, moldes, roscas, engranajes |
+| 1 | Texto y capas: llaveros (también con forma), placas de mascota, colgantes, letreros, @usuario, placas con base, toppers, estacas, adornos, marcapáginas ✅ |
+| 2 | QR e imagen: placas QR (Mercado Pago, WiFi, redes, Google, lista, tarjeta, QR 3D) ✅, imagen→silueta ✅, dibujo a STL ✅, cortador ✅, sello ✅, sellos de letras ✅, stencils ✅, llavero con logo ✅ · faltan: eyector, sello EVA, colorear, posavasos a color, line art, multipartes |
+| 3 | Paramétricos sólidos: cajas ✅, Gridfinity ✅, portalápices ✅, ganchos ✅, soporte de celular ✅, adaptadores ✅ · faltan: gabinetes, repuestos, bottons |
+| 4 | Superficies: litofanía ✅, bowls ✅, vasos y lámparas en espiral ✅ · faltan: letras grandes, string art, rompecabezas, texturas |
+| 5 | Avanzados: engranajes ✅ · faltan: letras corpóreas con división por cama, neón flex, cortar por color con encastres, moldes, roscas |
 
 Los productos están inspirados en tipos de producto comunes (MakerLab, Mafagrafos, Área Maker, PROLED3D, CORTO, etc.); el código, los diseños y las imágenes son propios.

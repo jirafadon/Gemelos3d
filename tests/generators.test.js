@@ -2,13 +2,13 @@
  * Prueba cada generador listo del catálogo con sus valores por defecto
  * y con cada opción de los selectores de colores y modo.
  */
-import { test, before } from 'node:test';
+import { test, before, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import opentype from 'opentype.js';
 import Module from 'manifold-3d';
 import { setWasm } from '../src/engine/geom.js';
-import { enableGC } from '../src/engine/gc.js';
+import { enableGC, collect } from '../src/engine/gc.js';
 import { to3MF, mergedSTL } from '../src/engine/export.js';
 import { GENERATORS } from '../src/catalog.js';
 
@@ -26,6 +26,7 @@ const ctx = { image: async () => (await import('../src/engine/trace.js')).sample
   return fonts[id];
 } };
 before(async () => { const w = await Module(); w.setup(); enableGC(w); setWasm(w); });
+afterEach(() => collect([]));
 
 const defaults = g => Object.fromEntries(g.params.filter(p => p.key).map(p => [p.key, p.default]));
 
@@ -42,9 +43,11 @@ function check(name, parts) {
   }
   assert.ok(to3MF(parts).length > 500);
   assert.ok(mergedSTL(parts).length > 84);
+  collect([]);
 }
 
-for (const entry of GENERATORS.filter(g => g.load)) {
+const ONLY = (process.env.ONLY || '').split(',').filter(Boolean);
+for (const entry of GENERATORS.filter(g => g.load && (!ONLY.length || ONLY.includes(g.id)))) {
   test(`${entry.id}: valores por defecto`, async () => {
     const gen = (await entry.load()).default;
     assert.equal(gen.id, entry.id, 'el id del módulo coincide con el catálogo');

@@ -27,13 +27,13 @@ export const GENERATORS = [
   g('llavero-nombre-completo', 'Llavero nombre y apellido', 'Dos líneas de texto sobre placa con borde.', 'nombres', 1, () => import('./generators/llavero-nombre-completo.js')),
   g('llavero-rectangular', 'Llavero rectangular', 'Placa rectangular con nombre en relieve o al ras.', 'nombres', 1, () => import('./generators/llavero-rectangular.js')),
   g('llavero-logo', 'Llavero con nombre y logo', 'Texto más un ícono o logo desde imagen.', 'nombres', 2, () => import('./generators/llavero-logo.js')),
-  g('llavero-forma', 'Llavero con forma', 'Zanahoria, conejo, corazón u otra silueta con nombre encima.', 'nombres', 2),
+  g('llavero-forma', 'Llavero con forma', 'Corazón, estrella, huella, hueso u ondulado, con el nombre adentro.', 'nombres', 2, () => import('./generators/llavero-forma.js')),
   g('llavero-espejo', 'Llavero con espejo', 'Aro con texto para encastrar un espejo redondo.', 'nombres', 3),
   g('llavero-nfc', 'Llavero NFC', 'Llavero con alojamiento para tag NFC (cuadrado, redondo o carrete).', 'nombres', 3),
   g('placa-mascota', 'Placa de mascota', 'Hueso, pez, ovalada, ondulada o con la forma que quieras, con nombre y teléfono.', 'nombres', 1, () => import('./generators/placa-mascota.js')),
   g('colgante-familia', 'Colgante de nombres familiares', 'Cadena de corazones o patitas con un nombre en cada uno.', 'nombres', 1, () => import('./generators/colgante-familia.js')),
   g('rosa-nombre', 'Rosa con nombre', 'Rosa con el nombre en letra cursiva unido al tallo.', 'nombres', 2),
-  g('marcapaginas', 'Marcapáginas', 'Geométrico, floral, elegante o con imagen, con nombre que asoma del libro.', 'nombres', 2),
+  g('marcapaginas', 'Marcapáginas', 'Tira con tu nombre o el nombre que asoma del libro, con adorno.', 'nombres', 2, () => import('./generators/marcapaginas.js')),
   g('cubos-apilables', 'Cubos apilables', 'Bloques con encastre y letras en relieve para armar nombres.', 'nombres', 3),
   g('abrelatas', 'Abrelatas / llavero de lata', 'Llavero que abre latas, con texto o NFC.', 'nombres', 3),
 
@@ -65,7 +65,7 @@ export const GENERATORS = [
   g('cortador-galletas', 'Cortador de galletas', 'Con forma, nombre o desde imagen. Con filo, refuerzo y faldón.', 'cocina', 2, () => import('./generators/cortador-galletas.js')),
   g('eyector', 'Eyector de masa', 'Cortador con émbolo para galletitas, caramelos y bombones.', 'cocina', 2),
   g('sello-imagen', 'Sello desde imagen', 'Sello circular o con forma para bombones, galletitas o fondant.', 'cocina', 2, () => import('./generators/sello-imagen.js')),
-  g('sello-letras', 'Sellos de letras y números', 'Sellos individuales con mango para escribir en masas.', 'cocina', 2),
+  g('sello-letras', 'Sellos de letras y números', 'Un sello por letra o número, con mango, para escribir en masas.', 'cocina', 2, () => import('./generators/sello-letras.js')),
   g('sello-eva', 'Sello para goma EVA / plastilina', 'Molde de estampado desde texto o imagen.', 'cocina', 2),
   g('topper-torta', 'Topper de torta', 'Nombre, edad y frase con púas, también circular.', 'cocina', 1, () => import('./generators/topper-torta.js')),
   g('estacas', 'Señaladores y estacas', 'Carteles con estaca para macetas, huertas y tortas.', 'cocina', 1, () => import('./generators/estacas.js')),
@@ -74,13 +74,13 @@ export const GENERATORS = [
   g('soporte-palillos', 'Soporte para palillos', 'Pie para pinchos y palillos decorativos.', 'cocina', 3),
   g('cortador-rectangulos', 'Cortador en cuadrícula', 'Corta varios rectángulos iguales de una sola vez.', 'cocina', 3),
   g('rodillo-textura', 'Rodillo texturizado', 'Rodillo con patrón o mosaico para masas y porcelana fría.', 'cocina', 4),
-  g('stencil', 'Stencils y plantillas', 'Plantillas de texto o formas con puentes automáticos.', 'cocina', 2),
+  g('stencil', 'Stencils y plantillas', 'Placa con texto o forma calada y puentes para que no se caigan los centros.', 'cocina', 2, () => import('./generators/stencil.js')),
 
   // ---------- Foto e imagen ----------
   g('dibujo-stl', 'De dibujo a STL', 'Imagen o SVG (logo, dibujo, silueta) a pieza imprimible, con placa base opcional.', 'imagen', 2, () => import('./generators/dibujo-stl.js')),
   g('line-art', 'Placa de line art', 'Dibujo de línea fina parado sobre base con nombre.', 'imagen', 2),
   g('posavasos-imagen', 'Posavasos con imagen', 'Tu foto o logo separada en hasta 4 colores.', 'imagen', 2),
-  g('litofania', 'Litofanía', 'Foto que aparece a contraluz: plana, curva o para lámpara.', 'imagen', 4),
+  g('litofania', 'Litofanía', 'Foto que aparece a contraluz: plana o curva, parada con pie.', 'imagen', 4, () => import('./generators/litofania.js')),
   g('colorear', 'Para colorear', 'Dibujo con bordes en relieve para pintar con marcadores.', 'imagen', 2),
   g('imagen-multipartes', 'Imagen multipartes', 'Imagen dividida en piezas de color que encastran.', 'imagen', 2),
   g('imagen-resina', 'Imagen con bordes altos para resina', 'Molde abierto para rellenar con resina o glitter.', 'imagen', 2),
@@ -89,16 +89,17 @@ export const GENERATORS = [
   g('botton', 'Accesorios para botton', 'Imán, llavero y adorno con borde para chapitas, y test de tamaño.', 'imagen', 3),
 
   // ---------- Hogar y organización ----------
-  g('cajas', 'Cajas y organizadores', 'Cajitas a medida con divisiones y tapa a presión.', 'hogar', 3),
-  g('gridfinity', 'Gridfinity', 'Bins, bandejas, divisiones y bases sobre la grilla estándar.', 'hogar', 3),
+  g('cajas', 'Cajas y organizadores', 'Caja a medida con divisiones y tapa a presión con nombre.', 'hogar', 3, () => import('./generators/cajas.js')),
+  g('gridfinity', 'Gridfinity', 'Cajitas con divisiones, etiqueta e imanes, y bases de grilla de 42 mm.', 'hogar', 3, () => import('./generators/gridfinity.js')),
   g('packaging', 'Packaging', 'Bandejas, insertos, separadores y esquineros a medida.', 'hogar', 3),
-  g('portalapices', 'Portalápices con nombre', 'Portalápices con el nombre al frente.', 'hogar', 3),
+  g('portalapices', 'Portalápices con nombre', 'Portalápices con el nombre al frente.', 'hogar', 3, () => import('./generators/portalapices.js')),
   g('porta-boligrafos', 'Porta-marcadores paramétrico', 'Grilla de alojamientos para marcadores o pinceles.', 'hogar', 3),
   g('caja-figuritas', 'Caja de figuritas', 'Caja con divisiones para figuritas o pegatinas.', 'hogar', 3),
   g('estuche-labial', 'Estuche de labial', 'Estuche con tapa, nombre y argolla.', 'hogar', 3),
   g('portapeine', 'Portapeine de pestañas', 'Tubo con tapa para cepillos y peines de pestañas.', 'hogar', 3),
   g('caja-panuelos', 'Caja de pañuelos', 'Cubre rollo o caja de pañuelos con texto en la tapa.', 'hogar', 4),
-  g('ganchos', 'Ganchos de pared', 'Ganchos para llaves, auriculares o carteras.', 'hogar', 3),
+  g('ganchos', 'Ganchos de pared', 'Uno o varios ganchos sobre placa, con tornillos o cinta doble faz.', 'hogar', 3, () => import('./generators/ganchos.js')),
+  g('soporte-celular', 'Soporte de celular / tablet', 'Atril de escritorio con ángulo a elección y paso para el cable.', 'hogar', 3, () => import('./generators/soporte-celular.js')),
   g('soporte-universal', 'Soporte universal', 'Soportes de escritorio, pared o debajo de mesa.', 'hogar', 3),
   g('peines', 'Peines con formas', 'Peines con dientes y mango a medida.', 'hogar', 3),
   g('contenedor-sellos', 'Contenedor de sellos', 'Caja para guardar sellos de plastilina o masa.', 'hogar', 3),
@@ -106,17 +107,17 @@ export const GENERATORS = [
 
   // ---------- Taller y repuestos ----------
   g('caja-electronica', 'Caja para electrónica', 'Gabinetes para placas con postes, conectores y tapa.', 'taller', 3),
-  g('adaptador', 'Adaptador de medidas', 'Une dos medidas: recto, reductor o codo, circular o rectangular.', 'taller', 3),
+  g('adaptador', 'Adaptador de medidas', 'Une dos caños o mangueras redondas de distinta medida.', 'taller', 3, () => import('./generators/adaptador.js')),
   g('repara', 'Repará 3D', 'Perillas, patas, bujes, manijas, tapas y clips a medida.', 'taller', 3),
   g('mueble-salvado', 'Mueble salvado', 'Pata, tirador, cuña o pasacables con medidas simples.', 'taller', 3),
   g('jig', 'Plantilla de perforación', 'Guías para agujerear con cotas y patrones repetibles.', 'taller', 3),
   g('roscas', 'Roscas y fijaciones', 'Roscas métricas, perillas y calibres de prueba.', 'taller', 5),
-  g('engranajes', 'Engranajes', 'Engranajes rectos parametrizados por módulo y dientes.', 'taller', 5),
+  g('engranajes', 'Engranajes', 'Rectos, helicoidales o en espiga, por módulo y dientes, con su par.', 'taller', 5, () => import('./generators/engranajes.js')),
   g('conectores', 'Conectores de estructura', 'Uniones en T, L y cruz para varillas o caños.', 'taller', 3),
 
   // ---------- Deco y lámparas ----------
-  g('bowls', 'Bowls y cuencos', 'Cuencos, fruteras y macetas con ondas o espiral.', 'deco', 4),
-  g('vasos-espiral', 'Vasos y lámparas en espiral', 'Pantallas y floreros para modo vaso, con giro y ondas.', 'deco', 4),
+  g('bowls', 'Bowls y cuencos', 'Cuencos, fruteras y macetas con ondas o espiral.', 'deco', 4, () => import('./generators/bowls.js')),
+  g('vasos-espiral', 'Vasos y lámparas en espiral', 'Pantallas y floreros para modo vaso, con giro y ondas.', 'deco', 4, () => import('./generators/vasos-espiral.js')),
   g('lampara-letra', 'Lámpara de letra con nombre', 'Letra grande hueca para LED con el nombre encima.', 'deco', 4),
   g('lampara-social', 'Lámpara LED @usuario', 'Letrero hueco para tira LED con tu usuario.', 'deco', 4),
   g('string-art', 'String art', 'Marco con hilos tensados y nombre flotante.', 'deco', 4),
@@ -139,8 +140,8 @@ export const findGenerator = id => GENERATORS.find(x => x.id === id);
 
 /** Apps del Lab: herramientas completas que no son un generador (van primero). */
 export const APPS = [
-  { id: 'calculadora', title: 'Calculadora de presupuestos', desc: 'Arrastrá STL, 3MF o G-code y te arma el precio: material, luz, desgaste, extras y comisión.', href: 'calculadora.html' },
-  { id: 'taller', title: 'Taller 3D', desc: 'Editor libre estilo Tinkercad: sumá formas, texto, imágenes o tu STL, marcá huecos y exportá.', route: '#/taller' },
+  { id: 'calculadora', icon: 'calc', tone: 'green', title: 'Calculadora de presupuestos', desc: 'Arrastrá STL, 3MF o G-code y te arma el precio: material, luz, desgaste, extras y comisión.', href: 'calculadora.html' },
+  { id: 'taller', icon: 'cube', tone: 'blue', title: 'Taller 3D', desc: 'Editor libre estilo Tinkercad: sumá formas, texto, imágenes o tu STL, marcá huecos y exportá.', route: '#/taller' },
 ];
 
 /**
@@ -149,22 +150,28 @@ export const APPS = [
  * `items` son ids de GENERATORS; los que todavía no están listos se muestran como "próximamente".
  */
 export const FAMILIES = [
-  { id: 'llaveros', title: 'Llaveros', desc: 'Nombre con contorno, placa, nombre y apellido o con logo.', cover: 'llavero-nombre', cat: 'nombres',
-    items: ['llavero-nombre', 'llavero-rectangular', 'llavero-nombre-completo', 'llavero-logo', 'llavero-forma', 'llavero-espejo', 'llavero-nfc', 'abrelatas'] },
-  { id: 'qr', title: 'QR y comercios', desc: 'Placas de cobro, WiFi, redes, reseñas, listas de QR y tarjetas.', cover: 'placa-qr-mp', cat: 'qr',
+  { id: 'llaveros', icon: 'tag', tone: 'blue', title: 'Llaveros', desc: 'Nombre con contorno, placa, nombre y apellido o con logo.', cover: 'llavero-nombre', cat: 'nombres',
+    items: ['llavero-nombre', 'llavero-forma', 'llavero-rectangular', 'llavero-nombre-completo', 'llavero-logo', 'llavero-espejo', 'llavero-nfc', 'abrelatas'] },
+  { id: 'qr', icon: 'qr', tone: 'teal', title: 'QR y comercios', desc: 'Placas de cobro, WiFi, redes, reseñas, listas de QR y tarjetas.', cover: 'placa-qr-mp', cat: 'qr',
     items: ['placa-qr-mp', 'placa-wifi', 'placa-redes', 'placa-google', 'placa-qr', 'lista-qr', 'tarjeta-presentacion', 'qr-3d', 'exhibidor-salon'] },
-  { id: 'letreros', title: 'Letreros', desc: 'Palabras superpuestas, @usuario, letras separadas y palabra con corazón.', cover: 'letrero-palabras', cat: 'carteles',
+  { id: 'letreros', icon: 'sign', tone: 'purple', title: 'Letreros', desc: 'Palabras superpuestas, @usuario, letras separadas y palabra con corazón.', cover: 'letrero-palabras', cat: 'carteles',
     items: ['letrero-palabras', 'letrero-social', 'letras-separadas', 'palabra-corazon', 'letrero-imagen', 'letrero-multipart', 'texto-guia'] },
-  { id: 'placas', title: 'Placas y cuadros', desc: 'Placa profesional, con rayas o cuadro con marco, con base para pararla.', cover: 'cuadro-marco', cat: 'carteles',
+  { id: 'placas', icon: 'frame', tone: 'indigo', title: 'Placas y cuadros', desc: 'Placa profesional, con rayas o cuadro con marco, con base para pararla.', cover: 'cuadro-marco', cat: 'carteles',
     items: ['placa-profesional', 'placa-rayas', 'cuadro-marco', 'trofeo'] },
-  { id: 'fiestas', title: 'Fiestas y regalos', desc: 'Toppers de torta, estacas, adornos navideños y colgantes familiares.', cover: 'topper-torta', cat: 'deco',
+  { id: 'fiestas', icon: 'gift', tone: 'pink', title: 'Fiestas y regalos', desc: 'Toppers de torta, estacas, adornos navideños y colgantes familiares.', cover: 'topper-torta', cat: 'deco',
     items: ['topper-torta', 'estacas', 'adorno-navidad', 'colgante-familia', 'rosa-nombre', 'marcapaginas', 'adorno-galleta'] },
-  { id: 'mascotas', title: 'Mascotas', desc: 'Placas con nombre y teléfono: hueso, pez, óvalo, corazón y más.', cover: 'placa-mascota', cat: 'nombres',
+  { id: 'mascotas', icon: 'paw', tone: 'amber', title: 'Mascotas', desc: 'Placas con nombre y teléfono: hueso, pez, óvalo, corazón y más.', cover: 'placa-mascota', cat: 'nombres',
     items: ['placa-mascota'] },
-  { id: 'cocina', title: 'Cocina y repostería', desc: 'Cortadores de galletas y sellos desde imagen o texto.', cover: 'cortador-galletas', cat: 'cocina',
-    items: ['cortador-galletas', 'sello-imagen', 'eyector', 'sello-letras', 'sello-eva', 'stencil', 'soporte-torta', 'cortador-rectangulos', 'rodillo-textura'] },
-  { id: 'imagen', title: 'Imagen a 3D', desc: 'Tu logo, dibujo o silueta convertido en pieza imprimible.', cover: 'dibujo-stl', cat: 'imagen',
-    items: ['dibujo-stl', 'line-art', 'posavasos-imagen', 'colorear', 'imagen-multipartes', 'imagen-resina', 'litofania', 'rompecabezas'] },
+  { id: 'cocina', icon: 'cookie', tone: 'orange', title: 'Cocina y repostería', desc: 'Cortadores, sellos de imagen y de letras, y stencils.', cover: 'cortador-galletas', cat: 'cocina',
+    items: ['cortador-galletas', 'sello-imagen', 'sello-letras', 'stencil', 'eyector', 'sello-eva', 'soporte-torta', 'cortador-rectangulos', 'rodillo-textura'] },
+  { id: 'imagen', icon: 'image', tone: 'rose', title: 'Imagen a 3D', desc: 'Tu logo o dibujo a pieza imprimible, y litofanías de tus fotos.', cover: 'dibujo-stl', cat: 'imagen',
+    items: ['dibujo-stl', 'litofania', 'line-art', 'posavasos-imagen', 'colorear', 'imagen-multipartes', 'imagen-resina', 'rompecabezas'] },
+  { id: 'hogar', icon: 'home', tone: 'green', title: 'Hogar y organización', desc: 'Cajas con divisiones, Gridfinity, portalápices, ganchos y soportes.', cover: 'cajas', cat: 'hogar',
+    items: ['cajas', 'gridfinity', 'portalapices', 'ganchos', 'soporte-celular', 'porta-boligrafos', 'caja-figuritas', 'packaging', 'soporte-universal'] },
+  { id: 'taller', icon: 'gear', tone: 'slate', title: 'Taller y repuestos', desc: 'Engranajes y adaptadores de medidas para arreglar cosas.', cover: 'engranajes', cat: 'taller',
+    items: ['engranajes', 'adaptador', 'repara', 'caja-electronica', 'jig', 'conectores', 'roscas', 'mueble-salvado'] },
+  { id: 'deco', icon: 'lamp', tone: 'yellow', title: 'Deco y lámparas', desc: 'Floreros, pantallas y bowls en espiral para modo vaso.', cover: 'vasos-espiral', cat: 'deco',
+    items: ['vasos-espiral', 'bowls', 'lampara-letra', 'lampara-social', 'string-art'] },
 ];
 
 export const familyOf = id => FAMILIES.find(f => f.items.includes(id));
@@ -197,4 +204,7 @@ export const FAMILY_SHARE = {
   cocina: [],
   mascotas: [],
   imagen: [],
+  hogar: ['texto', 'letra'],
+  taller: [],
+  deco: [],
 };
