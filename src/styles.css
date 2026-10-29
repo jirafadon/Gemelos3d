@@ -349,3 +349,27 @@ button { font: inherit; cursor: pointer; color: inherit; }
   body:has(.taller) .tabbar { display: none; }
   body:has(.taller) { padding-bottom: 0; }
 }
+
+/* ---------- Taller: dibujo, regla, booleanas, patrones ---------- */
+.t-add.t-add2 { grid-template-columns: repeat(2, 1fr); }
+.t-recover { padding-top: 8px; font-weight: 500; color: var(--brand); }
+.t-menu.t-form { min-width: 240px; padding: 10px; }
+.t-menu.t-form > div:not(.t-seg) { display: block; margin: 0; }
+.t-form label { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12.5px; margin: 6px 0; color: var(--text); }
+.t-form input[type=number] { width: 80px; padding: 5px 7px; border: 1px solid var(--line); border-radius: 7px; background: var(--panel); color: var(--text); font: inherit; }
+.t-form label.chk { justify-content: flex-start; }
+.t-form .primary { width: 100%; margin-top: 8px; background: var(--brand); color: var(--brand-ink); border: 0; border-radius: 8px; padding: 8px; font-weight: 600; }
+.t-seg { display: flex !important; gap: 0 !important; background: var(--soft); border-radius: 8px; padding: 2px; margin-bottom: 6px !important; }
+.t-seg button { flex: 1; border: 0 !important; background: none; border-radius: 6px; }
+.t-seg button.on { background: var(--panel); color: var(--brand); box-shadow: 0 1px 2px rgba(0, 0, 0, .08); }
+.t-sketchbar { position: absolute; left: 50%; bottom: 60px; transform: translateX(-50%); z-index: 4; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; max-width: calc(100% - 24px); background: var(--panel); border: 1px solid var(--brand); border-radius: 12px; padding: 8px 12px; box-shadow: var(--shadow); font-size: 13px; }
+.t-sketchbar[hidden] { display: none; }
+.t-sketchbar span { flex: 1 1 220px; font-size: 12.5px; }
+.t-sketchbar input { width: 64px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 7px; background: var(--panel); color: var(--text); font: inherit; }
+.t-sketchbar button { border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 6px 10px; font-size: 12.5px; }
+.t-sketchbar button.primary { background: var(--brand); border-color: var(--brand); color: var(--brand-ink); font-weight: 600; }
+.t-ruler { position: absolute; z-index: 4; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; background: #e11d48; color: #fff; border-radius: 9px; padding: 5px 11px; font-size: 12.5px; pointer-events: none; white-space: nowrap; box-shadow: var(--shadow); }
+.t-ruler[hidden] { display: none; }
+.t-ruler span { font-size: 11px; opacity: .9; }
+.t-rect { position: absolute; z-index: 4; border: 1.5px dashed var(--brand); background: color-mix(in srgb, var(--brand) 10%, transparent); pointer-events: none; }
+.t-rect[hidden] { display: none; }

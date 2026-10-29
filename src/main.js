@@ -1,6 +1,6 @@
 import './styles.css';
 import { CATEGORIES, GENERATORS, APPS, FAMILIES, SHARED_GROUPS, FAMILY_SHARE, findGenerator, familyOf } from './catalog.js';
-import { renderTaller, loadScene, saveScene } from './taller/taller.js';
+import { renderTaller, sendToTaller } from './taller/taller.js';
 import { makeObject, solidToMeshData, groupObjects } from './taller/objects.js';
 import { icon } from './ui/icons.js';
 import { renderParams, defaultValues } from './ui/params.js';
@@ -14,12 +14,19 @@ const app = document.getElementById('app');
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const money = n => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(n || 0);
 const fmtTime = min => { min = Math.round(min); const h = Math.floor(min / 60), m = min % 60; return h ? `${h} h ${m} min` : `${m} min`; };
-const store = {
-  get: k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
-  set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* sin espacio */ } },
-};
 
 let cleanup = null;
+
+/**
+ * Lo que se escribe en un programa vive solo mientras estás adentro:
+ * al volver al inicio (o recargar) todo arranca de cero.
+ */
+const session = { family: null, params: {}, shared: {} };
+const resetSession = () => { session.family = null; session.params = {}; session.shared = {}; };
+// Limpia lo que guardaban las versiones anteriores
+try {
+  for (const k of Object.keys(localStorage)) if (/^g3d_lab_(params_|shared_|filters)/.test(k)) localStorage.removeItem(k);
+} catch { /* sin acceso */ }
 
 function route() {
   if (typeof cleanup === 'function') cleanup();
@@ -61,8 +68,8 @@ const isReady = g => !!(g.load || g.href);
 const norm = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 
 function renderCatalog(focusSearch = false) {
-  const saved = store.get('g3d_lab_filters') || {};
-  const state = { q: saved.q || '', soon: false };
+  resetSession();
+  const state = { q: '', soon: false };
   const base = import.meta.env.BASE_URL;
   const readyIn = f => f.items.filter(id => isReady(findGenerator(id) || {}));
   const inFamily = new Set(FAMILIES.flatMap(f => f.items));
@@ -110,7 +117,6 @@ function renderCatalog(focusSearch = false) {
   };
 
   const draw = () => {
-    store.set('g3d_lab_filters', { q: state.q });
     const q = norm(state.q.trim());
     if (q) {
       const hits = GENERATORS.filter(g => isReady(g) && norm(g.title + ' ' + g.desc).includes(q));
@@ -211,12 +217,14 @@ async function renderGenerator(id, fam = null) {
     return;
   }
 
-  const saveKey = `g3d_lab_params_${id}`;
-  const values = { ...defaultValues(gen.params), ...(store.get(saveKey) || {}) };
+  // Si cambiaste de programa, se olvida lo del anterior
+  const famId = fam ? fam.id : `g:${id}`;
+  if (session.family !== famId) { session.family = famId; session.params = {}; session.shared = {}; }
+  const values = { ...defaultValues(gen.params), ...(session.params[id] || {}) };
+  session.params[id] = values;
   // Lo que escribiste en otra opción del mismo programa (nombre, letra, colores…) te sigue
-  const famKey = fam ? `g3d_lab_shared_${fam.id}` : null;
   const shareGroups = fam ? (FAMILY_SHARE[fam.id] || []) : [];
-  const famShared = famKey ? (store.get(famKey) || {}) : {};
+  const famShared = session.shared;
   const validFor = (p, v) => {
     if (p.type === 'segment' || p.type === 'select') return p.options.some(o => o.value === v);
     if (p.type === 'number') return typeof v === 'number' && v >= p.min && v <= p.max;
@@ -230,12 +238,11 @@ async function renderGenerator(id, fam = null) {
     }
   }
   const rememberShared = () => {
-    if (!famKey) return;
+    if (!fam) return;
     for (const g of shareGroups) {
       const k = SHARED_GROUPS[g].find(key => key in values);
       if (k) famShared[g] = values[k];
     }
-    store.set(famKey, famShared);
   };
   let parts = [], token = 0, timer = null, alive = true;
   cleanup = () => { alive = false; clearTimeout(timer); viewer.renderer.dispose(); collect([]); };
@@ -273,11 +280,10 @@ async function renderGenerator(id, fam = null) {
     $('oParts').innerHTML = parts.map(p => `<li><i style="background:${p.color}"></i>${esc(p.name)}<span>${(p.solid.volume() / 1000).toFixed(1)} cm³</span></li>`).join('');
   };
 
-  renderParams($('params'), gen.params, values, () => { store.set(saveKey, values); rememberShared(); schedule(); });
+  renderParams($('params'), gen.params, values, () => { rememberShared(); schedule(); });
   $('reset').addEventListener('click', () => {
     Object.assign(values, defaultValues(gen.params));
-    store.set(saveKey, values);
-    renderParams($('params'), gen.params, values, () => { store.set(saveKey, values); rememberShared(); schedule(); });
+    renderParams($('params'), gen.params, values, () => { rememberShared(); schedule(); });
     schedule();
   });
   document.querySelector('.views').addEventListener('click', e => {
@@ -311,14 +317,10 @@ async function renderGenerator(id, fam = null) {
         w: b.max[0] - b.min[0], d: b.max[1] - b.min[1], h: b.max[2] - b.min[2],
       });
     });
-    const scene = loadScene() || { objs: [], sel: [] };
-    const item = kids.length > 1 ? await groupObjects(kids, ctx, scene.objs.length) : kids[0];
+    const item = kids.length > 1 ? await groupObjects(kids, ctx, 0) : kids[0];
     item.name = `${gen.title}: ${label()}`.slice(0, 60);
-    // Lo ubica al costado de lo que ya hay en el Taller
-    item.x = scene.objs.length ? Math.max(...scene.objs.map(o => o.x + o.w / 2)) + item.w / 2 + 10 : 0;
-    item.y = 0; item.z = 0;
-    scene.objs.push(item); scene.sel = [item.id]; scene.focus = true;
-    if (!saveScene(scene)) { status('⚠ El modelo es muy pesado para pasarlo al Taller. Exportalo como STL e importalo ahí.', 'error'); return; }
+    item.x = 0; item.y = 0; item.z = 0;
+    if (!sendToTaller(item)) { status('⚠ El modelo es muy pesado para pasarlo al Taller. Exportalo como STL e importalo ahí.', 'error'); return; }
     location.hash = '#/taller';
   }));
 

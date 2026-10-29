@@ -32,6 +32,7 @@ export const TYPES = {
   text: { label: 'Texto', size: [40, 12, 4], cat: 'text' },
   image: { label: 'Imagen', size: [40, 40, 3], cat: 'import' },
   stl: { label: 'Malla', size: [20, 20, 20], cat: 'import' },
+  sketch: { label: 'Perfil', size: [20, 20, 10], cat: 'sketch' },
   group: { label: 'Grupo', size: [20, 20, 20], cat: 'none' },
 };
 
@@ -63,12 +64,14 @@ export function makeObject(type, index = 0, extra = {}) {
   for (const p of SHAPE_PARAMS[type] || []) o[p.key] = p.default;
   if (type === 'text') Object.assign(o, { text: 'Hola', font: 'baloo' });
   if (type === 'image') Object.assign(o, { image: '', threshold: 128, invert: false });
+  if (type === 'sketch') Object.assign(o, { pts: [[-10, -10], [10, -10], [0, 10]], op: 'extrude', angle: 360 });
   return Object.assign(o, extra);
 }
 
 /** Copia profunda que comparte las mallas (para no duplicar memoria). */
 export function cloneObj(o, fresh = false) {
   const c = { ...o, mirror: [...(o.mirror || [false, false, false])] };
+  if (o.pts) c.pts = o.pts.map(p => [...p]);
   if (o.children) c.children = o.children.map(ch => cloneObj(ch, fresh));
   if (fresh) c.id = newId();
   return c;
@@ -147,8 +150,39 @@ async function shapeSolid(o, ctx) {
       if (!o.mesh) return Manifold.cube([w, d, h], true);
       return fitBox(meshToManifold(o.mesh), w, d, h);
     }
+    case 'sketch': return fitBox(sketchRaw(o), w, d, h);
     default: throw new Error(`Tipo desconocido: ${o.type}`);
   }
+}
+
+// ---------------- Perfiles (boceto → extruir o revolucionar) ----------------
+
+/** Sólido de un perfil en su tamaño natural (sin escalar). */
+export function sketchRaw(o) {
+  const { Manifold } = wasm();
+  const pts = (o.pts || []).filter(p => Array.isArray(p) && p.length >= 2 && p.every(Number.isFinite));
+  if (pts.length < 3) throw new Error('El perfil necesita al menos 3 puntos');
+  if (o.op === 'revolve') {
+    // Gira alrededor del borde izquierdo del perfil: X = radio, Y = alto
+    const minX = Math.min(...pts.map(p => p[0])), minY = Math.min(...pts.map(p => p[1]));
+    const cs = polygonShape(pts.map(([x, y]) => [x - minX, y - minY]));
+    const ang = Math.max(1, Math.min(360, o.angle || 360));
+    const m = Manifold.revolve(cs, 96, ang);
+    if (m.isEmpty()) throw new Error('El perfil no se puede girar: dibujalo a un costado del eje');
+    return m;
+  }
+  const m = polygonShape(pts).extrude(1);
+  if (m.isEmpty()) throw new Error('El perfil está vacío o se cruza consigo mismo');
+  return m;
+}
+
+/** Tamaño natural de un perfil (para crearlo o cuando cambia la operación). */
+export function sketchSize(o, height = 10) {
+  const b = sketchRaw(o).boundingBox();
+  const r = n => Math.round(n * 100) / 100;
+  return o.op === 'revolve'
+    ? { w: r(b.max[0] - b.min[0]), d: r(b.max[1] - b.min[1]), h: r(b.max[2] - b.min[2]) }
+    : { w: r(b.max[0] - b.min[0]), d: r(b.max[1] - b.min[1]), h: height };
 }
 
 // ---------------- Piezas de un objeto ----------------
@@ -178,6 +212,20 @@ function resolveColors(entries, holes) {
 /** Resultado de un grupo en sus coordenadas locales (sin centrar ni escalar). */
 export async function groupLocal(o, ctx) {
   const { Manifold } = wasm();
+  if (o.op === 'subtract' || o.op === 'intersect') {
+    // Operación booleana: el primero es la base y los demás lo cortan (o se intersecan)
+    const solids = [];
+    for (const ch of o.children || []) {
+      if (ch.hidden) continue;
+      const ps = (await objectParts(ch, ctx)).parts;
+      if (ps.length) solids.push(ps.length === 1 ? ps[0].solid : Manifold.union(ps.map(p => p.solid)));
+    }
+    if (!solids.length) return { parts: [], box: null };
+    let u = solids[0];
+    for (const t of solids.slice(1)) u = o.op === 'subtract' ? u.subtract(t) : u.intersect(t);
+    const parts = u.isEmpty() ? [] : [{ color: o.color, hole: !!o.hole, solid: u }];
+    return { parts, box: parts.length ? partsBox(parts) : null };
+  }
   const placed = [];
   for (const ch of o.children || []) {
     if (ch.hidden) continue;
@@ -271,17 +319,25 @@ export function sceneParts(objs, partsById) {
 // ---------------- Agrupar / desagrupar ----------------
 
 /** Agrupa objetos (ya posicionados en el mundo). Devuelve el grupo nuevo. */
-export async function groupObjects(objs, ctx, index = 0) {
+export const OPS = { union: 'Grupo', subtract: 'Resta', intersect: 'Intersección' };
+
+/**
+ * Agrupa objetos (ya posicionados en el mundo). Devuelve el grupo nuevo.
+ * @param op 'union' (grupo común, los huecos restan) | 'subtract' (al primero le resta los demás) | 'intersect' (solo lo común)
+ */
+export async function groupObjects(objs, ctx, index = 0, op = 'union') {
   const solidsOnly = objs.filter(o => !o.hole);
+  const boolean = op === 'subtract' || op === 'intersect';
   const g = {
-    id: newId(), type: 'group', name: `Grupo ${index + 1}`,
+    id: newId(), type: 'group', name: `${OPS[op] || 'Grupo'} ${index + 1}`, op,
     x: 0, y: 0, z: 0, w: 1, d: 1, h: 1, rx: 0, ry: 0, rz: 0,
-    color: (solidsOnly[0] || objs[0]).color, hole: objs.every(o => o.hole), hidden: false, locked: false,
-    mirror: [false, false, false], multicolor: new Set(solidsOnly.map(o => o.color)).size > 1,
+    color: boolean ? objs[0].color : (solidsOnly[0] || objs[0]).color, hole: boolean ? false : objs.every(o => o.hole), hidden: false, locked: false,
+    mirror: [false, false, false], multicolor: !boolean && new Set(solidsOnly.map(o => o.color)).size > 1,
     children: objs.map(o => cloneObj(o)),
   };
   // El tamaño del grupo es el de su resultado (los huecos no cuentan)
   const local = await groupLocal(g, ctx);
+  if (!local.box && boolean) throw new Error(op === 'intersect' ? 'Esos objetos no se tocan: la intersección queda vacía.' : 'La resta dejó el objeto vacío.');
   const box = local.box || partsBox((await Promise.all(objs.map(o => objectParts(o, ctx)))).flatMap(r => r.parts));
   Object.assign(g, { x: box.center[0], y: box.center[1], z: box.min[2], w: box.size[0], d: box.size[1], h: box.size[2] });
   return g;

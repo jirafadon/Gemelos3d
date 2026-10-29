@@ -18,7 +18,9 @@ npm run build    # sitio estático en dist/
 ## Apps
 
 - **Calculadora de presupuestos** (`public/calculadora.html`): precio desde STL, 3MF o G-code.
-- **Taller 3D** (`src/taller/`, ruta `#/taller`): editor estilo Tinkercad. 14 formas con parámetros (caja redondeada, cilindro, esfera, cono, techo, pirámide, media esfera, cuña, tubo, toroide, polígono, estrella, corazón, paraboloide), texto, imagen y STL. Manijas para mover/rotar/escalar, selección múltiple, grupos (los huecos restan solo dentro del grupo; multicolor o de un color), deshacer/rehacer, copiar/pegar, duplicar repitiendo el movimiento, alinear, espejar, ocultar, bloquear, grilla y medidas. Cada generador tiene "Seguir editando en el Taller 3D".
+- **Taller 3D** (`src/taller/`, ruta `#/taller`): editor estilo Tinkercad / FreeCAD. 14 formas con parámetros, texto, imagen y STL; perfiles dibujados sobre la grilla que se extruyen o revolucionan (con puntos editables); operaciones booleanas (unir, restar, intersecar) que se pueden cambiar después; repetir en línea o en círculo; regla para medir; selección con recuadro (Mayús + arrastrar); manijas para mover/rotar/escalar, grupos con huecos, deshacer/rehacer, copiar/pegar, duplicar repitiendo el movimiento, alinear, espejar, ocultar, bloquear, grilla y medidas. Cada generador tiene "Seguir editando en el Taller 3D".
+
+Cada módulo arranca de cero al entrar: los valores de un programa se recuerdan solo mientras estás adentro (se comparten entre sus opciones), la calculadora abre con el presupuesto vacío (el perfil sí se guarda) y el Taller ofrece "Abrir el diseño anterior" como respaldo.
 
 ## Estructura
 

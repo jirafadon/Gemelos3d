@@ -44,7 +44,9 @@ export function estimate(parts, prof = activeProfile()) {
 
 /** Agrega la pieza al presupuesto actual de la calculadora y la abre. */
 export function sendToCalculator({ name, grams, minutes, thumb, meta }) {
-  const job = read(STORE.job) || { name: '', units: 1, pieces: [], supplies: 0, design: { mode: 'fixed', value: 0 }, post: { mode: 'fixed', value: 0 }, searchText: '', marketRef: 0 };
+  // Pase de piezas a la calculadora: la calculadora lo levanta al abrirse y lo borra
+  const KEY = 'g3d_calc_incoming';
+  const job = read(KEY) || { name: '', units: 1, pieces: [], supplies: 0, design: { mode: 'fixed', value: 0 }, post: { mode: 'fixed', value: 0 }, searchText: '', marketRef: 0 };
   job.pieces = job.pieces || [];
   job.pieces.push({
     id: Math.random().toString(36).slice(2, 10), name, filament: 0,
@@ -53,6 +55,6 @@ export function sendToCalculator({ name, grams, minutes, thumb, meta }) {
   });
   if (!job.name) job.name = name;
   if (!job.searchText) job.searchText = name;
-  try { localStorage.setItem(STORE.job, JSON.stringify(job)); } catch { /* sin espacio */ }
+  try { localStorage.setItem(KEY, JSON.stringify(job)); } catch { /* sin espacio */ }
   window.open(`${import.meta.env.BASE_URL}calculadora.html`, '_blank');
 }

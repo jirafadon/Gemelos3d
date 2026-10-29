@@ -292,10 +292,15 @@ const firstRun = !profiles || !profiles.length;
 if (firstRun) profiles = [defaultProfile()];
 let activeId = load(STORE.active, profiles[0].id);
 if (!profiles.find(p => p.id === activeId)) activeId = profiles[0].id;
-let job = Object.assign(emptyJob(), load(STORE.job, {}));
+// Cada vez que se abre, el presupuesto arranca vacío (el perfil sí queda guardado).
+// Si llegaron piezas desde el Lab ("Mandar a la calculadora"), se cargan y se borran del pase.
+let job = emptyJob();
+const incoming = load('g3d_calc_incoming', null);
+if (incoming && Array.isArray(incoming.pieces)) job = Object.assign(emptyJob(), incoming);
+try { localStorage.removeItem('g3d_calc_incoming'); localStorage.removeItem(STORE.job); } catch { /* sin acceso */ }
 
 const profile = () => profiles.find(p => p.id === activeId);
-const persistJob = () => save(STORE.job, job);
+const persistJob = () => {}; // el presupuesto no se guarda entre visitas
 const persistProfiles = () => { save(STORE.profiles, profiles); save(STORE.active, activeId); };
 
 // ---------- Formatting ----------

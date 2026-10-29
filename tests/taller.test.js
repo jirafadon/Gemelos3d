@@ -6,7 +6,7 @@ import Module from 'manifold-3d';
 import { setWasm } from '../src/engine/geom.js';
 import { enableGC } from '../src/engine/gc.js';
 import { toSTL, solidToTriangles, to3MF } from '../src/engine/export.js';
-import { TYPES, makeObject, objectSolid, objectParts, sceneParts, parseSTLMesh, meshToManifold } from '../src/taller/objects.js';
+import { TYPES, makeObject, objectSolid, objectParts, sceneParts, parseSTLMesh, meshToManifold, sketchSize } from '../src/taller/objects.js';
 import { sampleMask } from '../src/engine/trace.js';
 
 let ctx;
@@ -113,4 +113,59 @@ test('espejar invierte la forma sin moverla', async () => {
   assert.ok(a.intersect(b).volume() < a.volume() * 0.9, 'quedó invertida');
   const ba = a.boundingBox(), bb = b.boundingBox();
   assert.ok(Math.abs(ba.min[0] - bb.min[0]) < 0.01);
+});
+
+test('restar: al primero le saca el segundo', async () => {
+  const a = makeObject('box', 0, { w: 20, d: 20, h: 20 });
+  const b = makeObject('cylinder', 1, { w: 10, d: 10, h: 30, z: -5 });
+  const g = await groupObjects([a, b], ctx, 0, 'subtract');
+  const s = await objectSolid(g, ctx);
+  const expected = 20 * 20 * 20 - Math.PI * 25 * 20;
+  assert.ok(Math.abs(s.volume() - expected) < expected * 0.02, `volumen ${s.volume()} vs ${expected}`);
+  assert.equal(g.hole, false);
+  const kids = await ungroupObject(g, ctx);
+  assert.equal(kids.length, 2, 'desagrupar devuelve las dos piezas originales');
+});
+
+test('intersecar: deja solo lo común', async () => {
+  const a = makeObject('box', 0, { w: 20, d: 20, h: 20 });
+  const b = makeObject('box', 1, { w: 20, d: 20, h: 20, x: 10 });
+  const g = await groupObjects([a, b], ctx, 0, 'intersect');
+  const s = await objectSolid(g, ctx);
+  assert.ok(Math.abs(s.volume() - 10 * 20 * 20) < 5, `volumen ${s.volume()}`);
+  assert.ok(Math.abs(g.w - 10) < 0.01, 'el grupo mide lo que queda');
+  await assert.rejects(() => groupObjects([a, makeObject('box', 2, { x: 100 })], ctx, 0, 'intersect'), /no se tocan/);
+});
+
+test('unir: una sola pieza de un color', async () => {
+  const a = makeObject('box', 0, { color: '#111111' });
+  const b = makeObject('sphere', 1, { x: 10, color: '#EEEEEE' });
+  const g = await groupObjects([a, b], ctx, 0, 'union');
+  g.multicolor = false;
+  const { parts } = await objectParts(g, ctx);
+  assert.equal(parts.length, 1);
+});
+
+test('perfil extruido: mide lo dibujado y el alto pedido', async () => {
+  const o = makeObject('sketch', 0, { pts: [[-15, -10], [15, -10], [15, 10], [0, 18], [-15, 10]], op: 'extrude' });
+  Object.assign(o, sketchSize(o, 7));
+  assert.deepEqual([o.w, o.d, o.h], [30, 28, 7]);
+  const s = await objectSolid(o, ctx);
+  const b = s.boundingBox();
+  assert.ok(Math.abs(b.max[2] - b.min[2] - 7) < 0.01);
+  assert.ok(Math.abs(s.volume() - (30 * 20 + 30 * 8 / 2) * 7) < 2, `volumen ${s.volume()}`);
+});
+
+test('perfil revolucionado: gira alrededor del borde izquierdo', async () => {
+  // Rectángulo de 10 de radio × 20 de alto → cilindro de 20 de diámetro
+  const o = makeObject('sketch', 0, { pts: [[0, 0], [10, 0], [10, 20], [0, 20]], op: 'revolve', angle: 360 });
+  Object.assign(o, sketchSize(o));
+  assert.ok(Math.abs(o.w - 20) < 0.1 && Math.abs(o.d - 20) < 0.1 && Math.abs(o.h - 20) < 0.01, `${o.w} × ${o.d} × ${o.h}`);
+  const s = await objectSolid(o, ctx);
+  assert.ok(Math.abs(s.volume() - Math.PI * 100 * 20) < Math.PI * 100 * 20 * 0.01);
+  // Media vuelta
+  const half = makeObject('sketch', 1, { pts: [[0, 0], [10, 0], [10, 20], [0, 20]], op: 'revolve', angle: 180 });
+  Object.assign(half, sketchSize(half));
+  assert.ok(Math.abs((await objectSolid(half, ctx)).volume() - Math.PI * 100 * 10) < 40);
+  assert.throws(() => sketchSize(makeObject('sketch', 2, { pts: [[0, 0], [1, 1]] })), /3 puntos/);
 });

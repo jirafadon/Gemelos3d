@@ -30,6 +30,9 @@ export class Viewer {
 
     this.group = new THREE.Group();
     this.scene.add(this.group);
+    // Dibujos auxiliares del editor (regla, perfil): no se eligen con clic
+    this.overlay = new THREE.Group();
+    this.scene.add(this.overlay);
     this.grid = null;
     this.lastSize = 0;
 
@@ -178,6 +181,48 @@ export class Viewer {
     ray.setFromCamera(this.ndc(ev), this.camera);
     const p = new THREE.Vector3();
     return ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 0, 1), -h), p) ? p : null;
+  }
+
+  /** Punto de la superficie bajo el puntero (o del piso si no hay nada). */
+  pickPoint(ev) {
+    const ray = new THREE.Raycaster();
+    ray.setFromCamera(this.ndc(ev), this.camera);
+    const hit = ray.intersectObjects(this.group.children, true)[0];
+    if (hit) return { id: hit.object.userData.id, point: hit.point.clone() };
+    const p = this.groundPoint(ev, 0);
+    return p ? { id: null, point: p } : null;
+  }
+
+  /** Coordenadas de pantalla (px, relativas a la ventana) de un punto del mundo. */
+  project(x, y, z) {
+    const v = new THREE.Vector3(x, y, z).project(this.camera);
+    const r = this.renderer.domElement.getBoundingClientRect();
+    return { x: r.left + (v.x + 1) / 2 * r.width, y: r.top + (1 - v.y) / 2 * r.height, behind: v.z > 1 };
+  }
+
+  /**
+   * Dibujo auxiliar: líneas y puntos encima del modelo.
+   * @param opts.lines  [[ [x,y,z], [x,y,z] ], ...]
+   * @param opts.points [[x,y,z], ...]
+   */
+  setOverlay({ lines = [], points = [], color = '#e11d48' } = {}) {
+    this.overlay.traverse(m => { if (m.geometry) m.geometry.dispose(); if (m.material) m.material.dispose(); });
+    this.overlay.clear();
+    if (lines.length) {
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(lines.flat(2)), 3));
+      const mat = new THREE.LineBasicMaterial({ color, depthTest: false });
+      const seg = new THREE.LineSegments(geo, mat);
+      seg.renderOrder = 10;
+      this.overlay.add(seg);
+    }
+    const r = Math.max(0.6, (this.distance || 120) / 220);
+    for (const p of points) {
+      const dot = new THREE.Mesh(new THREE.SphereGeometry(r, 12, 8), new THREE.MeshBasicMaterial({ color, depthTest: false }));
+      dot.position.set(...p); dot.renderOrder = 11;
+      this.overlay.add(dot);
+    }
+    this.render();
   }
 
   render() { this.renderer.render(this.scene, this.camera); }
