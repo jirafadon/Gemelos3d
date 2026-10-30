@@ -1,0 +1,82 @@
+# Ideas de herramientas para hacer
+
+Lista sacada de capturas de MakerWorld / MakerLab que pasó Joni (29/10/2026).
+Se copia el tipo de producto, no el código, las imágenes ni las marcas.
+
+Estado: **nueva** = no existe nada parecido · **ampliar** = se resuelve agrandando un generador que ya está.
+
+## Navidad (conviene tenerlas antes de diciembre)
+
+| # | Herramienta | Qué hace | Estado |
+|---|---|---|---|
+| 1 | Bola de Navidad con nombre | Silueta de bola con moño y gajos caladas, nombre en el medio, 2.ª línea opcional, 1 o 2 colores | ampliar `adorno-navidad` |
+| 2 | Corona navideña con nombre | Corona de hojas con moño, nombre y año; 3 estilos de corona | ampliar `adorno-navidad` |
+| 3 | Adorno de reno | Cabeza de reno con cuernos, moño, nombre y año | ampliar `adorno-navidad` |
+| 4 | Adorno giratorio 2D | Aro exterior + disco interior que gira; estilo calado o lleno; texto, stickers (pino, muñeco de nieve, copos, renos) | nueva |
+| 5 | Placa "árbol" de nombres | Nombres apilados de mayor a menor formando un pino, estrella arriba, base | nueva |
+| 6 | Árbol cónico de nombres | Cono hecho con anillos de nombres en capas de colores, estrella arriba, sin cambio automático de filamento | nueva |
+
+## Llaveros y personalizados
+
+| # | Herramienta | Qué hace | Estado |
+|---|---|---|---|
+| 7 | Clicker (llavero o suelto) | Tapa + cuerpo alrededor de un switch mecánico de teclado; forma por contorno, círculo, corazón, estrella, escudo; imagen, ícono o texto; aro de llavero; holguras ajustables | nueva |
+| 8 | Llavero de nombre articulado | Letras unidas por bisagras impresas en el lugar (flexi), multicolor | nueva |
+| 9 | Llavero con nombre + emoji / ícono, en lote | Nombre en cursiva con un ícono al final (corazón, rosa, mariposa), varios nombres de una | ampliar `llavero-nombre` |
+| 10 | Cuentas con letras (dijes) | Cuentas con agujero para pulseras o cordón, una letra por cuenta, varias tipografías y colores | nueva |
+| 11 | Etiqueta para copa / vaso | Nombre con un clip que abraza el borde del vaso | nueva |
+| 12 | Vincha con nombre | Vincha (diadema) con texto o forma arriba, tamaño ajustable | nueva |
+| 13 | Varita giratoria | Mango con espiral y una figura con nombre (corazón, estrella, nube) que gira al deslizarla | nueva |
+| 14 | Peine infantil con nombre | Ya está; sumar adornos (corona, estrella, luna) y cantidad de dientes | ampliar `peines` |
+
+## Cajas y regalos
+
+| # | Herramienta | Qué hace | Estado |
+|---|---|---|---|
+| 15 | Caja plegable | Se imprime plana con bisagras y se arma doblando; también con manija (caja de regalo) | nueva |
+| 16 | Caja con tapa deslizante | Para cartas u objetos; medidas a pedido | ampliar `cajas` |
+| 17 | Alhajero con nombre | Caja con tapa de pestaña y nombre arriba, separadores | nueva |
+| 18 | Alcancía laberinto | Cilindro con laberinto para regalar plata (hay que resolverlo para abrir); niveles | nueva |
+
+## Hogar, taller y oficina
+
+| # | Herramienta | Qué hace | Estado |
+|---|---|---|---|
+| 19 | Soporte para destornilladores | De pared, con agujeros a medida y varias filas | nueva |
+| 20 | Soporte de carga para reloj inteligente | Soporte (forma de banquito) que sostiene el cargador del reloj | nueva |
+| 21 | Florero panal | Florero con superficie de panal o facetas (biomimética), varias siluetas | ampliar `vasos-espiral` |
+| 22 | Diseñador de lámparas | Pantalla por silueta (esfera, pera, campana, curva libre), portalámparas, base con patas, textura en la superficie | nueva (grande) |
+
+## Sellos, dados y QR
+
+| # | Herramienta | Qué hace | Estado |
+|---|---|---|---|
+| 23 | Embosador de papel | Prensa con bisagra impresa en el lugar que marca texto o un dibujo en papel | nueva |
+| 24 | Fabricante de sellos completo | Texto curvo alrededor, bordes simple/doble, círculo/elipse/rectángulo, relieve o hundido, mango con rosca | ampliar `sello-letras` |
+| 25 | Estudio de dados | D4, D6, D8, D10, D12, D20 (y dados de caras repetidas); cada cara con puntos, número, texto o ícono; redondeo y profundidad | nueva |
+| 26 | QR con estilos 3D | Además de plano: pirámide, terrazas, "río", colinas; logo al centro y texto abajo | ampliar `qr-3d` |
+
+## Recipientes con trama (tipo "ParamaCraft")
+
+Un solo programa de recipientes en pasos: **1. Cuerpo** (forma, medidas, redondeo, alto) → **2. Trama** → **3. Tapa** → exportar.
+
+| # | Herramienta | Qué hace | Estado |
+|---|---|---|---|
+| 27 | Recipiente con tapa encastrada | Caja redondeada con tapa que entra adentro (labio) | ampliar `cajas` |
+| 28 | Frasco con tapa a rosca | Recipiente redondo + tapa roscada | nueva (usa `roscas`) |
+| 29 | Recipiente con frente bajo | Bandeja/organizador con el frente en curva para sacar cosas | ampliar `cajas` |
+| 30 | Tramas para paredes | Voronoi, panal calado, tejido de canasto, rayas, espiral torcida, facetado | nueva (motor común) |
+| 31 | Formas del cuerpo | Círculo, polígono, rectángulo redondeado; abombado, cono, inclinado (tilt), torcido | ampliar `vasos-espiral` / `bowls` |
+| 32 | Canasto tejido | Recipiente con paredes de tejido entrelazado | nueva (con 30) |
+| 33 | Portalápices de rayas | Cilindro/caja con estrías verticales | ampliar `portalapices` |
+| 34 | Especiero / bandeja de huecos | Bandeja con huecos redondos en grilla (frascos, pinturas, especias) | nueva |
+| 35 | Tablero perforado (pegboard) | Placa con agujeros en grilla, medidas a pedido, para colgar accesorios | nueva |
+| 36 | Gancho para puerta | Gancho en "J" que se cuelga del borde de la puerta, espesor de puerta a medida | ampliar `ganchos` |
+| 37 | Funda calada voronoi | Trama voronoi calada para la espalda de la funda | ampliar `funda-celular` (nueva trama) |
+
+## Orden sugerido
+
+1. Navidad: 1–3 (rápido, sobre `adorno-navidad`), luego 4 y 5.
+2. Clicker (7) y dados (25): los más descargados en las capturas.
+3. Ampliaciones chicas: 9, 14, 16, 21, 24, 26.
+4. Resto, y la lámpara (22) al final por ser la más grande.
