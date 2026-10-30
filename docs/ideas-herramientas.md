@@ -74,6 +74,104 @@ Un solo programa de recipientes en pasos: **1. Cuerpo** (forma, medidas, redonde
 | 36 | Gancho para puerta | Gancho en "J" que se cuelga del borde de la puerta, espesor de puerta a medida | ampliar `ganchos` |
 | 37 | Funda calada voronoi | Trama voronoi calada para la espalda de la funda | ampliar `funda-celular` (nueva trama) |
 
+## Más ideas del listado completo de MakerWorld (Parametric Model Maker, ~330 modelos, 29/10/2026)
+
+★ = buena para vender (regalo personalizado, fecha especial o comercio). Se dejan afuera las que usan marcas o personajes ajenos (Pokémon, Harry Potter, Mario, NFL, Disney, etc.).
+
+### Regalos y personalizados
+| # | Herramienta | Estado |
+|---|---|---|
+| 38 | ★ Caja de luz con nombre (frente calado + LED) | nueva |
+| 39 | ★ Marco de foto de egresados / jardín (letras ABC) | nueva |
+| 40 | ★ Letras globo (nombre o número inflado tipo globo metalizado) | nueva |
+| 41 | ★ Letras de pie con el nombre (display, sin cambio de filamento) | ampliar `letras-separadas` |
+| 42 | ★ Placa de escritorio "zigzag" y placa de nombre barrida (sweep) | nueva |
+| 43 | ★ Placa para marco de puerta / cartel de cuarto | ampliar `letrero-palabras` |
+| 44 | ★ Topper de torta en 3 tonos | ampliar `topper-torta` |
+| 45 | ★ Tarjetas de lugar para mesa (bodas, Navidad, cumpleaños) + portacubiertos con nombre | nueva |
+| 46 | ★ Etiquetas de regalo con nombre / tipo sello de lacre | nueva |
+| 47 | ★ Regalo de dinero de cumpleaños (soporte para billetes con nombre) | nueva |
+| 48 | ★ Nube de nacimiento (globo aerostático con nombre, fecha, peso) | nueva |
+| 49 | ★ Rompecabezas de nombre para chicos (letras gruesas) | ampliar `rompecabezas` |
+| 50 | ★ Mini trofeos en serie (10 de una, base con texto) | ampliar `trofeo` |
+| 51 | ★ Imán con nombre (hasta 3 líneas) | ampliar `souvenirs` |
+| 52 | Soporte de celular tipo "pop" con texto (agarre adhesivo) | nueva |
+| 53 | Señalética en braille (7 idiomas) | nueva |
+| 54 | Visor/porta foto instantánea | nueva |
+
+### Llaveros y etiquetas
+| # | Herramienta | Estado |
+|---|---|---|
+| 55 | ★ Etiquetas deportivas con nombre y número (fútbol, básquet, tenis, natación, danza, hockey) | nueva (una familia) |
+| 56 | ★ Llavero de patente | nueva |
+| 57 | ★ Llavero estilo tecla de teclado | nueva |
+| 58 | ★ Llavero de encaje con nombres de la familia, sol / flor / nube, gorro navideño | ampliar `llavero-forma` |
+| 59 | ★ Llavero flexi (articulado, juguete antiestrés) | igual que #8 |
+| 60 | Etiqueta de equipaje / identificación | nueva |
+| 61 | Portacredencial (badge) personalizable | nueva |
+| 62 | Funda para rastreador (tipo tag Bluetooth) con texto, logo o QR | nueva |
+| 63 | Funda para encendedor | nueva |
+
+### Navidad y fechas
+| # | Herramienta | Estado |
+|---|---|---|
+| 64 | ★ Bastón de caramelo, gnomo, moño, copo de nieve familiar, galletita de jengibre con nombre | ampliar `adorno-navidad` |
+| 65 | ★ Bola de Navidad con forma de perro o gato (mascota con nombre) | ampliar `adorno-navidad` |
+| 66 | ★ Bola calada de las dos caras / termoformada | ampliar `adorno-navidad` / `thermoform` |
+| 67 | ★ Calendario de Adviento giratorio | nueva |
+| 68 | ★ Árbol portacaramelos / árbol modular con nombres de la familia | ampliar #5 |
+| 69 | ★ Tarjeta-kit de casita de jengibre (se encastra) | nueva |
+| 70 | ★ Corona navideña con el apellido de la familia | ampliar `adorno-navidad` |
+| 71 | Generador de copos de nieve / adornos en espiral | nueva |
+| 72 | Halloween: fantasma con nombre y año, telaraña con nombre, marcador de copas | nueva |
+
+### Juguetes y antiestrés
+| # | Herramienta | Estado |
+|---|---|---|
+| 73 | ★ Anillo flexi, fidgets articulados, cubo infinito | nueva |
+| 74 | Escalera de mono (juguete de gravedad) | nueva |
+| 75 | Cartas que se tiran / pelotas deportivas en miniatura | nueva |
+| 76 | Puerta mágica de duende con escalera | nueva |
+
+### Hogar, cocina y organización
+| # | Herramienta | Estado |
+|---|---|---|
+| 77 | ★ Divisores de cajón a medida | nueva |
+| 78 | ★ Organizador de escritorio apilable / con nombre | ampliar `porta-boligrafos` |
+| 79 | Caja apilable, caja magnética, caja con compartimentos y nombre, caja tambor (se enrolla), caja kumiko | ampliar `cajas` |
+| 80 | ★ Maceta a medida | nueva |
+| 81 | Jabonera / bandeja de dispensador con estrías | nueva |
+| 82 | Colador y desagüe de pileta | nueva |
+| 83 | Organizador de saquitos de té | nueva |
+| 84 | Porta sahumerios / cenicero con hoja | nueva |
+| 85 | Soporte para tablas de cortar, soporte de manga pastelera | nueva |
+| 86 | Soporte de exhibición (autitos, bloques, figuras), base para minifiguras | nueva |
+| 87 | Soporte para auriculares, para lector de libros, para tablet en el auto, para la balanza | ampliar `soporte-universal` |
+| 88 | Colgador de cuadros, ganchos para estante | ampliar `ganchos` |
+| 89 | Caja para guardar fotos / álbum | nueva |
+
+### Taller, cables y repuestos
+| # | Herramienta | Estado |
+|---|---|---|
+| 90 | Tornillo + tuerca + arandela M3–M24, tuerca mariposa, pomo estrella, mango en T | ampliar `roscas` |
+| 91 | Arandelas, juntas y o-rings a medida, espaciadores y bujes | nueva |
+| 92 | Resortes paramétricos | nueva |
+| 93 | Organizadores de pinzas, destornilladores, puntas y mechas (pared o Gridfinity) | ampliar #19 / `gridfinity` |
+| 94 | Tablero perforado compatible con el sistema sueco de pared + accesorios | ampliar #35 |
+| 95 | Bridas reutilizables, clips y etiquetas de cables, pasacables de escritorio | nueva |
+| 96 | Adaptador para manguera, conectores de tubo, tubo corrugado, boquilla de aspiradora | ampliar `adaptador` / `conectores` |
+| 97 | Gabinete para placas (ESP32/Arduino), rejilla de ventilación, tapa de inspección | ampliar `caja-electronica` |
+| 98 | Tapón para pata de silla, tapón de manubrio, mango de escoba (repuestos) | ampliar `repara` |
+| 99 | Plantilla de radios para router, cuchillo de esquina para yeso | ampliar `jig` |
+
+## Promoción con fotos reales (pedido de Joni)
+
+Idea: armar un catálogo para vender lo que podemos hacer, **por categoría y con fotos reales de cada cosa impresa**.
+- Las fotos de MakerWorld no se pueden usar (son de otros). Hay que imprimir una muestra de cada producto y sacarle foto.
+- Mientras tanto se pueden usar los renders de los generadores, marcados como "vista previa".
+- Categorías propuestas: Regalos personalizados · Llaveros · Navidad y fechas · Cumpleaños, egresados y eventos · Comercios (QR, precios, carteles) · Hogar y cocina · Organización y taller · Fundas · Juguetes.
+- Dónde: página del catálogo (link para compartir) y la tienda gemelos3d.com.ar.
+
 ## Orden sugerido
 
 1. Navidad: 1–3 (rápido, sobre `adorno-navidad`), luego 4 y 5.
