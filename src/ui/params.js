@@ -107,7 +107,13 @@ function fieldBody(p, values, set) {
     case 'select': {
       const s = document.createElement('select');
       s.className = 'p-input';
-      s.innerHTML = p.options.map(o => `<option value="${esc(o.value)}" ${o.value === v ? 'selected' : ''}>${esc(o.label)}</option>`).join('');
+      // Opciones agrupadas (optgroup) si traen "group"; selectedIndex cuenta solo las <option>, así que el orden se mantiene
+      let html = '', grp = null;
+      for (const o of p.options) {
+        if ((o.group || null) !== grp) { if (grp) html += '</optgroup>'; grp = o.group || null; if (grp) html += `<optgroup label="${esc(grp)}">`; }
+        html += `<option value="${esc(o.value)}" ${o.value === v ? 'selected' : ''}>${esc(o.label)}</option>`;
+      }
+      s.innerHTML = html + (grp ? '</optgroup>' : '');
       s.addEventListener('change', () => set(p.key, p.options[s.selectedIndex].value));
       box.appendChild(s);
       break;

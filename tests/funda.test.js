@@ -42,7 +42,7 @@ test('tramas y modos', async () => {
   }
 });
 test('opciones de funda y a medida', async () => {
-  for (const o of [{ buttons: 'cut' }, { buttons: 'none', corners: false }, { bottom: 'open', lanyard: true }, { bottom: 'usb', camProtect: false }, { print: 'test' }, { model: 'redmi-note-13' }, { model: 'custom', camSide: 'C' }, { model: 'custom', cEdge: 0, camSide: 'R' }, { model: 'iphone-12', text: 'Hola\nMundo', pattern: 'none' }]) {
+  for (const o of [{ buttons: 'cut' }, { buttons: 'none', corners: false }, { bottom: 'open', lanyard: true }, { bottom: 'usb', camProtect: false }, { print: 'test' }, { model: 'redmi-note-13' }, { model: 'custom', camSide: 'C' }, { model: 'custom', cEdge: 0, camSide: 'R' }, { model: 'iphone-12', text: 'Hola\nMundo', pattern: 'none' }, { model: 'iphone-17-pro', buttons: 'cut' }, { model: 'galaxy-s26-ultra' }, { model: 'ipad-a16', buttons: 'cut' }, { model: 'ipad-pro-11', print: 'test' }, { model: 'tab-a9-plus', pattern: 'dots', mode: 'cut' }]) {
     ok(JSON.stringify(o), await gen.build({ ...base, ...o }, ctx));
   }
 });

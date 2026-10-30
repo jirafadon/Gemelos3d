@@ -67,14 +67,20 @@ const P = v => (v.model === 'custom' ? {
 
 export default {
   id: 'funda-celular',
-  title: 'Funda de TPU para celular',
-  description: 'Elegí tu celular y diseñá la funda: labio, cámara, botones, esquinas reforzadas y tramas atrás.',
+  title: 'Funda de TPU para celular o tablet',
+  description: 'Elegí tu celular o tablet y diseñá la funda: labio, cámara, botones, esquinas reforzadas y tramas atrás.',
   fileName: v => `funda_${v.model}${v.print === 'test' ? '_prueba' : ''}`,
   params: [
     { type: 'group', label: 'Celular' },
-    { key: 'model', type: 'select', label: 'Modelo', default: 'galaxy-a15', options: PHONE_OPTIONS, hint: 'Medidas generales oficiales. Cámara y botones son aproximados: imprimí primero la prueba de calce y ajustá abajo.' },
-    { key: 'cH', type: 'number', label: 'Alto del celular', default: 160, min: 100, max: 190, step: 0.1, unit: 'mm', show: v => v.model === 'custom' },
-    { key: 'cW', type: 'number', label: 'Ancho', default: 75, min: 50, max: 95, step: 0.1, unit: 'mm', show: v => v.model === 'custom' },
+    { key: 'model', type: 'select', label: 'Modelo', default: 'galaxy-a15', options: PHONE_OPTIONS, hint: v => {
+      const p = v.model === 'custom' ? { w: v.cW, h: v.cH } : PHONES[v.model];
+      if (!p) return '';
+      const ow = Math.round(p.w + 2 * (v.tol + v.wall) + (v.corners ? 1.8 : 0)), oh = Math.round(p.h + 2 * (v.tol + v.wall) + (v.corners ? 1.8 : 0));
+      const big = Math.max(ow, oh) > 270 ? ' ⚠ No entra en la cama de la U1 (270 × 270).' : '';
+      return `La funda mide ${ow} × ${oh} mm.${big} Medidas generales oficiales; cámara y botones son aproximados: imprimí primero la prueba de calce.`;
+    } },
+    { key: 'cH', type: 'number', label: 'Alto del celular o tablet', default: 160, min: 100, max: 265, step: 0.1, unit: 'mm', show: v => v.model === 'custom' },
+    { key: 'cW', type: 'number', label: 'Ancho', default: 75, min: 50, max: 200, step: 0.1, unit: 'mm', show: v => v.model === 'custom' },
     { key: 'cD', type: 'number', label: 'Espesor (sin la cámara)', default: 8.2, min: 5, max: 14, step: 0.05, unit: 'mm', show: v => v.model === 'custom' },
     { key: 'cCorner', type: 'number', label: 'Radio de las esquinas', default: 9, min: 2, max: 20, step: 0.5, unit: 'mm', show: v => v.model === 'custom' },
     { key: 'cEdge', type: 'number', label: 'Curva del canto', default: 1.5, min: 0, max: 5, step: 0.1, unit: 'mm', show: v => v.model === 'custom', hint: '0 = cantos rectos (tipo iPhone 12); 3 = muy redondeados.' },
@@ -125,7 +131,7 @@ export default {
     const ph = P(v);
     if (!ph) throw new Error('Elegí un modelo de celular');
     const tol = v.tol, t = v.wall;
-    const W = ph.w, H = ph.h, D = ph.d, R = ph.corner, E = ph.edge;
+    const W = ph.w, H = ph.h, D = ph.d, R = ph.corner, E = ph.edge, tablet = ph.kind === 'tablet';
     const [side, cTop, cOff, cW, cH, cR, bump] = ph.cam;
     const back = v.camProtect ? Math.max(v.back, bump + 0.6) : v.back;
 
@@ -134,10 +140,11 @@ export default {
     const outerW = W + 2 * (tol + t), outerH = H + 2 * (tol + t);
     let body = roundedBody(outerW, outerH, R + tol + t, -back, D + v.lipH, Math.min(E + t, back + 1), 0.6);
     if (v.corners) {
-      const k = 0.9, cr = R + tol + t;
+      // Refuerzo que abraza cada esquina unos 9 mm por lado (aunque la esquina del equipo sea muy cerrada)
+      const k = 0.9, cr = R + tol + t, pr = Math.max(cr, 9);
       for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
-        const c = [sx * (outerW / 2 - cr), sy * (outerH / 2 - cr)];
-        body = body.add(slab(circle(cr + k, 48).translate(c).intersect(roundedRect(outerW + 2 * k, outerH + 2 * k, cr + k)), D + v.lipH - 0.6 - (-back + 0.8), -back + 0.8));
+        const c = [sx * (outerW / 2 - pr), sy * (outerH / 2 - pr)];
+        body = body.add(slab(circle(pr + k, 48).translate(c).intersect(roundedRect(outerW + 2 * k, outerH + 2 * k, cr + k)), D + v.lipH - 0.6 - (-back + 0.8), -back + 0.8));
       }
     }
     let cut = cavity;
@@ -147,32 +154,47 @@ export default {
     // Cámara (posición dada mirando la espalda: a la izquierda en la espalda = a la derecha visto de frente)
     const cx = side === 'C' ? 0 : (side === 'L' ? 1 : -1) * (W / 2 - cOff - cW / 2 - v.camDx);
     const cy = H / 2 - cTop - cH / 2 - v.camDy;
-    const camCut = roundedRect(cW + 2 * v.camGrow, cH + 2 * v.camGrow, Math.min(cR + v.camGrow, (Math.min(cW, cH) + 2 * v.camGrow) / 2 - 0.01)).translate([cx, cy]);
+    const camCut = roundedRect(Math.min(cW + 2 * v.camGrow, W - 1), cH + 2 * v.camGrow, Math.min(cR + v.camGrow, (Math.min(cW, cH) + 2 * v.camGrow) / 2 - 0.01)).translate([cx, cy]);
     cut = cut.add(slab(camCut, back + 2, -back - 1));
 
-    // Botones laterales
+    // Botones: en los costados (L/R, medidos desde arriba) o en el borde de arriba/abajo (T/B, desde la izquierda)
     const zMid = D / 2;
     if (v.model !== 'custom' && v.buttons !== 'none') {
       for (const [bs, from, len] of ph.buttons || []) {
-        const x = (bs === 'L' ? -1 : 1) * (W / 2 + tol), y = H / 2 - from - len / 2 - v.btnDy;
-        if (v.buttons === 'cut') {
-          cut = cut.add(Manifold.cube([t * 2 + 2, len + 2, Math.min(D * 0.62, 5.5)], true).translate([x + (bs === 'L' ? -t / 2 : t / 2), y, zMid]));
-        } else {
+        const vert = bs === 'L' || bs === 'R', dir = bs === 'L' || bs === 'B' ? -1 : 1;
+        // Se arma como si estuviera en el costado derecho (X = afuera) y después se gira
+        const place = m => (vert ? m : m.rotate([0, 0, 90]));
+        const along = vert ? H / 2 - from - len / 2 - v.btnDy : -W / 2 + from + len / 2 + v.btnDy;
+        const edge = (vert ? W : H) / 2 + tol;
+        const at = (m, off) => {
+          const q = place(m);
+          return vert ? q.translate([dir * (edge + off), along, zMid]) : q.translate([along, dir * (edge + off), zMid]);
+        };
+        const hz = Math.min(D * 0.62, 5.5);
+        if (v.buttons === 'cut') cut = cut.add(at(Manifold.cube([t * 2 + 2, len + 2, hz], true), t / 2));
+        else {
           // Cubierto: la pared se afina por dentro y lleva un relieve afuera para encontrar el botón
-          cut = cut.add(Manifold.cube([1.2, len + 1, Math.min(D * 0.62, 5)], true).translate([x + (bs === 'L' ? -0.3 : 0.3), y, zMid]));
-          body = body.add(Manifold.cube([1.6, len, Math.min(D * 0.5, 4)], true).translate([x + (bs === 'L' ? -(t + 0.4) : t + 0.4), y, zMid]));
+          cut = cut.add(at(Manifold.cube([1.2, len + 1, Math.min(hz, 5)], true), 0.3));
+          body = body.add(at(Manifold.cube([1.6, len, Math.min(D * 0.5, 4)], true), t + 0.4));
         }
       }
     }
 
     // Abajo: USB-C, parlante y micrófono (o abierto); auricular si tiene
     const yb = -H / 2 - tol, slotZ = Math.min(D - 1.4, 6.6);
+    const slotH = Math.min(3.4, D - 2);
     if (v.bottom === 'open') {
       cut = cut.add(Manifold.cube([W - 2 * Math.max(R, 10), t * 2 + 4, D - 1.6], true).translate([0, yb, D / 2 + 0.4]));
     } else {
       cut = cut.add(Manifold.cube([13, t * 2 + 4, slotZ], true).translate([0, yb, zMid]));
-      if (v.bottom === 'ports') for (const sx of [-1, 1]) cut = cut.add(Manifold.cube([12, t * 2 + 4, Math.min(3.4, D - 2)], true).translate([sx * 17, yb, zMid]));
+      if (v.bottom === 'ports') {
+        if (tablet) {
+          // Tablets: parlantes cerca de las esquinas, en los dos bordes cortos
+          for (const y of [yb, H / 2 + tol]) for (const sx of [-1, 1]) cut = cut.add(Manifold.cube([22, t * 2 + 4, slotH], true).translate([sx * (W / 2 - R - 14), y, zMid]));
+        } else for (const sx of [-1, 1]) cut = cut.add(Manifold.cube([12, t * 2 + 4, slotH], true).translate([sx * 17, yb, zMid]));
+      }
     }
+    if (ph.spen != null) cut = cut.add(Manifold.cube([9, t * 2 + 4, Math.min(5, D - 1.6)], true).translate([ph.spen, yb, zMid]));
     if (ph.jack) {
       const jy = ph.jack.side === 'top' ? H / 2 + tol : yb;
       cut = cut.add(Manifold.cylinder(t * 2 + 4, 3.6, 3.6, 32, true).rotate([90, 0, 0]).translate([ph.jack.x, jy, zMid]));
