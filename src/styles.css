@@ -380,3 +380,4 @@ button { font: inherit; cursor: pointer; color: inherit; }
 .views button[data-ortho].on { background: var(--brand-soft); color: var(--brand); }
 .tone-cyan { --t: #0891b2; --tb: #dcf3f8; }
 .taller .t-dims { bottom: 58px; }
+.tone-gold { --t: #b7791f; --tb: #fbf0d6; }

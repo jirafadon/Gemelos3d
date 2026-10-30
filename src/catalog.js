@@ -47,7 +47,10 @@ export const GENERATORS = [
   g('palabra-corazon', 'Palabra en 2 capas con corazón', 'Palabra cursiva con un corazón final, en dos capas.', 'carteles', 1, () => import('./generators/palabra-corazon.js')),
   g('letrero-imagen', 'Letrero con imagen', 'Una o dos líneas de texto más un ícono, en 2 o 3 colores.', 'carteles', 2),
   g('letrero-multipart', 'Letrero multipartes desde imagen', 'Logo o dibujo separado en capas de color para encastrar.', 'carteles', 2),
-  g('trofeo', 'Trofeo imagen + texto', 'Copa, estrella, medalla o escudo con texto, sobre base con el nombre.', 'carteles', 2, () => import('./generators/trofeo.js')),
+  g('medalla', 'Diseñá tu medalla', 'Medalla con borde, laurel, ícono y textos, con pasacinta o argolla.', 'carteles', 3, () => import('./generators/medalla.js')),
+  g('graduados', 'Egresados y graduados', 'Birrete, año y nombre como adorno, llavero, imán o topper; uno por egresado.', 'carteles', 3, () => import('./generators/graduados.js')),
+  g('souvenirs', 'Souvenirs para eventos', 'Forma con el nombre de cada invitado y la fecha: llavero, imán o colgante.', 'carteles', 3, () => import('./generators/souvenirs.js')),
+  g('trofeo', 'Trofeo imagen + texto', 'Copa, estrella, medalla, escudo, pelota o birrete, con base y dos líneas de texto.', 'carteles', 2, () => import('./generators/trofeo.js')),
   g('texto-guia', 'Texto de pared con guía', 'Letras grandes para pegar en pared, con plantilla de colocación.', 'carteles', 3),
 
   // ---------- QR y comercios ----------
@@ -153,12 +156,14 @@ export const APPS = [
 export const FAMILIES = [
   { id: 'llaveros', icon: 'tag', tone: 'blue', title: 'Llaveros', desc: 'Nombre con contorno, placa, nombre y apellido o con logo.', cover: 'llavero-nombre', cat: 'nombres',
     items: ['llavero-nombre', 'llavero-forma', 'llavero-rectangular', 'llavero-nombre-completo', 'llavero-logo', 'llavero-nfc', 'llavero-espejo', 'abrelatas'] },
+  { id: 'premios', icon: 'trophy', tone: 'gold', title: 'Trofeos, medallas y souvenirs', desc: 'Diseñá tu trofeo o medalla, recuerdos de egresados y souvenirs con el nombre de cada invitado.', cover: 'medalla', cat: 'carteles',
+    items: ['trofeo', 'medalla', 'graduados', 'souvenirs'] },
   { id: 'qr', icon: 'qr', tone: 'teal', title: 'QR y comercios', desc: 'Placas de cobro, WiFi, redes, reseñas, listas de QR y tarjetas.', cover: 'placa-qr-mp', cat: 'qr',
     items: ['placa-qr-mp', 'placa-wifi', 'placa-redes', 'placa-google', 'placa-qr', 'lista-qr', 'tarjeta-presentacion', 'qr-3d', 'exhibidor-salon'] },
   { id: 'letreros', icon: 'sign', tone: 'purple', title: 'Letreros', desc: 'Palabras superpuestas, @usuario, letras separadas y palabra con corazón.', cover: 'letrero-palabras', cat: 'carteles',
     items: ['letrero-palabras', 'letrero-social', 'letras-separadas', 'palabra-corazon', 'letrero-imagen', 'letrero-multipart', 'texto-guia'] },
-  { id: 'placas', icon: 'frame', tone: 'indigo', title: 'Placas y cuadros', desc: 'Placa profesional, cuadros, portafotos y trofeos, con base para pararlos.', cover: 'cuadro-marco', cat: 'carteles',
-    items: ['placa-profesional', 'placa-rayas', 'cuadro-marco', 'portafotos', 'trofeo'] },
+  { id: 'placas', icon: 'frame', tone: 'indigo', title: 'Placas y cuadros', desc: 'Placa profesional, cuadros y portafotos, con base para pararlos.', cover: 'cuadro-marco', cat: 'carteles',
+    items: ['placa-profesional', 'placa-rayas', 'cuadro-marco', 'portafotos'] },
   { id: 'fiestas', icon: 'gift', tone: 'pink', title: 'Fiestas y regalos', desc: 'Toppers, estacas, adornos, colgantes, marcapáginas, cubos con letras y peines.', cover: 'topper-torta', cat: 'deco',
     items: ['topper-torta', 'estacas', 'adorno-navidad', 'colgante-familia', 'marcapaginas', 'cubos-apilables', 'peines', 'rosa-nombre', 'adorno-galleta'] },
   { id: 'mascotas', icon: 'paw', tone: 'amber', title: 'Mascotas', desc: 'Placas con nombre y teléfono: hueso, pez, óvalo, corazón y más.', cover: 'placa-mascota', cat: 'nombres',
@@ -211,4 +216,5 @@ export const FAMILY_SHARE = {
   taller: [],
   deco: [],
   letras: ['letra'],
+  premios: ['colorBase', 'colorTexto'],
 };

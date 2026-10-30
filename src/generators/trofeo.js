@@ -6,6 +6,7 @@
 import { wasm, circle, roundedRect, polygonShape, slab, part } from '../engine/geom.js';
 import { mergeByColor, stackLines, placeBelow } from '../engine/layers.js';
 import { star, fitInto, smooth } from '../engine/shapes.js';
+import { ball, birrete } from '../engine/icons2d.js';
 import { firstLine } from './_common.js';
 
 /** Silueta de copa de trofeo (alto ≈ s). */
@@ -28,19 +29,20 @@ function shield(s) {
 
 export default {
   id: 'trofeo',
-  title: 'Trofeo',
-  description: 'Copa, estrella, medalla o escudo con texto, sobre base con el nombre al frente.',
+  title: 'Diseñá tu trofeo',
+  description: 'Copa, estrella, medalla, escudo, pelota o birrete con texto, sobre base con dos líneas al frente.',
   fileName: v => `trofeo_${firstLine(v.name, v.title)}`,
   params: [
     { type: 'group', label: 'Figura' },
-    { key: 'figure', type: 'segment', label: 'Figura', default: 'cup', options: [{ value: 'cup', label: 'Copa' }, { value: 'star', label: 'Estrella' }, { value: 'medal', label: 'Medalla' }, { value: 'shield', label: 'Escudo' }] },
+    { key: 'figure', type: 'segment', label: 'Figura', default: 'cup', options: [{ value: 'cup', label: 'Copa' }, { value: 'star', label: 'Estrella' }, { value: 'medal', label: 'Medalla' }, { value: 'shield', label: 'Escudo' }, { value: 'ball', label: 'Pelota' }, { value: 'birrete', label: 'Birrete' }] },
     { key: 'size', type: 'number', label: 'Alto de la figura', default: 110, min: 50, max: 220, step: 1, unit: 'mm' },
     { key: 'title', type: 'text', label: 'Texto en la figura', default: '1°', multiline: true },
     { key: 'titleFont', type: 'font', label: 'Tipografía', default: 'bangers' },
     { key: 'thick', type: 'number', label: 'Espesor de la figura', default: 4, min: 2.4, max: 10, step: 0.2, unit: 'mm' },
 
     { type: 'group', label: 'Base' },
-    { key: 'name', type: 'text', label: 'Nombre o premio al frente', default: 'Campeón 2026' },
+    { key: 'name', type: 'text', label: 'Línea 1 al frente', default: 'Juan Pérez' },
+    { key: 'name2', type: 'text', label: 'Línea 2 al frente (opcional)', default: 'Campeón 2026' },
     { key: 'nameFont', type: 'font', label: 'Tipografía del nombre', default: 'poppins' },
     { key: 'tol', type: 'number', label: 'Holgura de la ranura', default: 0.25, min: 0, max: 0.8, step: 0.05, unit: 'mm' },
 
@@ -57,14 +59,17 @@ export default {
     const tab = 8; // lengüeta que entra en la base
     let fig = v.figure === 'cup' ? cup(S) : v.figure === 'star' ? star(S, 5, 0.45, S * 0.02).translate([0, S / 2])
       : v.figure === 'medal' ? circle(S * 0.42, 128).translate([0, S * 0.5]).add(polygonShape([[-S * 0.22, S * 0.15], [S * 0.22, S * 0.15], [S * 0.08, S * 0.02], [-S * 0.08, S * 0.02]]))
-        : shield(S);
+        : v.figure === 'ball' ? ball(S * 0.8).translate([0, S * 0.45]).add(roundedRect(S * 0.3, S * 0.12, 2).translate([0, S * 0.05]))
+          : v.figure === 'birrete' ? birrete(S).translate([0, S * 0.5])
+            : shield(S);
     const fb = fig.bounds();
     fig = fig.translate([0, -fb.min[1] + tab]);
     const figB = fig.bounds();
     const tabW = Math.min(30, (figB.max[0] - figB.min[0]) * 0.4);
     fig = fig.add(CrossSection.square([tabW, tab + 2], false).translate([-tabW / 2, 0]));
     // Zona para el texto de la figura
-    const area = v.figure === 'cup' ? [S * 0.42, S * 0.22, S * 0.69] : v.figure === 'star' ? [S * 0.38, S * 0.26, S * 0.5 + tab] : v.figure === 'medal' ? [S * 0.56, S * 0.4, S * 0.5 + tab] : [S * 0.5, S * 0.36, S * 0.62];
+    const area = v.figure === 'cup' ? [S * 0.42, S * 0.22, S * 0.69] : v.figure === 'star' ? [S * 0.38, S * 0.26, S * 0.5 + tab] : v.figure === 'medal' ? [S * 0.56, S * 0.4, S * 0.5 + tab]
+      : v.figure === 'ball' ? [S * 0.2, S * 0.14, S * 0.45 + tab + S * 0.02] : v.figure === 'birrete' ? [S * 0.36, S * 0.16, S * 0.4 + tab] : [S * 0.5, S * 0.36, S * 0.62];
     const tf = await ctx.font(v.titleFont);
     const title = fitInto(stackLines(String(v.title || ' ').split('\n').map(t => ({ font: tf, text: t, height: 10 })), 1.5), area[0], area[1]).translate([0, area[2]]);
     const L = 0.8;
@@ -75,7 +80,8 @@ export default {
     let base = slab(roundedRect(bw, bd, 4), 10).add(slab(roundedRect(bw - 12, bd - 10, 3), 8, 9.99));
     base = base.subtract(Manifold.cube([tabW + 2 * v.tol, v.thick + 2 * v.tol, tab + 1], false).translate([-(tabW + 2 * v.tol) / 2, -(v.thick + 2 * v.tol) / 2, 18 - tab]));
     const nf = await ctx.font(v.nameFont);
-    const nm = (v.name || '').trim() ? fitInto(stackLines([{ font: nf, text: v.name, height: 10 }], 0), bw - 10, 6) : null;
+    const lines = [v.name, v.name2].filter(t => (t || '').trim()).map((t, i) => ({ font: nf, text: t, height: i ? 7 : 10 }));
+    const nm = lines.length ? fitInto(stackLines(lines, 1.5), bw - 10, lines.length > 1 ? 8 : 6) : null;
     const all = parts.reduce((a, p) => (a ? a.add(p.solid) : p.solid), null);
     const placed = placeBelow(base, all, 12);
     const pb = placed.boundingBox(), sb = base.boundingBox();
