@@ -177,7 +177,7 @@ async function renderGenerator(id, fam = null) {
     <section class="gen-view">
       <div class="viewer" id="viewer"></div>
       <div class="views">
-        <button data-view="iso" class="on">3D</button><button data-view="top">Arriba</button><button data-view="front">Frente</button><button data-view="side">Costado</button>
+        <button data-view="iso" class="on">3D</button><button data-view="top">Arriba</button><button data-view="bottom">Abajo</button><button data-view="front">Frente</button><button data-view="side">Costado</button>
       </div>
       <div class="status" id="status"></div>
     </section>

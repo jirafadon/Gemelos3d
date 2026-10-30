@@ -100,11 +100,13 @@ export class Viewer {
     const pos = {
       iso: [-0.55 * d, -0.75 * d, 0.55 * d],
       top: [0, -0.0001, d],
+      bottom: [0, 0.0001, -d],
       front: [0, -d, t.z],
       side: [d, 0, t.z],
     }[name] || [-0.55 * d, -0.75 * d, 0.55 * d];
     this.camera.position.set(t.x + pos[0], t.y + pos[1], name === 'front' || name === 'side' ? pos[2] : t.z + pos[2]);
     this.camera.lookAt(t);
+    if (this.grid) this.grid.visible = name !== 'bottom';
     if (this.orthoOn) this.updateOrtho();
     this.controls.update();
     this.render();
