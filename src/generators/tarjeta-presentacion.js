@@ -17,7 +17,7 @@ export default {
     { type: 'group', label: 'Datos' },
     { key: 'name', type: 'text', label: 'Nombre o marca', default: 'Gemelos 3D' },
     { key: 'nameFont', type: 'font', label: 'Tipografía del nombre', default: 'poppins' },
-    { key: 'info', type: 'text', label: 'Datos (una línea cada uno)', multiline: true, default: 'Impresión 3D a medida\n@gemelos3d\ngemelos3d.com.ar' },
+    { key: 'info', type: 'text', label: 'Datos (una línea cada uno)', multiline: true, default: 'Impresión 3D a medida\n@3dgemelos\ngemelos3d.com.ar' },
     { key: 'infoFont', type: 'font', label: 'Tipografía de los datos', default: 'poppins' },
     { type: 'group', label: 'Tarjeta' },
     { key: 'width', type: 'number', label: 'Ancho', default: 85, min: 60, max: 140, step: 1, unit: 'mm' },

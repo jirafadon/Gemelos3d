@@ -41,7 +41,7 @@ export const contentParams = (def = 'link') => [
   { key: 'pass', type: 'text', label: 'Contraseña', default: 'clave1234', show: v => v.kind === 'wifi' && v.security !== 'nopass' },
   { key: 'security', type: 'segment', label: 'Seguridad', default: 'WPA', options: [{ value: 'WPA', label: 'WPA/WPA2' }, { value: 'WEP', label: 'WEP' }, { value: 'nopass', label: 'Abierta' }], show: v => v.kind === 'wifi' },
   { key: 'network', type: 'select', label: 'Red', default: 'instagram', options: NETWORKS, show: v => v.kind === 'social' },
-  { key: 'user', type: 'text', label: 'Tu usuario (es lo que abre el QR)', default: '@gemelos3d', show: v => v.kind === 'social',
+  { key: 'user', type: 'text', label: 'Tu usuario (es lo que abre el QR)', default: '@3dgemelos', show: v => v.kind === 'social',
     hint: v => `El QR abre: ${socialUrl(v.network, v.user)}${v.network === 'whatsapp' ? ' · Número con código de país, ej. 5491155555555.' : ''}` },
   { key: 'ecc', type: 'segment', label: 'Resistencia a errores', default: 'M', options: [{ value: 'L', label: 'Baja' }, { value: 'M', label: 'Media' }, { value: 'Q', label: 'Alta' }, { value: 'H', label: 'Máx.' }], hint: 'Más alta = más cuadraditos, pero se sigue leyendo aunque se raye.' },
 ];

@@ -15,7 +15,7 @@ export default {
   fileName: v => `luz_${firstLine(v.text).replace(/^@/, '')}`,
   params: [
     { type: 'group', label: 'Texto' },
-    { key: 'text', type: 'text', label: 'Texto', default: '@gemelos3d', multiline: true },
+    { key: 'text', type: 'text', label: 'Texto', default: '@3dgemelos', multiline: true },
     { key: 'font', type: 'font', label: 'Tipografía', default: 'righteous' },
     { key: 'icon', type: 'segment', label: 'Ícono', default: 'heart', options: [{ value: 'none', label: 'Ninguno' }, { value: 'heart', label: 'Corazón' }, { value: 'star', label: 'Estrella' }] },
 

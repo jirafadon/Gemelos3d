@@ -6,5 +6,5 @@ export default preset(base, {
   title: 'Placa QR de redes',
   description: 'Instagram, TikTok, YouTube o WhatsApp con su QR.',
   hide: ['kind', 'link'],
-  defaults: { kind: 'social', network: 'instagram', user: '@gemelos3d', title: 'Seguinos', sub: '@gemelos3d', cBase: '#F72585' },
+  defaults: { kind: 'social', network: 'instagram', user: '@3dgemelos', title: 'Seguinos', sub: '@3dgemelos', cBase: '#F72585' },
 });
