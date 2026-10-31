@@ -172,6 +172,14 @@ Idea: armar un catálogo para vender lo que podemos hacer, **por categoría y co
 - Categorías propuestas: Regalos personalizados · Llaveros · Navidad y fechas · Cumpleaños, egresados y eventos · Comercios (QR, precios, carteles) · Hogar y cocina · Organización y taller · Fundas · Juguetes.
 - Dónde: página del catálogo (link para compartir) y la tienda gemelos3d.com.ar.
 
+## Soportes de celular que faltan (de las capturas del 30/10)
+
+| # | Herramienta | Estado |
+|---|---|---|
+| 100 | Soporte plegable multiángulo (patas que se traban en varias inclinaciones) | nueva |
+| 101 | Soporte de bolsillo de una pieza, con bisagra impresa en el lugar (también como llavero) | nueva |
+| 102 | Soporte inclinable con engranajes | nueva (usa `engranajes`) |
+
 ## Orden sugerido
 
 1. Navidad: 1–3 (rápido, sobre `adorno-navidad`), luego 4 y 5.

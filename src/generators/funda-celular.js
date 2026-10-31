@@ -9,7 +9,7 @@
  */
 import { wasm, roundedRect, circle, slab, part, polygonShape } from '../engine/geom.js';
 import { stackLines, mergeByColor } from '../engine/layers.js';
-import { fitInto } from '../engine/shapes.js';
+import { fitInto, patternShape } from '../engine/shapes.js';
 import { imageParams, silhouette } from './_common.js';
 import { PHONES, PHONE_OPTIONS } from './phones.js';
 
@@ -29,35 +29,6 @@ function roundedBody(w, h, corner, z0, z1, eBottom, eTop, segs = 6) {
     layers.push(layer(ins(eTop, t), z1 - 0.01 - eTop * t));
   }
   return Manifold.hull(layers);
-}
-
-/** Tramas para la espalda (formas 2D que se graban, calan o van en otro color). */
-function patternShape(kind, zone, s) {
-  const { CrossSection } = wasm();
-  const b = zone.bounds();
-  const cells = [];
-  const W = b.max[0] - b.min[0], H = b.max[1] - b.min[1], cx = (b.min[0] + b.max[0]) / 2, cy = (b.min[1] + b.max[1]) / 2;
-  if (kind === 'honey') {
-    const R = s / 2, dx = R * Math.sqrt(3), dy = R * 1.5, hex = circle(R * 0.78, 6).rotate(30);
-    for (let j = -Math.ceil(H / dy / 2) - 1; j <= Math.ceil(H / dy / 2) + 1; j++) for (let i = -Math.ceil(W / dx / 2) - 1; i <= Math.ceil(W / dx / 2) + 1; i++) cells.push(hex.translate([cx + i * dx + (j % 2 ? dx / 2 : 0), cy + j * dy]));
-  } else if (kind === 'diamonds') {
-    const d = polygonShape([[0, s * 0.42], [s * 0.3, 0], [0, -s * 0.42], [-s * 0.3, 0]]);
-    for (let j = -Math.ceil(H / s) - 1; j <= Math.ceil(H / s) + 1; j++) for (let i = -Math.ceil(W / (s * 0.7)) - 1; i <= Math.ceil(W / (s * 0.7)) + 1; i++) cells.push(d.translate([cx + i * s * 0.7 + (j % 2 ? s * 0.35 : 0), cy + j * s * 0.5]));
-  } else if (kind === 'dots') {
-    const c = circle(s * 0.28, 24);
-    for (let j = -Math.ceil(H / s) - 1; j <= Math.ceil(H / s) + 1; j++) for (let i = -Math.ceil(W / s) - 1; i <= Math.ceil(W / s) + 1; i++) cells.push(c.translate([cx + i * s + (j % 2 ? s / 2 : 0), cy + j * s * 0.87]));
-  } else if (kind === 'lines') {
-    const L = Math.hypot(W, H) + 20;
-    for (let k = -Math.ceil(L / s); k <= Math.ceil(L / s); k++) cells.push(CrossSection.square([s * 0.35, L], true).rotate(35).translate([cx + k * s / Math.cos(35 * Math.PI / 180), cy]));
-  } else if (kind === 'waves') {
-    for (let k = -Math.ceil(H / s) - 1; k <= Math.ceil(H / s) + 1; k++) {
-      const pts = [], y0 = cy + k * s, amp = s * 0.3, th = s * 0.2;
-      for (let x = b.min[0] - 5; x <= b.max[0] + 5; x += 1) pts.push([x, y0 + amp * Math.sin(x / s * Math.PI)]);
-      for (let x = b.max[0] + 5; x >= b.min[0] - 5; x -= 1) pts.push([x, y0 + th + amp * Math.sin(x / s * Math.PI)]);
-      cells.push(polygonShape(pts));
-    }
-  } else return null;
-  return CrossSection.union(cells).intersect(zone);
 }
 
 const P = v => (v.model === 'custom' ? {
@@ -111,7 +82,7 @@ export default {
     { key: 'lanyard', type: 'toggle', label: 'Agujeros para colgante', default: false },
 
     { type: 'group', label: 'Diseño de la espalda' },
-    { key: 'pattern', type: 'select', label: 'Trama', default: 'honey', options: [{ value: 'none', label: 'Lisa' }, { value: 'honey', label: 'Panal de abejas' }, { value: 'diamonds', label: 'Rombos' }, { value: 'dots', label: 'Puntos' }, { value: 'lines', label: 'Líneas diagonales' }, { value: 'waves', label: 'Ondas' }, { value: 'image', label: 'Mi imagen o logo' }] },
+    { key: 'pattern', type: 'select', label: 'Trama', default: 'honey', options: [{ value: 'none', label: 'Lisa' }, { value: 'honey', label: 'Panal de abejas' }, { value: 'diamonds', label: 'Rombos' }, { value: 'dots', label: 'Puntos' }, { value: 'lines', label: 'Líneas diagonales' }, { value: 'waves', label: 'Ondas' }, { value: 'voronoi', label: 'Voronoi' }, { value: 'image', label: 'Mi imagen o logo' }] },
     { key: 'pSize', type: 'number', label: 'Tamaño de la trama', default: 8, min: 3, max: 25, step: 0.5, unit: 'mm', show: v => !['none', 'image'].includes(v.pattern) },
     ...imageParams({ label: 'Imagen o logo', showIf: v => v.pattern === 'image' }),
     { key: 'imgSize', type: 'number', label: 'Tamaño de la imagen', default: 0.7, min: 0.2, max: 1, step: 0.05, unit: '×', show: v => v.pattern === 'image' },

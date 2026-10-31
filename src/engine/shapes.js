@@ -146,6 +146,67 @@ export function balloonShape(w, h) {
   return fitBox2(body.add(polygonShape([[0, -9.6], [1.8, -12.4], [-1.8, -12.4]])), w, h);
 }
 
+/** Tramas para la espalda (formas 2D que se graban, calan o van en otro color). */
+export function patternShape(kind, zone, s, rib) {
+  const { CrossSection } = wasm();
+  const b = zone.bounds();
+  const cells = [];
+  const W = b.max[0] - b.min[0], H = b.max[1] - b.min[1], cx = (b.min[0] + b.max[0]) / 2, cy = (b.min[1] + b.max[1]) / 2;
+  if (kind === 'honey') {
+    const R = s / 2, dx = R * Math.sqrt(3), dy = R * 1.5, hex = circle(R * 0.78, 6).rotate(30);
+    for (let j = -Math.ceil(H / dy / 2) - 1; j <= Math.ceil(H / dy / 2) + 1; j++) for (let i = -Math.ceil(W / dx / 2) - 1; i <= Math.ceil(W / dx / 2) + 1; i++) cells.push(hex.translate([cx + i * dx + (j % 2 ? dx / 2 : 0), cy + j * dy]));
+  } else if (kind === 'diamonds') {
+    const d = polygonShape([[0, s * 0.42], [s * 0.3, 0], [0, -s * 0.42], [-s * 0.3, 0]]);
+    for (let j = -Math.ceil(H / s) - 1; j <= Math.ceil(H / s) + 1; j++) for (let i = -Math.ceil(W / (s * 0.7)) - 1; i <= Math.ceil(W / (s * 0.7)) + 1; i++) cells.push(d.translate([cx + i * s * 0.7 + (j % 2 ? s * 0.35 : 0), cy + j * s * 0.5]));
+  } else if (kind === 'dots') {
+    const c = circle(s * 0.28, 24);
+    for (let j = -Math.ceil(H / s) - 1; j <= Math.ceil(H / s) + 1; j++) for (let i = -Math.ceil(W / s) - 1; i <= Math.ceil(W / s) + 1; i++) cells.push(c.translate([cx + i * s + (j % 2 ? s / 2 : 0), cy + j * s * 0.87]));
+  } else if (kind === 'lines') {
+    const L = Math.hypot(W, H) + 20;
+    for (let k = -Math.ceil(L / s); k <= Math.ceil(L / s); k++) cells.push(CrossSection.square([s * 0.35, L], true).rotate(35).translate([cx + k * s / Math.cos(35 * Math.PI / 180), cy]));
+  } else if (kind === 'waves') {
+    for (let k = -Math.ceil(H / s) - 1; k <= Math.ceil(H / s) + 1; k++) {
+      const pts = [], y0 = cy + k * s, amp = s * 0.3, th = s * 0.2;
+      for (let x = b.min[0] - 5; x <= b.max[0] + 5; x += 1) pts.push([x, y0 + amp * Math.sin(x / s * Math.PI)]);
+      for (let x = b.max[0] + 5; x >= b.min[0] - 5; x -= 1) pts.push([x, y0 + th + amp * Math.sin(x / s * Math.PI)]);
+      cells.push(polygonShape(pts));
+    }
+  } else if (kind === 'voronoi') {
+    return voronoi(zone, s, rib ?? Math.max(1.2, s * 0.22));
+  } else return null;
+  return CrossSection.union(cells).intersect(zone);
+}
+
+
+/**
+ * Trama voronoi (celdas irregulares como panal orgánico) recortada a la zona.
+ * @param s tamaño medio de celda (mm) · @param rib ancho de los nervios entre celdas (mm)
+ */
+export function voronoi(zone, s, rib = 1.6, seed = 7) {
+  const { CrossSection } = wasm();
+  const b = zone.bounds();
+  let r = seed >>> 0;
+  const rnd = () => { r = (r * 1664525 + 1013904223) >>> 0; return r / 4294967296; };
+  const pts = [];
+  for (let y = b.min[1] - s; y <= b.max[1] + s; y += s * 0.87) for (let x = b.min[0] - s; x <= b.max[0] + s; x += s) {
+    pts.push([x + (rnd() - 0.5) * s * 0.7, y + (rnd() - 0.5) * s * 0.7]);
+  }
+  const big = s * 6, cells = [];
+  for (const [px, py] of pts) {
+    let cell = CrossSection.square([s * 3, s * 3], true).translate([px, py]);
+    for (const [qx, qy] of pts) {
+      const dx = px - qx, dy = py - qy, d = Math.hypot(dx, dy);
+      if (!d || d > s * 2.4) continue;
+      // Semiplano del lado de p, limitado por la mediatriz entre p y q
+      const half = CrossSection.square([big, big], false).translate([0, -big / 2]).rotate(Math.atan2(dy, dx) * 180 / Math.PI).translate([(px + qx) / 2, (py + qy) / 2]);
+      cell = cell.intersect(half);
+    }
+    const hole = cell.offset(-rib / 2, 'Round', 2, 12);
+    if (!hole.isEmpty()) cells.push(hole.offset(-rib * 0.25, 'Round', 2, 12).offset(rib * 0.25, 'Round', 2, 12));
+  }
+  return CrossSection.union(cells).intersect(zone);
+}
+
 export const SHAPES = {
   rect: { label: 'Rectángulo', aspect: 0.5, area: [0.84, 0.6, 0], make: (w, h, r = 3) => roundedRect(w, h, r) },
   oval: { label: 'Óvalo', aspect: 0.62, area: [0.74, 0.44, 0], make: (w, h) => ellipse(w, h) },

@@ -35,7 +35,7 @@ test('todos los modelos (lisa)', async () => {
   for (const [model, ph] of Object.entries(PHONES)) ok(model, await gen.build({ ...base, model, pattern: 'none' }, ctx), ph);
 });
 test('tramas y modos', async () => {
-  for (const pattern of ['honey', 'diamonds', 'dots', 'lines', 'waves', 'image']) for (const mode of ['engrave', 'cut', 'inlay']) {
+  for (const pattern of ['honey', 'diamonds', 'dots', 'lines', 'waves', 'voronoi', 'image']) for (const mode of ['engrave', 'cut', 'inlay']) {
     const parts = await gen.build({ ...base, pattern, mode, text: pattern === 'dots' ? 'Joni' : '' }, ctx);
     ok(`${pattern}/${mode}`, parts);
     if (mode === 'inlay') assert.equal(parts.length, 2, `${pattern}: dos colores`);
