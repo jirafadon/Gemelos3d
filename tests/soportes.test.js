@@ -32,3 +32,11 @@ test('tramas y dibujos calados o de color, celular y tablet', async () => {
   }
   for (const style of styles) ok(`${style}/tablet`, await gen.build({ ...base, style, device: 'tablet', angle: 75, phoneT: 18, cable: false, ribs: false }, ctx));
 });
+
+test('soporte con logo + nombre: calado, en color, en cada estilo con respaldo', async () => {
+  const logo = (await import('../src/generators/soporte-logo.js')).default;
+  const b2 = Object.fromEntries(logo.params.filter(p => p.key).map(p => [p.key, p.default]));
+  for (const style of ['triangle', 'desk', 'classic', 'zen']) for (const pMode of ['cut', 'inlay']) for (const text of ['Gemelos 3D', '']) {
+    ok(`${style}/${pMode}/${text || 'solo logo'}`, await logo.build({ ...b2, style, pMode, text, mScale: 80 }, ctx));
+  }
+});

@@ -21,7 +21,7 @@ const PATTERNS = [
   { value: 'none', label: 'Liso' }, { value: 'voronoi', label: 'Voronoi' }, { value: 'honey', label: 'Panal' },
   { value: 'diamonds', label: 'Rombos' }, { value: 'dots', label: 'Puntos' }, { value: 'lines', label: 'Líneas' },
   { value: 'slots', label: 'Ranuras' }, { value: 'leaf', label: 'Hoja' }, { value: 'spiral', label: 'Espiral' },
-  { value: 'stones', label: 'Piedras zen' }, { value: 'text', label: 'Nombre' }, { value: 'image', label: 'Mi imagen o logo' },
+  { value: 'stones', label: 'Piedras zen' }, { value: 'text', label: 'Nombre' }, { value: 'image', label: 'Mi imagen o logo' }, { value: 'logoText', label: 'Logo + nombre' },
 ];
 const profiled = v => !['zen', 'speaker'].includes(v.style);
 const hasPlate = v => ['triangle', 'desk', 'classic', 'zen'].includes(v.style);
@@ -111,8 +111,9 @@ function profileOf(v) {
 }
 
 // ---------- Diseños para la placa / respaldo ----------
-async function motif(v, ctx, w, h) {
+async function motif(v, ctx, w0, h0) {
   const { CrossSection } = wasm();
+  const sc = (v.mScale ?? 100) / 100, w = w0 * Math.min(1, sc) || w0, h = h0 * Math.min(1, sc) || h0;
   const zone = roundedRect(w, h, Math.min(w, h) * 0.12);
   const k = v.pSize;
   if (['voronoi', 'honey', 'diamonds', 'dots', 'lines'].includes(v.pattern)) return patternShape(v.pattern, zone, k, v.pattern === 'voronoi' ? Math.max(1.4, k * 0.25) : undefined);
@@ -145,6 +146,18 @@ async function motif(v, ctx, w, h) {
     return fitInto(stackLines(String(v.text || ' ').split('\n').map(tx => ({ font, text: tx, height: 10 })), 2), w * 0.88, h * 0.8);
   }
   if (v.pattern === 'image') return fitInto(await silhouette(v, ctx, 100), w * 0.85, h * 0.8);
+  if (v.pattern === 'logoText') {
+    // Logo arriba y nombre abajo, centrados
+    const logo = fitInto(await silhouette(v, ctx, 100), w * 0.8, h * 0.58);
+    const font = await ctx.font(v.font);
+    const name = (v.text || '').trim() ? fitInto(stackLines(String(v.text).split('\n').map(tx => ({ font, text: tx, height: 10 })), 2), w * 0.88, h * 0.26) : null;
+    if (!name) return logo;
+    const lb = logo.bounds(), nb = name.bounds(), gap = Math.max(3, h * 0.05);
+    const total = (lb.max[1] - lb.min[1]) + gap + (nb.max[1] - nb.min[1]);
+    const top = total / 2;
+    return logo.translate([-(lb.min[0] + lb.max[0]) / 2, top - lb.max[1]])
+      .add(name.translate([-(nb.min[0] + nb.max[0]) / 2, top - (lb.max[1] - lb.min[1]) - gap - nb.max[1]]));
+  }
   return null;
 }
 
@@ -179,9 +192,10 @@ export default {
     { type: 'group', label: 'Diseño' },
     { key: 'pattern', type: 'select', label: 'Trama o dibujo en el respaldo', default: 'voronoi', options: PATTERNS, show: hasPlate },
     { key: 'pSize', type: 'number', label: 'Tamaño de la trama', default: 12, min: 5, max: 30, step: 0.5, unit: 'mm', show: v => hasPlate(v) && !['none', 'text', 'image', 'stones'].includes(v.pattern) },
-    { key: 'text', type: 'text', label: 'Nombre', default: 'Joni', multiline: true, show: v => hasPlate(v) && v.pattern === 'text' },
-    { key: 'font', type: 'font', label: 'Tipografía', default: 'pacifico', show: v => hasPlate(v) && v.pattern === 'text' },
-    ...imageParams({ label: 'Imagen o logo', showIf: v => hasPlate(v) && v.pattern === 'image' }),
+    { key: 'text', type: 'text', label: 'Nombre', default: 'Joni', multiline: true, show: v => hasPlate(v) && ['text', 'logoText'].includes(v.pattern) },
+    { key: 'font', type: 'font', label: 'Tipografía', default: 'pacifico', show: v => hasPlate(v) && ['text', 'logoText'].includes(v.pattern) },
+    ...imageParams({ label: 'Imagen o logo', showIf: v => hasPlate(v) && ['image', 'logoText'].includes(v.pattern) }),
+    { key: 'mScale', type: 'number', label: 'Tamaño del diseño', default: 100, min: 40, max: 100, step: 5, unit: '%', show: v => hasPlate(v) && ['text', 'image', 'logoText'].includes(v.pattern) },
     { key: 'pMode', type: 'segment', label: 'Cómo va', default: 'cut', options: [{ value: 'cut', label: 'Calado' }, { value: 'inlay', label: 'En otro color' }], show: v => hasPlate(v) && v.pattern !== 'none' },
     { key: 'ribs', type: 'toggle', label: 'Estrías', default: true, show: v => ['wave', 'heart'].includes(v.style) },
     { key: 'accent', type: 'segment', label: 'Detalle de color', default: 'edge', options: [{ value: 'none', label: 'Ninguno' }, { value: 'edge', label: 'Borde' }, { value: 'line', label: 'Línea' }], show: profiled },
@@ -207,8 +221,8 @@ export default {
       if (u1 - u0 > 15 && w1 - w0 > 15) {
         const m = await motif(v, ctx, w1 - w0, u1 - u0);
         if (m && !m.isEmpty()) {
-          // (u = a lo largo del respaldo, w = ancho, n = espesor) → mundo
-          const place = (n0, n1) => m.rotate(-90).mirror([0, 1]).translate([(u0 + u1) / 2, (w0 + w1) / 2]).extrude(n1 - n0).translate([0, 0, n0])
+          // (u = a lo largo del respaldo, w = ancho, n = espesor) → mundo. Se lee derecho mirando el respaldo desde atrás (el frente lo tapa el equipo)
+          const place = (n0, n1) => m.rotate(-90).translate([(u0 + u1) / 2, (w0 + w1) / 2]).extrude(n1 - n0).translate([0, 0, n0])
             .rotate([90, 0, 0]).rotate([0, 0, plate.ang]).translate([plate.p0[0], plate.p0[1], 0]);
           if (v.pMode === 'cut') body = body.subtract(place(-t, t));
           else accents.push(place(t / 2 - 1, t / 2 + 0.5));
