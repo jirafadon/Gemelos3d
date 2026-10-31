@@ -4,28 +4,22 @@
  */
 import { addRing } from '../engine/geom.js';
 import { layered, stackLines } from '../engine/layers.js';
-import { SHAPES, fitInto } from '../engine/shapes.js';
-import { colorsParams, modeParam, thicknessParams, ringParams, firstLine } from './_common.js';
-
-// Zona útil para el texto: [ancho, alto, corrimiento y] en proporción del tamaño
-const AREA = {
-  heart: [0.62, 0.36, 0.06], star: [0.5, 0.24, -0.02], circle: [0.74, 0.42, 0], wavy: [0.72, 0.42, 0],
-  oval: [0.74, 0.44, 0], paw: [0.5, 0.26, -0.18], bone: [0.56, 0.4, 0], rect: [0.84, 0.6, 0],
-};
-const ASPECT = { heart: 0.9, star: 1, circle: 1, wavy: 0.72, oval: 0.62, paw: 1, bone: 0.42, rect: 0.5 };
+import { SHAPES, SHAPE_OPTIONS, fitInto } from '../engine/shapes.js';
+import { colorsParams, modeParam, thicknessParams, ringParams, firstLine, textPlaceParams, placeText } from './_common.js';
 
 export default {
   id: 'llavero-forma',
   title: 'Llavero con forma',
-  description: 'Corazón, estrella, huella, hueso u ondulado, con el nombre adentro.',
+  description: 'Más de 20 formas (corazón, estrella, nube, corona, camiseta…) con el nombre adentro.',
   fileName: v => firstLine(v.text),
   params: [
     { type: 'group', label: 'Texto' },
     { key: 'text', type: 'text', label: 'Nombre', default: 'Lola', multiline: true },
     { key: 'font', type: 'font', label: 'Tipografía', default: 'baloo' },
 
+    ...textPlaceParams(),
     { type: 'group', label: 'Forma' },
-    { key: 'shape', type: 'select', label: 'Forma', default: 'heart', options: Object.keys(AREA).map(k => ({ value: k, label: SHAPES[k].label })) },
+    { key: 'shape', type: 'select', label: 'Forma', default: 'heart', options: SHAPE_OPTIONS.filter(o => o.value !== 'rect') },
     { key: 'size', type: 'number', label: 'Ancho', default: 45, min: 25, max: 90, step: 1, unit: 'mm' },
     { key: 'frame', type: 'toggle', label: 'Borde del color del texto', default: true },
     { key: 'frameW', type: 'number', label: 'Ancho del borde', default: 1.4, min: 0.8, max: 4, step: 0.1, unit: 'mm', show: v => v.frame },
@@ -38,11 +32,11 @@ export default {
 
   async build(v, ctx) {
     const font = await ctx.font(v.font);
-    const w = v.size, h = w * ASPECT[v.shape];
-    const shape = SHAPES[v.shape].make(w, h, Math.min(8, h * 0.25));
-    const [aw, ah, ay] = AREA[v.shape];
+    const S = SHAPES[v.shape] || SHAPES.heart, w = v.size, h = w * S.aspect;
+    const shape = S.make(w, h, Math.min(8, h * 0.25));
+    const [aw, ah, ay] = S.area;
     const lines = String(v.text || ' ').split('\n').map(t => ({ font, text: t, height: 10 }));
-    const text = fitInto(stackLines(lines, 1.5), w * aw, w * ASPECT[v.shape] * ah * (lines.length > 1 ? 1.5 : 1)).translate([0, w * ay]);
+    const text = placeText(fitInto(stackLines(lines, 1.5), w * aw, h * ah * (lines.length > 1 ? 1.5 : 1)).translate([0, w * ay]), v, shape);
     let top = text;
     if (v.frame) top = top.add(shape.subtract(shape.offset(-v.frameW, 'Round', 2, 32)));
     const { shape: base } = addRing(shape, { side: v.ring, holeD: v.holeD, wall: v.ringWall });

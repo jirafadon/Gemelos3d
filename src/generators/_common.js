@@ -69,3 +69,33 @@ export async function silhouette(v, ctx, width, { fill = false } = {}) {
     : sampleMask();
   return maskToShape(mask, { width, smooth: v.smooth ?? 0.4, fill, minArea: Math.max(0.5, width * width * 0.0004) });
 }
+
+/**
+ * Acomodar el texto sobre la forma: tamaño, centrar y mover con flechas.
+ * Va al final del grupo de texto de cada herramienta.
+ */
+export const textPlaceParams = ({ showIf, label = 'Acomodar el texto' } = {}) => [
+  { type: 'group', label },
+  { key: 'tScale', type: 'number', label: 'Tamaño del texto', default: 100, min: 30, max: 200, step: 5, unit: '%', show: showIf },
+  { key: 'tDx', type: 'nudge', keyY: 'tDy', keyC: 'tCenter', label: 'Posición', default: 0, step: 0.5, show: showIf },
+  { key: 'tDy', type: 'number', label: 'Y', default: 0, min: -200, max: 200, step: 0.5, show: () => false },
+  { key: 'tCenter', type: 'toggle', label: 'Centrado', default: false, show: () => false },
+];
+
+/**
+ * Aplica tamaño, centrado y corrimiento a un texto 2D.
+ * @param cs    texto (CrossSection) ya ubicado donde lo pone la herramienta
+ * @param shape forma de referencia para "Centrar" (su centro)
+ */
+export function placeText(cs, v, shape = null) {
+  if (!cs || cs.isEmpty()) return cs;
+  const b = cs.bounds(), c = [(b.min[0] + b.max[0]) / 2, (b.min[1] + b.max[1]) / 2];
+  const k = Math.max(0.05, (v.tScale ?? 100) / 100);
+  let out = k !== 1 ? cs.translate([-c[0], -c[1]]).scale([k, k]).translate(c) : cs;
+  if (v.tCenter && shape && !shape.isEmpty()) {
+    const sb = shape.bounds();
+    out = out.translate([(sb.min[0] + sb.max[0]) / 2 - c[0], (sb.min[1] + sb.max[1]) / 2 - c[1]]);
+  }
+  const dx = +v.tDx || 0, dy = +v.tDy || 0;
+  return dx || dy ? out.translate([dx, dy]) : out;
+}

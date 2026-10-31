@@ -6,9 +6,11 @@
 import { circle, slab, part, addRing } from '../engine/geom.js';
 import { layered, stackLines, mergeByColor } from '../engine/layers.js';
 import { fitInto, heart, star, wavyOval } from '../engine/shapes.js';
+import { SHAPES as LIB } from '../engine/shapes.js';
 import { cloud, balloon, pacifier, birrete } from '../engine/icons2d.js';
+import { textPlaceParams, placeText } from './_common.js';
 
-const SHAPES = {
+const OWN = {
   heart: { label: 'Corazón', make: w => heart(w, w * 0.9), area: [0.62, 0.38, 0.05] },
   star: { label: 'Estrella', make: w => star(w, 5, 0.5, w * 0.03), area: [0.46, 0.22, -0.02] },
   circle: { label: 'Círculo', make: w => circle(w / 2, 96), area: [0.74, 0.46, 0] },
@@ -18,6 +20,10 @@ const SHAPES = {
   pacifier: { label: 'Chupete', make: w => pacifier(w), area: [0.5, 0.2, 0] },
   birrete: { label: 'Birrete', make: w => birrete(w), area: [0.5, 0.18, 0.26] },
 };
+// Más formas de la biblioteca común (sin repetir las propias)
+const SHAPES = { ...OWN };
+for (const [k, sh] of Object.entries(LIB)) if (!SHAPES[k] && k !== 'rect') SHAPES[k] = { label: sh.label, make: w => sh.make(w, w * sh.aspect), area: sh.area };
+
 
 export default {
   id: 'souvenirs',
@@ -32,6 +38,7 @@ export default {
     { key: 'font', type: 'font', label: 'Tipografía del nombre', default: 'baloo' },
     { key: 'font2', type: 'font', label: 'Tipografía de la fecha', default: 'poppins', show: v => !!(v.extra || '').trim() },
 
+    ...textPlaceParams(),
     { type: 'group', label: 'Souvenir' },
     { key: 'shape', type: 'select', label: 'Forma', default: 'heart', options: Object.entries(SHAPES).map(([value, s]) => ({ value, label: s.label })) },
     { key: 'format', type: 'segment', label: 'Formato', default: 'key', options: [{ value: 'key', label: 'Llavero' }, { value: 'magnet', label: 'Imán' }, { value: 'hang', label: 'Colgante' }] },
@@ -61,6 +68,7 @@ export default {
       if (nm) lines.push({ font: f1, text: nm, height: 10 });
       if ((v.extra || '').trim()) lines.push({ font: f2, text: v.extra, height: nm ? 5 : 8 });
       let top = lines.length ? fitInto(stackLines(lines, 1.5), sw * aw, sh * ah * (lines.length > 1 ? 1.5 : 1)).translate([0, (sb.min[1] + sb.max[1]) / 2 + sh * ay]) : null;
+      if (top) top = placeText(top, v, shape);
       if (v.frame) { const ring = shape.subtract(shape.offset(-1.4, 'Round', 2, 32)); top = top ? top.add(ring) : ring; }
       if (!top) top = shape.subtract(shape.offset(-1.4, 'Round', 2, 32));
       let base = shape;

@@ -5,7 +5,7 @@
 import { addRing, circle } from '../engine/geom.js';
 import { layered, stackLines } from '../engine/layers.js';
 import { SHAPES, fitInto } from '../engine/shapes.js';
-import { colorsParams, modeParam, thicknessParams, firstLine } from './_common.js';
+import { colorsParams, modeParam, thicknessParams, firstLine, textPlaceParams, placeText } from './_common.js';
 
 // Zona útil para el texto dentro de cada forma: [ancho, alto, corrimiento x, corrimiento y] en proporción.
 const TEXT_AREA = {
@@ -40,6 +40,7 @@ export default {
     modeParam(),
     ...thicknessParams({ base: 3, relief: 1 }),
 
+    ...textPlaceParams(),
     { type: 'group', label: 'Argolla' },
     { key: 'ring', type: 'segment', label: 'Posición', default: 'top', options: [{ value: 'top', label: 'Arriba' }, { value: 'left', label: 'Izquierda' }, { value: 'inside', label: 'Agujero adentro' }] },
     { key: 'holeD', type: 'number', label: 'Diámetro del agujero', default: 3.5, min: 2, max: 8, step: 0.5, unit: 'mm' },
@@ -52,7 +53,7 @@ export default {
     const [aw, ah, ax, ay] = TEXT_AREA[v.shape];
     const lines = [{ font, text: v.name || ' ', height: 10 }];
     if ((v.info || '').trim()) lines.push({ font, text: v.info, height: 10 * v.infoSize });
-    const text = fitInto(stackLines(lines, 1.2), w * aw, h * ah).translate([w * ax, h * ay]);
+    const text = placeText(fitInto(stackLines(lines, 1.2), w * aw, h * ah).translate([w * ax, h * ay]), v, shape);
 
     let top = text;
     if (v.frame) top = top.add(shape.subtract(shape.offset(-v.frameW, 'Round', 2, 32)));

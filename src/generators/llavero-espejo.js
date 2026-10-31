@@ -6,7 +6,7 @@
 import { circle, slab, part, addRing } from '../engine/geom.js';
 import { mergeByColor, stackLines } from '../engine/layers.js';
 import { fitInto, heart } from '../engine/shapes.js';
-import { ringParams, firstLine } from './_common.js';
+import { ringParams, firstLine, textPlaceParams, placeText } from './_common.js';
 
 export default {
   id: 'llavero-espejo',
@@ -28,6 +28,7 @@ export default {
     { key: 'color', type: 'color', label: 'Llavero', default: '#F72585' },
     { key: 'cText', type: 'color', label: 'Nombre', default: '#F5F5F5' },
     ...ringParams({ def: 'top', options: ['top', 'left', 'right'] }),
+    ...textPlaceParams(),
   ],
   async build(v, ctx) {
     const D = v.mirrorD + 0.4, R = D / 2 + v.rim;
@@ -41,7 +42,7 @@ export default {
     const parts = [];
     if ((v.text || '').trim()) {
       const font = await ctx.font(v.font);
-      const t = slab(fitInto(stackLines([{ font, text: v.text, height: 10 }], 0), D * 0.75, D * 0.35).mirror([1, 0]), 0.6);
+      const t = slab(placeText(fitInto(stackLines([{ font, text: v.text, height: 10 }], 0), D * 0.75, D * 0.35), v).mirror([1, 0]), 0.6);
       body = body.subtract(t);
       parts.push(part('Nombre', v.cText, t));
     }

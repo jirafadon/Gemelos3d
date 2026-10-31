@@ -8,6 +8,7 @@ import { layered, stackLines, mergeByColor, slotBase, placeBelow } from '../engi
 import { fitInto } from '../engine/shapes.js';
 import { birrete, diploma } from '../engine/icons2d.js';
 import { stack } from './medalla.js';
+import { textPlaceParams, placeText } from './_common.js';
 
 export default {
   id: 'graduados',
@@ -22,6 +23,9 @@ export default {
     { key: 'yearFont', type: 'font', label: 'Tipografía del año', default: 'bangers' },
     { key: 'nameFont', type: 'font', label: 'Tipografía del nombre', default: 'pacifico' },
     { key: 'icon', type: 'segment', label: 'Ícono', default: 'birrete', options: [{ value: 'birrete', label: 'Birrete' }, { value: 'diploma', label: 'Diploma' }, { value: 'none', label: 'Ninguno' }] },
+    ...textPlaceParams({ label: 'Acomodar' }),
+    { key: 'iconScale', type: 'number', label: 'Tamaño del ícono', default: 100, min: 30, max: 200, step: 5, unit: '%', show: v => v.icon !== 'none' },
+    { key: 'gapY', type: 'number', label: 'Separación entre ícono y texto', default: 0, min: -20, max: 30, step: 0.5, unit: 'mm', show: v => v.icon !== 'none', hint: 'Negativo = el texto se mete debajo del ícono. Tiene que tocarlo para que quede una sola pieza.' },
 
     { type: 'group', label: 'Formato' },
     { key: 'format', type: 'segment', label: 'Qué hacer', default: 'stand', options: [{ value: 'stand', label: 'Adorno con base' }, { value: 'key', label: 'Llavero' }, { value: 'magnet', label: 'Imán' }, { value: 'topper', label: 'Topper' }] },
@@ -48,13 +52,23 @@ export default {
     const lineS = (v.line || '').trim() ? fitInto(stackLines([{ font: yf, text: v.line, height: 10 }], 0), W * 0.7, W * 0.1) : null;
     const pieces = [];
     for (const nm of names) {
-      const items = [];
-      if (ic) items.push(fitInto(ic, W * 0.6, W * 0.35));
-      if (lineS) items.push(lineS);
-      if (yearS) items.push(yearS);
-      if (nm) items.push(fitInto(stackLines([{ font: nf, text: nm, height: 10 }], 0), W * 0.9, W * 0.2));
+      const texts = [];
+      if (lineS) texts.push(lineS);
+      if (yearS) texts.push(yearS);
+      if (nm) texts.push(fitInto(stackLines([{ font: nf, text: nm, height: 10 }], 0), W * 0.9, W * 0.2));
       // Las piezas se superponen un poco para que todo quede unido por el contorno
-      let art = stack(items, -W * 0.01) || circle(W * 0.2, 48);
+      let block = stack(texts, -W * 0.01);
+      let art;
+      const icS = ic ? fitInto(ic, W * 0.6 * v.iconScale / 100, W * 0.35 * v.iconScale / 100) : null;
+      if (icS && block) {
+        // Ícono arriba centrado; el texto abajo, en su lugar o corrido / centrado
+        const ib = icS.bounds(), icP = icS.translate([-(ib.min[0] + ib.max[0]) / 2, -ib.min[1]]);
+        const k = (v.tScale ?? 100) / 100, tb = block.bounds();
+        block = block.translate([-(tb.min[0] + tb.max[0]) / 2, -(tb.min[1] + tb.max[1]) / 2]).scale([k, k]);
+        const t2 = block.bounds();
+        let tP = block.translate([0, -t2.max[1] + W * 0.01 - (v.gapY || 0)]);
+        art = icP.add(tP.translate([+v.tDx || 0, +v.tDy || 0]));
+      } else art = block ? placeText(block, v) : icS || circle(W * 0.2, 48);
       art = fitInto(art, W - 2 * v.border, W * 1.4);
       let plate = fillHoles(outline(art, v.border));
       let tabH = 0;

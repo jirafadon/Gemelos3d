@@ -4,7 +4,7 @@
  */
 import { roundedRect, addRing } from '../engine/geom.js';
 import { layered, stackLines } from '../engine/layers.js';
-import { colorsParams, modeParam, thicknessParams, ringParams, firstLine } from './_common.js';
+import { colorsParams, modeParam, thicknessParams, ringParams, firstLine, textPlaceParams, placeText } from './_common.js';
 
 export default {
   id: 'llavero-rectangular',
@@ -21,6 +21,7 @@ export default {
     { key: 'size2', type: 'number', label: 'Alto de la segunda línea', default: 6, min: 3, max: 40, step: 0.5, unit: 'mm', show: v => !!(v.line2 || '').trim() },
     { key: 'gap', type: 'number', label: 'Separación entre líneas', default: 2, min: -4, max: 10, step: 0.2, unit: 'mm', show: v => !!(v.line2 || '').trim() },
 
+    ...textPlaceParams(),
     { type: 'group', label: 'Placa' },
     { key: 'padX', type: 'number', label: 'Margen a los costados', default: 5, min: 1, max: 20, step: 0.5, unit: 'mm' },
     { key: 'padY', type: 'number', label: 'Margen arriba y abajo', default: 4, min: 1, max: 20, step: 0.5, unit: 'mm' },
@@ -43,7 +44,7 @@ export default {
     const b = text.bounds();
     const w = b.max[0] - b.min[0] + 2 * v.padX, h = b.max[1] - b.min[1] + 2 * v.padY;
     let plate = roundedRect(w, h, v.radius);
-    let top = text;
+    let top = placeText(text, v, plate);
     if (v.frame) top = top.add(plate.subtract(plate.offset(-v.frameW, 'Round', 2, 32)));
     const { shape } = addRing(plate, { side: v.ring, holeD: v.holeD, wall: v.ringWall });
     return layered({ base2d: shape, text2d: top, colors: v.colors, mode: v.mode, cBase: v.cBase, cText: v.cText, hBase: v.hBase, hText: v.hText });

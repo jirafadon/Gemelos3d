@@ -7,7 +7,7 @@ import { wasm, circle, roundedRect, polygonShape, addRing } from '../engine/geom
 import { layered, stackLines } from '../engine/layers.js';
 import { fitInto, star, heart } from '../engine/shapes.js';
 import { birrete, ball, diploma, laurel } from '../engine/icons2d.js';
-import { colorsParams, modeParam, firstLine } from './_common.js';
+import { colorsParams, modeParam, firstLine, textPlaceParams, placeText } from './_common.js';
 
 const ICON = (k, w) => k === 'star' ? star(w) : k === 'heart' ? heart(w, w * 0.9) : k === 'birrete' ? birrete(w) : k === 'ball' ? ball(w) : k === 'diploma' ? diploma(w) : null;
 
@@ -24,6 +24,7 @@ export default {
     { key: 'mainFont', type: 'font', label: 'Tipografía principal', default: 'bangers' },
     { key: 'font', type: 'font', label: 'Tipografía de los textos chicos', default: 'poppins' },
 
+    ...textPlaceParams(),
     { type: 'group', label: 'Diseño' },
     { key: 'shape', type: 'segment', label: 'Forma', default: 'circle', options: [{ value: 'circle', label: 'Redonda' }, { value: 'star', label: 'Estrella' }, { value: 'shield', label: 'Escudo' }] },
     { key: 'size', type: 'number', label: 'Diámetro', default: 60, min: 30, max: 120, step: 1, unit: 'mm' },
@@ -58,7 +59,7 @@ export default {
     if ((v.main || '').trim()) items.push(fitInto(stackLines([{ font: mf, text: v.main, height: 10 }], 0), inner * 1.4, inner * (ic ? 0.6 : 0.85)));
     if ((v.bottom || '').trim()) items.push(fitInto(stackLines([{ font: sf, text: v.bottom, height: 10 }], 0), inner * 1.5, inner * 0.26));
     let text = stack(items, inner * 0.1);
-    if (text) text = fitInto(text, inner * 1.6, inner * 1.75).intersect(face.offset(-v.rim - 1.2, 'Round', 2, 32));
+    if (text) text = placeText(fitInto(text, inner * 1.6, inner * 1.75), v, face).intersect(face.offset(-v.rim - 1.2, 'Round', 2, 32));
     else text = circle(0.5, 12);
     // Pasacinta / argolla arriba
     let base = face;

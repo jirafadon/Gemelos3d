@@ -2,14 +2,16 @@
  * Panel de parámetros generado a partir del esquema de cada generador.
  * Tipos: group, text, number, segment, select, toggle, color, font.
  */
-import { FONTS, registerCssFonts } from '../engine/fonts.js';
+import { FONTS, FONT_KINDS, registerCssFont } from '../engine/fonts.js';
 import { fileToDataURL } from '../engine/image.js';
 
 export const PALETTE = [
-  ['Blanco', '#F5F5F5'], ['Negro', '#1E1E1E'], ['Gris', '#8D99AE'], ['Plateado', '#C0C0C0'],
-  ['Rojo', '#D62828'], ['Naranja', '#F77F00'], ['Amarillo', '#FCBF49'], ['Dorado', '#C9A227'],
-  ['Verde', '#2A9D8F'], ['Lima', '#8AC926'], ['Celeste', '#4CC9F0'], ['Azul', '#1D4ED8'],
-  ['Violeta', '#7B2CBF'], ['Lila', '#C8B6FF'], ['Rosa', '#F72585'], ['Madera', '#B08968'],
+  ['Blanco', '#F5F5F5'], ['Perla', '#EAE7DC'], ['Beige', '#E9D8A6'], ['Negro', '#1E1E1E'], ['Gris', '#8D99AE'], ['Plateado', '#C0C0C0'],
+  ['Rojo', '#D62828'], ['Bordó', '#7B1E3A'], ['Coral', '#FF6F59'], ['Naranja', '#F77F00'], ['Amarillo', '#FCBF49'], ['Amarillo pastel', '#FFF3B0'],
+  ['Dorado', '#C9A227'], ['Cobre', '#B87333'], ['Bronce', '#8C6239'], ['Madera', '#B08968'], ['Marrón', '#7F4F24'],
+  ['Verde', '#2A9D8F'], ['Verde oscuro', '#1B4332'], ['Lima', '#8AC926'], ['Menta', '#B9FBC0'], ['Turquesa', '#00A6A6'],
+  ['Celeste', '#4CC9F0'], ['Celeste pastel', '#A2D2FF'], ['Azul', '#1D4ED8'], ['Azul marino', '#14213D'],
+  ['Violeta', '#7B2CBF'], ['Lila', '#C8B6FF'], ['Rosa', '#F72585'], ['Fucsia', '#D90368'], ['Rosa pastel', '#FFC8DD'],
 ];
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -18,9 +20,13 @@ export function defaultValues(schema) {
   return Object.fromEntries(schema.filter(p => p.key).map(p => [p.key, p.default]));
 }
 
+// Texto de muestra para el selector de tipografías: lo primero que escribiste
+let sample = { key: null, get: () => '' };
+
 export function renderParams(root, schema, values, onChange) {
-  registerCssFonts();
   root.innerHTML = '';
+  const firstText = schema.find(p => p.type === 'text' && typeof values[p.key] === 'string');
+  sample = { key: firstText?.key || null, get: () => String((firstText && values[firstText.key]) || '').split('\n')[0].trim().slice(0, 18) };
   const wrappers = [];
 
   const updateVisibility = () => {
@@ -34,7 +40,10 @@ export function renderParams(root, schema, values, onChange) {
       gr.hidden = ![...gr.querySelectorAll('.p-field')].some(f => !f.hidden);
     });
   };
-  const set = (key, val) => { values[key] = val; updateVisibility(); onChange(values, key); };
+  const set = (key, val) => {
+    values[key] = val; updateVisibility(); onChange(values, key);
+    if (key === sample.key) root.querySelectorAll('.p-font-sample').forEach(e => { e.textContent = sample.get() || e.dataset.name; });
+  };
 
   let group = root;
   for (const p of schema) {
@@ -143,19 +152,71 @@ function fieldBody(p, values, set) {
       break;
     }
     case 'font': {
-      box.className = 'p-fonts';
+      // Selector con categorías, búsqueda y vista previa con tu texto. Cada letra se carga cuando se ve.
+      box.className = 'p-fontpick';
+      const cur = FONTS.find(f => f.id === v) || FONTS[0];
+      box.innerHTML = `<div class="p-fontbar"><input type="search" class="p-input" placeholder="Buscar tipografía…"><span class="p-fontcur">Elegida: <b>${esc(cur.name)}</b></span></div>
+        <div class="p-kinds"><button type="button" data-kind="" class="on">Todas</button>${FONT_KINDS.map(k => `<button type="button" data-kind="${esc(k)}">${esc(k)}</button>`).join('')}</div>
+        <div class="p-fonts"></div>`;
+      const grid = box.querySelector('.p-fonts'), search = box.querySelector('input'), curEl = box.querySelector('.p-fontcur b');
+      let kind = '';
+      const io = typeof IntersectionObserver !== 'undefined'
+        ? new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { registerCssFont(e.target.dataset.font); io.unobserve(e.target); } }), { root: grid, rootMargin: '80px' })
+        : null;
       for (const f of FONTS) {
         const b = document.createElement('button');
-        b.type = 'button';
-        b.innerHTML = `<span style="font-family:'g3d-${f.id}',sans-serif">${esc(f.name)}</span><small>${esc(f.kind)}</small>`;
+        b.type = 'button'; b.dataset.font = f.id; b.dataset.kind = f.kind; b.dataset.q = `${f.name} ${f.kind}`.toLowerCase();
+        b.innerHTML = `<span class="p-font-sample" data-name="${esc(f.name)}" style="font-family:'g3d-${f.id}',sans-serif">${esc(sample.get() || f.name)}</span><small>${esc(f.name)} · ${esc(f.kind)}</small>`;
         b.classList.toggle('on', f.id === v);
         b.addEventListener('click', () => {
-          box.querySelectorAll('button').forEach(x => x.classList.remove('on'));
-          b.classList.add('on');
+          grid.querySelectorAll('button').forEach(x => x.classList.remove('on'));
+          b.classList.add('on'); curEl.textContent = f.name;
           set(p.key, f.id);
         });
-        box.appendChild(b);
+        grid.appendChild(b);
+        if (io) io.observe(b); else registerCssFont(f.id);
       }
+      registerCssFont(cur.id);
+      const filter = () => {
+        const q = search.value.trim().toLowerCase();
+        grid.querySelectorAll('button').forEach(b => { b.hidden = (kind && b.dataset.kind !== kind) || (q && !b.dataset.q.includes(q)); });
+      };
+      search.addEventListener('input', filter);
+      box.querySelector('.p-kinds').addEventListener('click', e => {
+        const k = e.target.closest('[data-kind]'); if (!k) return;
+        kind = k.dataset.kind; box.querySelectorAll('.p-kinds button').forEach(x => x.classList.toggle('on', x === k)); filter();
+      });
+      // La elegida queda a la vista
+      requestAnimationFrame(() => { const on = grid.querySelector('button.on'); if (on) grid.scrollTop = Math.max(0, on.offsetTop - grid.offsetTop - 40); });
+      break;
+    }
+    case 'nudge': {
+      // Mover el texto con flechas (Mayús = de a 5) y centrarlo en la forma con un toque
+      box.className = 'p-nudge';
+      const step = p.step || 0.5;
+      const show = () => {
+        const x = +values[p.key] || 0, y = +values[p.keyY] || 0;
+        box.querySelector('.n-pos').textContent = `${values[p.keyC] ? 'Centrado' : 'Lugar del diseño'} ${x || y ? `· corrido X ${x.toLocaleString('es-AR')} · Y ${y.toLocaleString('es-AR')} mm` : ''}`;
+      };
+      box.innerHTML = `<div class="n-pad">
+          <span></span><button type="button" data-d="0,1" title="Subir">▲</button><span></span>
+          <button type="button" data-d="-1,0" title="A la izquierda">◀</button><button type="button" data-d="c" class="n-c" title="Centrar en la forma">Centrar</button><button type="button" data-d="1,0" title="A la derecha">▶</button>
+          <span></span><button type="button" data-d="0,-1" title="Bajar">▼</button><span></span>
+        </div><div class="n-side"><span class="n-pos"></span><button type="button" class="link" data-d="r">Volver al lugar original</button><small>Mayús + flecha: de a 5 mm</small></div>`;
+      box.addEventListener('click', e => {
+        const b = e.target.closest('[data-d]'); if (!b) return;
+        const d = b.dataset.d;
+        if (d === 'c') { values[p.keyC] = true; values[p.keyY] = 0; set(p.key, 0); }
+        else if (d === 'r') { values[p.keyC] = false; values[p.keyY] = 0; set(p.key, 0); }
+        else {
+          const [dx, dy] = d.split(',').map(Number), k = step * (e.shiftKey ? 10 : 1);
+          const r = v => Math.round(v * 100) / 100;
+          values[p.keyY] = r((+values[p.keyY] || 0) + dy * k);
+          set(p.key, r((+values[p.key] || 0) + dx * k));
+        }
+        show();
+      });
+      show();
       break;
     }
     case 'image': {

@@ -5,7 +5,7 @@
 import { circle, outline, part, slab } from '../engine/geom.js';
 import { mergeByColor, stackLines } from '../engine/layers.js';
 import { ring, snowflake, star, fitInto } from '../engine/shapes.js';
-import { firstLine } from './_common.js';
+import { firstLine, textPlaceParams, placeText } from './_common.js';
 
 export default {
   id: 'adorno-navidad',
@@ -24,6 +24,7 @@ export default {
     { key: 'font', type: 'font', label: 'Tipografía', default: 'pacifico' },
     { key: 'border', type: 'number', label: 'Contorno del nombre', default: 2, min: 0.8, max: 6, step: 0.1, unit: 'mm', show: v => v.kind !== 'ball' },
 
+    ...textPlaceParams(),
     { type: 'group', label: 'Colores' },
     { key: 'colors', type: 'segment', label: 'Cantidad de colores', default: 2, options: [{ value: 1, label: '1' }, { value: 2, label: '2' }] },
     { key: 'cBase', type: 'color', label: 'Adorno', default: '#F5F5F5' },
@@ -49,12 +50,12 @@ export default {
         body = body.add(snowflake(v.rim * 3.4).translate([R - v.rim / 2, 0]).rotate(a));
       }
       // El nombre cruza el aro de lado a lado para quedar unido
-      nameShape = fitInto(stackLines([{ font, text: v.name || ' ', height: 10 }]), (R - v.rim * 0.4) * 2, R * 0.9);
+      nameShape = placeText(fitInto(stackLines([{ font, text: v.name || ' ', height: 10 }]), (R - v.rim * 0.4) * 2, R * 0.9), v, body);
       body = body.subtract(nameShape);
     } else {
       body = v.kind === 'flake' ? snowflake(v.size) : star(v.size, 5, 0.5, 1.2);
       const area = v.kind === 'flake' ? [R * 1.3, R * 0.45] : [R * 0.9, R * 0.36];
-      nameShape = fitInto(stackLines([{ font, text: v.name || ' ', height: 10 }]), area[0], area[1]);
+      nameShape = placeText(fitInto(stackLines([{ font, text: v.name || ' ', height: 10 }]), area[0], area[1]), v, body);
       body = body.add(outline(nameShape, v.border));
       nameZ = t;
     }

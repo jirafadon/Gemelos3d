@@ -7,7 +7,7 @@ import { wasm, circle, roundedRect, polygonShape, slab, part } from '../engine/g
 import { mergeByColor, stackLines, placeBelow } from '../engine/layers.js';
 import { star, fitInto, smooth } from '../engine/shapes.js';
 import { ball, birrete } from '../engine/icons2d.js';
-import { firstLine } from './_common.js';
+import { firstLine, textPlaceParams, placeText } from './_common.js';
 
 /** Silueta de copa de trofeo (alto ≈ s). */
 function cup(s) {
@@ -40,6 +40,7 @@ export default {
     { key: 'titleFont', type: 'font', label: 'Tipografía', default: 'bangers' },
     { key: 'thick', type: 'number', label: 'Espesor de la figura', default: 4, min: 2.4, max: 10, step: 0.2, unit: 'mm' },
 
+    ...textPlaceParams(),
     { type: 'group', label: 'Base' },
     { key: 'name', type: 'text', label: 'Línea 1 al frente', default: 'Juan Pérez' },
     { key: 'name2', type: 'text', label: 'Línea 2 al frente (opcional)', default: 'Campeón 2026' },
@@ -71,7 +72,7 @@ export default {
     const area = v.figure === 'cup' ? [S * 0.42, S * 0.22, S * 0.69] : v.figure === 'star' ? [S * 0.38, S * 0.26, S * 0.5 + tab] : v.figure === 'medal' ? [S * 0.56, S * 0.4, S * 0.5 + tab]
       : v.figure === 'ball' ? [S * 0.2, S * 0.14, S * 0.45 + tab + S * 0.02] : v.figure === 'birrete' ? [S * 0.36, S * 0.16, S * 0.4 + tab] : [S * 0.5, S * 0.36, S * 0.62];
     const tf = await ctx.font(v.titleFont);
-    const title = fitInto(stackLines(String(v.title || ' ').split('\n').map(t => ({ font: tf, text: t, height: 10 })), 1.5), area[0], area[1]).translate([0, area[2]]);
+    const title = placeText(fitInto(stackLines(String(v.title || ' ').split('\n').map(t => ({ font: tf, text: t, height: 10 })), 1.5), area[0], area[1]).translate([0, area[2]]), v, fig.subtract(CrossSection.square([tabW, tab + 2], false).translate([-tabW / 2, 0])));
     const L = 0.8;
     const parts = [part('Figura', v.cFig, slab(fig, v.thick)), part('Texto de la figura', v.cText, slab(title, L, v.thick))];
 
