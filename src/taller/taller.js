@@ -5,6 +5,8 @@
  * perfiles dibujados que se extruyen o revolucionan (como en FreeCAD), regla para medir,
  * deshacer, alinear, espejar, copiar y pegar. Exporta 3MF por color.
  */
+import { openProfileEditor } from './profile-editor.js';
+import { setupPanes, paneButtons, newButton } from '../ui/panes.js';
 import * as THREE from 'three';
 import { TransformControls } from 'three/addons/controls/TransformControls.js';
 import { initEngine, loadFont, collect, modelStats } from '../engine/index.js';
@@ -12,11 +14,11 @@ import { Viewer } from '../engine/viewer.js';
 import { imageToMask } from '../engine/image.js';
 import { to3MF, toSTLZip, mergedSTL, download } from '../engine/export.js';
 import { estimate, sendToCalculator } from '../engine/cost.js';
-import { renderParams } from '../ui/params.js';
+import { renderParams, PALETTE } from '../ui/params.js';
 import { icon } from '../ui/icons.js';
 import {
   TYPES, SHAPE_PARAMS, makeObject, cloneObj, objectParts, sceneParts, partsBox,
-  groupObjects, ungroupObject, parseSTLMesh, sketchSize, OPS, groupLocal,
+  groupObjects, ungroupObject, parseSTLMesh, sketchSize, OPS, groupLocal, splitParts, bodiesOf, meshObject,
 } from './objects.js';
 
 export const SCENE_KEY = 'g3d_taller_scene';
@@ -26,6 +28,9 @@ const fmtTime = min => { min = Math.round(min); const h = Math.floor(min / 60), 
 const r2 = v => Math.round(v * 100) / 100;
 
 const SVG = {
+  paint: '<path d="M18.4 2.6a2 2 0 0 1 2.9 2.9L11 15.8 8.2 13z"/><path d="M8 13.4c-2.5 0-4 1.6-4 4 0 1.5-.6 2.6-2 3.1 3.6 1 8.4.4 8.9-3.9z"/>',
+  cut: '<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M8.6 7.6L20 18M8.6 16.4L20 6"/>',
+  split: '<rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/><path d="M13 7h4a2 2 0 0 1 2 2v1M11 17H7a2 2 0 0 1-2-2v-1"/>',
   box: '<rect x="4" y="7" width="13" height="13" rx="1"/><path d="M4 7l4-4h13v13l-4 4M17 7l4-4"/>',
   cylinder: '<ellipse cx="12" cy="5" rx="7" ry="2.5"/><path d="M5 5v14c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V5"/>',
   sphere: '<circle cx="12" cy="12" r="8.5"/><ellipse cx="12" cy="12" rx="8.5" ry="3"/>',
@@ -189,12 +194,15 @@ export async function renderTaller(app, headerHtml) {
     </aside>
     <section class="gen-view">
       <div class="t-toolbar" id="toolbar">
+        <div class="t-panes">${paneButtons()}${newButton('data-cmd="new"')}</div>
+        <span class="t-sep"></span>
         <div class="t-tools">
           <button data-tool="translate" class="on" title="Mover (1)">${svg('move')}</button>
           <button data-tool="rotate" title="Rotar (2)">${svg('rotate')}</button>
           <button data-tool="scale" title="Escalar (3)">${svg('scale')}</button>
           <button data-tool="measure" title="Regla: tocá dos puntos para medir (R)">${svg('ruler')}</button>
           <button data-tool="workplane" title="Plano de trabajo: tocá una cara y lo nuevo se apoya ahí (W)">${svg('workplane')}</button>
+          <button data-tool="paint" title="Pintar: elegí un color y tocá cada pieza (B)">${svg('paint')}</button>
         </div>
         <span class="t-sep"></span>
         <button data-cmd="undo" title="Deshacer (Ctrl+Z)">${svg('undo')}</button>
@@ -224,6 +232,15 @@ export async function renderTaller(app, headerHtml) {
             <label class="chk"><input type="checkbox" id="pGroup" checked> Agrupar el resultado</label>
             <button class="primary" id="pGo">Repetir</button>
           </div></div>
+        <div class="t-pop"><button data-pop="cut" title="Cortar con un plano (X)">${svg('cut')}</button>
+          <div class="t-menu t-form" id="cutMenu">
+            <p class="muted small">Corta lo elegido en dos piezas por un plano. Cada mitad queda como pieza propia para pintarla, moverla o imprimirla aparte.</p>
+            <div class="t-seg" id="cutAxis"><button data-cutax="0">X</button><button data-cutax="1">Y</button><button data-cutax="2" class="on">Z (altura)</button></div>
+            <label>Dónde cortar (mm) <input type="number" id="cutPos" value="0" step="0.5"></label>
+            <label>Separar las mitades (mm) <input type="number" id="cutGap" value="0" min="0" step="1"></label>
+            <button class="primary" id="cutGo">Cortar</button>
+          </div></div>
+        <button data-cmd="split" title="Separar en piezas: cada parte suelta o de otro color queda aparte">${svg('split')}</button>
         <div class="t-pop"><button data-pop="align" title="Alinear (L)">${svg('align')}</button>
           <div class="t-menu" id="alignMenu">${['x', 'y', 'z'].map(ax => `<div><b>${ax.toUpperCase()}</b>${[['min', ax === 'z' ? 'Abajo' : 'Mín.'], ['mid', 'Centro'], ['max', ax === 'z' ? 'Arriba' : 'Máx.']].map(([k, l]) => `<button data-align="${ax}:${k}">${l}</button>`).join('')}</div>`).join('')}</div></div>
         <div class="t-pop"><button data-pop="mirror" title="Espejar (M)">${svg('mirror')}</button>
@@ -249,6 +266,12 @@ export async function renderTaller(app, headerHtml) {
         <button id="skUndo" title="Borrar el último punto (Retroceso)">Deshacer punto</button>
         <button class="primary" id="skDone">Terminar</button>
         <button id="skCancel">Cancelar</button>
+      </div>
+      <div class="t-sketchbar t-paintbar" id="paintbar" hidden>
+        <b>Pintar</b>
+        <div class="pb-sw" id="pbSw">${PALETTE.map(([n, hex]) => `<button data-paint="${hex}" title="${n}" style="background:${hex}"></button>`).join('')}<label title="Otro color"><input type="color" id="pbColor" value="#D62828"></label></div>
+        <span class="muted">Tocá una pieza para pintarla. Un grupo se separa en sus piezas para que pintes cada una. Para pintar una parte de una pieza, cortala primero (tijera).</span>
+        <button class="primary" id="pbDone">Listo</button>
       </div>
       <div class="t-ruler" id="ruler" hidden></div>
       <div class="t-rect" id="rect" hidden></div>
@@ -436,6 +459,8 @@ export async function renderTaller(app, headerHtml) {
     tb.querySelector('[data-pop=mirror]').disabled = !n;
     for (const b of tb.querySelectorAll('[data-bool]')) b.disabled = n < 2;
     tb.querySelector('[data-pop=pattern]').disabled = !n;
+    tb.querySelector('[data-pop=cut]').disabled = !n;
+    tb.querySelector('[data-cmd=split]').disabled = !n;
   }
 
   function drawProps() {
@@ -452,7 +477,8 @@ export async function renderTaller(app, headerHtml) {
     }
     const o = sel[0];
     if (o.type === 'sketch') o.ptsText = o.pts.map(([x, y]) => `${r2(x)}, ${r2(y)}`).join('\n');
-    $('props').innerHTML = `<h2>Propiedades</h2>${o.meshLost ? '<p class="warn small">Esta malla era muy pesada para guardarse; volvé a importar el STL.</p>' : ''}<div id="single"></div>`;
+    $('props').innerHTML = `<h2>Propiedades</h2>${o.meshLost ? '<p class="warn small">Esta malla era muy pesada para guardarse; volvé a importar el STL.</p>' : ''}${o.type === 'sketch' ? `<button class="primary t-editpts" id="editPts">${svg('sketch')} Editar puntos y medidas (E)</button>` : ''}<div id="single"></div>`;
+    if (o.type === 'sketch') $('editPts').addEventListener('click', () => editSketch(o));
     renderParams($('single'), schemaFor(o), o, async (v, key) => {
       if (['name', 'hole', 'color', 'multicolor'].includes(key)) drawList();
       if (o.type === 'sketch' && ['ptsText', 'op', 'angle', 'round'].includes(key)) {
@@ -573,6 +599,28 @@ export async function renderTaller(app, headerHtml) {
       }
       changed();
     },
+    async split() {
+      const s = selection().filter(o => !o.locked && !o.hole); if (!s.length) return;
+      status('<span class="spin"></span> Separando en piezas…');
+      let made = 0; const newSel = [];
+      for (const o of s) {
+        const bodies = bodiesOf((partsById.get(o.id) || []).filter(p => !p.hole));
+        if (bodies.length < 2) continue;
+        const items = bodies.map((b, i) => meshObject(b.solid, b.color, `${o.name} · pieza ${i + 1}`, state.objs.length + i));
+        state.objs.splice(state.objs.indexOf(o), 1, ...items);
+        newSel.push(...items.map(x => x.id)); made += items.length;
+      }
+      if (!made) { status('Ya es una sola pieza. Para dividirla usá la tijera (cortar con un plano).'); setTimeout(() => status(''), 2500); return; }
+      state.sel = newSel; changed();
+      status(`Quedó en ${made} piezas: ahora podés pintar cada una`); setTimeout(() => status(''), 2500);
+    },
+    new() {
+      if (state.objs.length && !confirm('¿Empezar un diseño nuevo? Lo que hay se borra, pero podés deshacerlo con Ctrl+Z.')) return;
+      if (special) setSpecial(null);
+      setWorkplane(null);
+      state.objs = []; state.sel = []; changed();
+      viewer.setView('iso');
+    },
     fit() {
       const parts = (state.sel.length ? selection() : state.objs).flatMap(o => partsById.get(o.id) || []);
       if (parts.length) { const b = partsBox(parts); viewer.frame(b.min, b.max); }
@@ -670,7 +718,8 @@ export async function renderTaller(app, headerHtml) {
     special = next;
     $('toolbar').querySelectorAll('[data-tool]').forEach(x => x.classList.toggle('on', next ? x.dataset.tool === next : x.dataset.tool === tool));
     $('sketchbar').hidden = next !== 'sketch';
-    if (next !== 'measure') { rulerPts = []; $('ruler').hidden = true; }
+    $('paintbar').hidden = next !== 'paint';
+    if (next !== 'measure') { rulerPts = []; rulerHover = null; $('ruler').hidden = true; }
     if (next !== 'sketch') sk = null;
     canvas.style.cursor = next ? 'crosshair' : '';
     viewer.controls.enableRotate = next !== 'sketch'; // dibujando se mira desde arriba, sin girar
@@ -678,15 +727,35 @@ export async function renderTaller(app, headerHtml) {
     attachGizmo();
   }
   const fmt = v => (Math.round(v * 100) / 100).toLocaleString('es-AR');
+  const SNAP_NAME = { vertex: 'vértice', mid: 'punto medio', edge: 'borde', face: 'cara', ground: 'cama' };
+  const SNAP_COLOR = { vertex: '#16a34a', mid: '#0ea5e9', edge: '#f59e0b', face: '#e11d48', ground: '#8d99ae' };
+  let rulerHover = null;
+  /** Con Mayús, el segundo punto queda alineado al eje con más diferencia. */
+  function lockAxis(a, b) {
+    const d = [b.x - a.x, b.y - a.y, b.z - a.z], i = d.map(Math.abs).indexOf(Math.max(...d.map(Math.abs)));
+    const q = a.clone(); q.setComponent(i, b.getComponent(i)); return q;
+  }
   function drawRuler() {
-    const pts = rulerPts.map(p => [p.x, p.y, p.z]);
-    viewer.setOverlay({ lines: pts.length === 2 ? [pts] : [], points: pts });
-    const el = $('ruler');
-    if (pts.length < 2) { el.hidden = false; el.innerHTML = pts.length ? 'Tocá el segundo punto' : 'Tocá el primer punto a medir'; el.style.left = '50%'; el.style.top = '64px'; return; }
-    const [a, b] = rulerPts, d = a.distanceTo(b);
-    el.innerHTML = `<b>${fmt(d)} mm</b><span>X ${fmt(Math.abs(b.x - a.x))} · Y ${fmt(Math.abs(b.y - a.y))} · Z ${fmt(Math.abs(b.z - a.z))}</span>`;
-    const m = viewer.project((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2), r = view.getBoundingClientRect();
-    el.hidden = false; el.style.left = `${m.x - r.left}px`; el.style.top = `${m.y - r.top - 40}px`;
+    const pts = rulerPts.map(r => r.point);
+    const hov = rulerHover && rulerPts.length < 2 ? rulerHover : null;
+    const end = pts.length === 2 ? pts[1] : hov && pts.length === 1 ? hov.point : null;
+    const lines = pts.length && end ? [[[pts[0].x, pts[0].y, pts[0].z], [end.x, end.y, end.z]]] : [];
+    const marks = rulerPts.map(r => ({ p: [r.point.x, r.point.y, r.point.z], color: SNAP_COLOR[r.kind] }));
+    if (hov) marks.push({ p: [hov.point.x, hov.point.y, hov.point.z], color: SNAP_COLOR[hov.kind], big: true });
+    viewer.setOverlay({ lines, points: marks });
+    const el = $('ruler'), r = view.getBoundingClientRect();
+    el.hidden = false;
+    if (!end) {
+      el.innerHTML = `${pts.length ? 'Tocá el segundo punto' : 'Tocá el primer punto a medir'}${hov ? ` <em>· se engancha al ${SNAP_NAME[hov.kind]}</em>` : ''}<span>Se engancha solo a vértices, puntos medios y bordes. Mayús: en línea recta por un eje.</span>`;
+      el.style.left = '50%'; el.style.top = '64px'; return;
+    }
+    const a = pts[0], b = end, d = a.distanceTo(b);
+    const dz = Math.abs(b.z - a.z), flat = Math.hypot(b.x - a.x, b.y - a.y);
+    const ang = Math.atan2(dz, flat) * 180 / Math.PI;
+    el.innerHTML = `<b>${fmt(d)} mm</b><span>X ${fmt(Math.abs(b.x - a.x))} · Y ${fmt(Math.abs(b.y - a.y))} · Z ${fmt(dz)} · ${fmt(ang)}° de inclinación</span>`
+      + `<span>De ${SNAP_NAME[rulerPts[0].kind]} a ${SNAP_NAME[(rulerPts[1] || hov).kind]}${pts.length === 2 ? ' · tocá de nuevo para otra medida' : ''}</span>`;
+    const m = viewer.project((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2);
+    el.style.left = `${m.x - r.left}px`; el.style.top = `${m.y - r.top - 54}px`;
   }
   function startSketch(op) {
     if (mode !== 'edit') main.querySelector('.t-mode [data-mode=edit]').click();
@@ -739,6 +808,99 @@ export async function renderTaller(app, headerHtml) {
     changed();
   }
 
+  // ---------- Pintar ----------
+  let paintColor = '#D62828';
+  function markPaint() { $('pbSw').querySelectorAll('[data-paint]').forEach(x => x.classList.toggle('on', x.dataset.paint.toLowerCase() === paintColor.toLowerCase())); }
+  $('pbSw').addEventListener('click', e => { const b = e.target.closest('[data-paint]'); if (!b) return; paintColor = b.dataset.paint; $('pbColor').value = paintColor; markPaint(); });
+  $('pbColor').addEventListener('input', e => { paintColor = e.target.value; markPaint(); });
+  $('pbDone').addEventListener('click', () => setSpecial(null));
+  async function paintAt(ev) {
+    const id = viewer.pick(ev), o = id && byId(id); if (!o) return;
+    if (o.locked) { status('Está bloqueado: desbloquealo para pintarlo'); return; }
+    if (o.hole) { status('Es un hueco: no se pinta'); return; }
+    if (o.type === 'group') {
+      const kids = await ungroupObject(o, ctx);
+      state.objs.splice(state.objs.indexOf(o), 1, ...kids);
+      state.sel = []; changed();
+      status('Separé el grupo en sus piezas: tocá cada una para pintarla'); setTimeout(() => status(''), 2500);
+      return;
+    }
+    o.color = paintColor; state.sel = [o.id]; changed();
+  }
+
+  // ---------- Cortar con un plano ----------
+  let cutAxis = 2;
+  const selBox = () => { const p = selection().flatMap(o => partsById.get(o.id) || []); return p.length ? partsBox(p) : null; };
+  const cutCenter = () => { const b = selBox(); return b ? r2(b.center[cutAxis]) : 0; };
+  function cutPreview() {
+    const b = selBox(); if (!b) { viewer.setOverlay(); return; }
+    const pos = +$('cutPos').value || 0, m = 4;
+    const lo = b.min.map(v => v - m), hi = b.max.map(v => v + m);
+    const [u, v] = [0, 1, 2].filter(i => i !== cutAxis);
+    const corner = (a, c) => { const q = [0, 0, 0]; q[cutAxis] = pos; q[u] = a; q[v] = c; return q; };
+    const c = [corner(lo[u], lo[v]), corner(hi[u], lo[v]), corner(hi[u], hi[v]), corner(lo[u], hi[v])];
+    const lines = c.map((q, i) => [q, c[(i + 1) % 4]]);
+    for (let k = 1; k < 6; k++) { const t = lo[u] + (hi[u] - lo[u]) * k / 6; lines.push([corner(t, lo[v]), corner(t, hi[v])]); }
+    viewer.setOverlay({ lines, color: '#f59e0b' });
+  }
+  $('cutPos').addEventListener('input', cutPreview);
+  async function cut() {
+    const s = selection().filter(o => !o.locked && !o.hole); if (!s.length) return;
+    const pos = +$('cutPos').value || 0, gap = Math.max(0, +$('cutGap').value || 0);
+    status('<span class="spin"></span> Cortando…');
+    const newSel = []; let n = 0;
+    for (const o of s) {
+      const { above, below } = splitParts((partsById.get(o.id) || []).filter(p => !p.hole), cutAxis, pos);
+      if (!above.length || !below.length) continue;
+      const items = [];
+      for (const [list, label, move] of [[below, 'B', 0], [above, 'A', gap]]) {
+        const t = [0, 0, 0]; t[cutAxis] = move;
+        const kids = list.map((p, i) => meshObject(move ? p.solid.translate(t) : p.solid, p.color, `${o.name} · parte ${label}`, state.objs.length + i));
+        const item = kids.length > 1 ? await groupObjects(kids, ctx, state.objs.filter(x => x.type === 'group').length) : kids[0];
+        item.name = `${o.name} · parte ${label}`;
+        items.push(item);
+      }
+      state.objs.splice(state.objs.indexOf(o), 1, ...items);
+      newSel.push(...items.map(x => x.id)); n++;
+    }
+    if (!n) { status('⚠ El plano no pasa por lo elegido: cambiá dónde cortar', 'error'); return; }
+    state.sel = newSel; changed();
+    status('Listo: quedaron dos piezas. Podés pintarlas o moverlas por separado.'); setTimeout(() => status(''), 2500);
+  }
+
+  // ---------- Editor 2D de perfiles ----------
+  let peOpen = null;
+  function editSketch(o) {
+    if (!o || o.type !== 'sketch' || peOpen) return;
+    if (special) setSpecial(null);
+    // Se edita en el tamaño que tiene ahora (si lo escalaste, los puntos ya vienen escalados)
+    let nat;
+    try { nat = sketchSize(o, o.h); } catch (err) { status(`⚠ ${esc(err.message)}`, 'error'); return; }
+    const sx = nat.w ? o.w / nat.w : 1, sy = o.op === 'revolve' ? (nat.h ? o.h / nat.h : 1) : (nat.d ? o.d / nat.d : 1);
+    const shown = o.pts.map(([x, y]) => [r2(x * sx), r2(y * sy)]);
+    const box = q => { const xs = q.map(p => p[0]), ys = q.map(p => p[1]); return { cx: (Math.min(...xs) + Math.max(...xs)) / 2, cy: (Math.min(...ys) + Math.max(...ys)) / 2, minY: Math.min(...ys) }; };
+    const b0 = box(shown);
+    tc.detach();
+    peOpen = openProfileEditor(view, {
+      pts: shown, op: o.op, snap, title: `Editar ${o.name}`,
+      onCancel: () => { peOpen = null; attachGizmo(); },
+      onApply: next => {
+        peOpen = null;
+        const prev = { pts: o.pts, w: o.w, d: o.d, h: o.h, x: o.x, y: o.y, z: o.z };
+        o.pts = next;
+        try { Object.assign(o, sketchSize(o, o.h)); } catch (err) { Object.assign(o, prev); status(`⚠ ${esc(err.message)}`, 'error'); attachGizmo(); return; }
+        const b1 = box(next);
+        if (o.op === 'revolve') { if (!o.rx && !o.ry) o.z = r2(o.z + (b1.minY - b0.minY)); }
+        else {
+          // Lo que no moviste queda en el mismo lugar
+          const a = THREE.MathUtils.degToRad(o.rz || 0), dx = b1.cx - b0.cx, dy = b1.cy - b0.cy;
+          if (!o.rx && !o.ry) { o.x = r2(o.x + dx * Math.cos(a) - dy * Math.sin(a)); o.y = r2(o.y + dx * Math.sin(a) + dy * Math.cos(a)); }
+        }
+        changed();
+      },
+    });
+  }
+
   // ---------- Eventos ----------
   const main = $('viewer').closest('main');
   main.querySelector('.gen-params').addEventListener('click', e => {
@@ -769,6 +931,9 @@ export async function renderTaller(app, headerHtml) {
   $('toolbar').addEventListener('click', async e => {
     const b = e.target.closest('button'); if (!b || b.disabled) return;
     if (b.dataset.tool === 'measure') { setSpecial(special === 'measure' ? null : 'measure'); if (special) drawRuler(); return; }
+    if (b.dataset.tool === 'paint') { setSpecial(special === 'paint' ? null : 'paint'); markPaint(); return; }
+    if (b.dataset.cutax) { cutAxis = +b.dataset.cutax; b.parentElement.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); $('cutPos').value = cutCenter(); cutPreview(); return; }
+    if (b.id === 'cutGo') { b.closest('.t-menu').classList.remove('open'); viewer.setOverlay(); await cut(); return; }
     if (b.dataset.tool === 'workplane') { setSpecial(special === 'workplane' ? null : 'workplane'); if (special) status('Tocá la cara donde querés trabajar (o la cama para volver al piso)'); return; }
     if (b.dataset.bool) { await boolean(b.dataset.bool); return; }
     if (b.dataset.pk) {
@@ -789,7 +954,9 @@ export async function renderTaller(app, headerHtml) {
       const menu = b.parentElement.querySelector('.t-menu');
       const open = !menu.classList.contains('open');
       $('toolbar').querySelectorAll('.t-menu').forEach(m => m.classList.remove('open'));
-      menu.classList.toggle('open', open); return;
+      menu.classList.toggle('open', open);
+      if (b.dataset.pop === 'cut') { if (open) { $('cutPos').value = cutCenter(); cutPreview(); } else viewer.setOverlay(); }
+      return;
     }
     if (b.dataset.align) { const [ax, w] = b.dataset.align.split(':'); align(ax, w); b.closest('.t-menu').classList.remove('open'); return; }
     if (b.dataset.mirror) { mirror(+b.dataset.mirror); b.closest('.t-menu').classList.remove('open'); return; }
@@ -810,10 +977,7 @@ export async function renderTaller(app, headerHtml) {
       setTimeout(() => commands.fit(), 300);
     });
   }
-  $('reset').addEventListener('click', () => {
-    if (state.objs.length && !confirm('¿Borrar todo y empezar un diseño nuevo? (Podés deshacerlo)')) return;
-    state.objs = []; state.sel = []; changed();
-  });
+  $('reset').addEventListener('click', () => commands.new());
   $('wpReset').addEventListener('click', () => setWorkplane(null));
   viewer.onCamera = cam => { tc.camera = cam; attachGizmo(); };
   main.querySelector('.views').addEventListener('click', e => {
@@ -821,7 +985,7 @@ export async function renderTaller(app, headerHtml) {
     if (b.hasAttribute('data-ortho')) { viewer.setOrtho(!viewer.orthoOn); b.classList.toggle('on', viewer.orthoOn); return; }
     main.querySelectorAll('.views button[data-view]').forEach(x => x.classList.toggle('on', x === b));
     viewer.setView(b.dataset.view);
-    if (special === 'measure' && rulerPts.length === 2) drawRuler();
+    if (special === 'measure' && rulerPts.length) drawRuler();
   });
   main.querySelector('.t-mode').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
@@ -836,10 +1000,12 @@ export async function renderTaller(app, headerHtml) {
   canvas.addEventListener('pointerdown', ev => {
     if (ev.button !== 0) return;
     if (special === 'measure') {
-      const hit = viewer.pickPoint(ev); if (!hit) return;
+      const hit = viewer.pickSnap(ev); if (!hit) return;
       if (rulerPts.length >= 2) rulerPts = [];
-      rulerPts.push(hit.point); drawRuler(); return;
+      if (rulerPts.length === 1 && ev.shiftKey) hit.point = lockAxis(rulerPts[0].point, hit.point);
+      rulerPts.push({ point: hit.point, kind: hit.kind }); rulerHover = null; drawRuler(); return;
     }
+    if (special === 'paint') { paintAt(ev); return; }
     if (special === 'workplane') {
       const hit = viewer.pickPoint(ev); if (!hit) return;
       const o = hit.id ? byId(hit.id) : null;
@@ -877,6 +1043,11 @@ export async function renderTaller(app, headerHtml) {
     canvas.setPointerCapture(ev.pointerId);
   });
   canvas.addEventListener('pointermove', ev => {
+    if (special === 'measure' && ev.buttons === 0) {
+      const hit = viewer.pickSnap(ev);
+      if (hit && rulerPts.length === 1 && ev.shiftKey) hit.point = lockAxis(rulerPts[0].point, hit.point);
+      rulerHover = hit; drawRuler(); return;
+    }
     if (special === 'sketch' && sk) { const p = viewer.groundPoint(ev, sketchZ()); sk.hover = p ? snapPt(p) : null; drawSketch(); return; }
     if (rectSel) {
       rectSel.x1 = ev.clientX; rectSel.y1 = ev.clientY;
@@ -896,7 +1067,10 @@ export async function renderTaller(app, headerHtml) {
     for (const o of drag.moving) { const h = viewer.items.get(o.id); const d = cache.get(o.id)?.data; if (h && d) h.position.set(d.pivot[0] + dx, d.pivot[1] + dy, d.pivot[2]); }
     viewer.render();
   });
-  canvas.addEventListener('dblclick', () => { if (special === 'sketch') finishSketch(); });
+  canvas.addEventListener('dblclick', ev => {
+    if (special === 'sketch') { finishSketch(); return; }
+    if (!special && mode === 'edit') { const id = viewer.pick(ev); const o = id && byId(id); if (o?.type === 'sketch') editSketch(o); }
+  });
   const endDrag = ev => {
     if (rectSel) {
       const R = rectSel; rectSel = null; $('rect').hidden = true; viewer.controls.enabled = true;
@@ -935,6 +1109,10 @@ export async function renderTaller(app, headerHtml) {
     if (special === 'measure' && k === 'escape') { setSpecial(null); return; }
     if (!ctrl && k === 'r') { $('toolbar').querySelector('[data-tool=measure]').click(); return; }
     if (!ctrl && k === 'p') { startSketch('extrude'); return; }
+    if (!ctrl && k === 'e' && primary()?.type === 'sketch') { editSketch(primary()); return; }
+    if (!ctrl && k === 'b') { $('toolbar').querySelector('[data-tool=paint]').click(); return; }
+    if (!ctrl && k === 'x' && state.sel.length) { $('toolbar').querySelector('[data-pop=cut]').click(); return; }
+    if (special === 'paint' && k === 'escape') { setSpecial(null); return; }
     if (!ctrl && k === 'w') { $('toolbar').querySelector('[data-tool=workplane]').click(); return; }
     if (special === 'workplane' && k === 'escape') { setSpecial(null); status(''); return; }
     if (ctrl && k === 'z' && !e.shiftKey) { e.preventDefault(); commands.undo(); return; }
@@ -959,7 +1137,12 @@ export async function renderTaller(app, headerHtml) {
     else if (k === 'l' && state.sel.length > 1) $('toolbar').querySelector('[data-pop=align]').click();
   };
   window.addEventListener('keydown', onKey);
-  const closeMenus = e => { if (!e.target.closest('.t-pop')) $('toolbar')?.querySelectorAll('.t-menu').forEach(m => m.classList.remove('open')); };
+  const closeMenus = e => {
+    if (e.target.closest('.t-pop')) return;
+    const cutOpen = $('cutMenu')?.classList.contains('open');
+    $('toolbar')?.querySelectorAll('.t-menu').forEach(m => m.classList.remove('open'));
+    if (cutOpen && !special) viewer.setOverlay();
+  };
   document.addEventListener('click', closeMenus);
 
   const fileBase = () => `taller_${(state.objs.find(o => o.type === 'text')?.text || 'diseño').split('\n')[0]}`.replace(/[^\w\-áéíóúñÁÉÍÓÚÑ]+/g, '_').slice(0, 50);
@@ -974,6 +1157,7 @@ export async function renderTaller(app, headerHtml) {
 
 
 
+  const unpane = setupPanes(main, $('toolbar'));
   drawList(); drawProps();
   await refresh();
   if (loaded?.focus) commands.fit();
@@ -982,6 +1166,6 @@ export async function renderTaller(app, headerHtml) {
     alive = false; clearTimeout(timer);
     window.removeEventListener('keydown', onKey);
     document.removeEventListener('click', closeMenus);
-    tc.dispose(); viewer.renderer.dispose(); collect([]);
+    unpane(); tc.dispose(); viewer.renderer.dispose(); collect([]);
   };
 }

@@ -199,6 +199,70 @@ export class Viewer {
     return p ? { id: null, point: p, normal: new THREE.Vector3(0, 0, 1) } : null;
   }
 
+  /**
+   * Punto para medir, enganchado a lo más cercano del modelo bajo el puntero:
+   * vértice, punto medio de un borde, borde (aristas reales, no las diagonales de los triángulos) o cara.
+   * @returns { id, point, normal, kind: 'vertex'|'mid'|'edge'|'face'|'ground' } o null
+   */
+  pickSnap(ev, radius = 14) {
+    const ray = new THREE.Raycaster();
+    ray.setFromCamera(this.ndc(ev), this.camera);
+    const hit = ray.intersectObjects(this.group.children, true)[0];
+    if (!hit || !hit.face) {
+      const p = this.groundPoint(ev, 0);
+      return p ? { id: null, point: p, normal: new THREE.Vector3(0, 0, 1), kind: 'ground' } : null;
+    }
+    const obj = hit.object, geo = obj.geometry, pos = geo.attributes.position;
+    const normal = hit.face.normal.clone().transformDirection(obj.matrixWorld).normalize();
+    const w = i => new THREE.Vector3().fromBufferAttribute(pos, i).applyMatrix4(obj.matrixWorld);
+    const ids = [hit.face.a, hit.face.b, hit.face.c], V = ids.map(w);
+    const sharp = this.sharpEdges(geo);
+    const key = i => { const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i); return `${x.toFixed(3)},${y.toFixed(3)},${z.toFixed(3)}`; };
+    const edges = [[0, 1], [1, 2], [2, 0]].filter(([a, b]) => { const ka = key(ids[a]), kb = key(ids[b]); return sharp.has(ka < kb ? ka + '|' + kb : kb + '|' + ka); });
+    const scr = v => { const q = this.project(v.x, v.y, v.z); return Math.hypot(q.x - ev.clientX, q.y - ev.clientY); };
+    const base = { id: obj.userData.id, normal };
+    // 1) vértices de bordes reales y 2) puntos medios
+    let best = null;
+    const consider = (v, kind, d = scr(v)) => { if (d <= radius && (!best || d < best.d)) best = { d, point: v, kind }; };
+    const corner = new Set(edges.flat());
+    corner.forEach(i => consider(V[i], 'vertex'));
+    if (!best) for (const [a, b] of edges) consider(V[a].clone().add(V[b]).multiplyScalar(0.5), 'mid');
+    if (best) return { ...base, point: best.point, kind: best.kind };
+    // 3) sobre un borde real: el punto del borde más cercano al toque
+    for (const [a, b] of edges) {
+      const l = new THREE.Line3(V[a], V[b]), q = new THREE.Vector3();
+      l.closestPointToPoint(hit.point, true, q);
+      consider(q, 'edge', scr(q) * 1.6);
+    }
+    if (best) return { ...base, point: best.point, kind: 'edge' };
+    return { ...base, point: hit.point.clone(), kind: 'face' };
+  }
+
+  /** Aristas "reales" de una malla (donde las caras vecinas forman ángulo o el borde queda libre). */
+  sharpEdges(geo) {
+    if (geo.userData.sharp) return geo.userData.sharp;
+    const pos = geo.attributes.position, index = geo.index;
+    const n = index ? index.count : pos.count;
+    const at = k => (index ? index.getX(k) : k);
+    const key = i => `${pos.getX(i).toFixed(3)},${pos.getY(i).toFixed(3)},${pos.getZ(i).toFixed(3)}`;
+    const map = new Map();
+    const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
+    for (let t = 0; t < n; t += 3) {
+      const i = [at(t), at(t + 1), at(t + 2)];
+      a.fromBufferAttribute(pos, i[0]); b.fromBufferAttribute(pos, i[1]); c.fromBufferAttribute(pos, i[2]);
+      const nrm = new THREE.Vector3().subVectors(c, b).cross(new THREE.Vector3().subVectors(a, b)).normalize();
+      const k = i.map(key);
+      for (const [p, q] of [[0, 1], [1, 2], [2, 0]]) {
+        const e = k[p] < k[q] ? k[p] + '|' + k[q] : k[q] + '|' + k[p];
+        const list = map.get(e); if (list) list.push(nrm); else map.set(e, [nrm]);
+      }
+    }
+    const sharp = new Set();
+    for (const [e, list] of map) if (list.length !== 2 || list[0].dot(list[1]) < 0.985) sharp.add(e);
+    geo.userData.sharp = sharp;
+    return sharp;
+  }
+
   /** Coordenadas de pantalla (px, relativas a la ventana) de un punto del mundo. */
   project(x, y, z) {
     const v = new THREE.Vector3(x, y, z).project(this.camera);
@@ -223,8 +287,9 @@ export class Viewer {
       this.overlay.add(seg);
     }
     const r = Math.max(0.6, (this.distance || 120) / 220);
-    for (const p of points) {
-      const dot = new THREE.Mesh(new THREE.SphereGeometry(r, 12, 8), new THREE.MeshBasicMaterial({ color, depthTest: false }));
+    for (const q of points) {
+      const p = Array.isArray(q) ? q : q.p, big = !Array.isArray(q) && q.big ? 1.6 : 1;
+      const dot = new THREE.Mesh(new THREE.SphereGeometry(r * big, 12, 8), new THREE.MeshBasicMaterial({ color: (!Array.isArray(q) && q.color) || color, depthTest: false }));
       dot.position.set(...p); dot.renderOrder = 11;
       this.overlay.add(dot);
     }

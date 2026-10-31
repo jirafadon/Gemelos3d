@@ -182,3 +182,19 @@ test('perfil con chaflán y redondeo: mantiene el alto y achica arriba', async (
   const vr = (await objectSolid(rounded, ctx)).volume();
   assert.ok(Math.abs(vr - (400 - (16 - Math.PI * 4) * 4) * 10) < 15, `redondeo ${vr}`);
 });
+
+test('cortar con un plano: dos mitades que suman el volumen', async () => {
+  const { splitParts, bodiesOf, meshObject } = await import('../src/taller/objects.js');
+  const { Manifold } = (await import('../src/engine/geom.js')).wasm();
+  const cube = Manifold.cube([20, 10, 10], true);
+  const { above, below } = splitParts([{ color: '#ff0000', solid: cube }], 0, 4);
+  assert.equal(above.length, 1); assert.equal(below.length, 1);
+  assert.ok(Math.abs(above[0].solid.volume() - 6 * 100) < 0.5);
+  assert.ok(Math.abs(below[0].solid.volume() - 14 * 100) < 0.5);
+  // Dos cubos separados → dos piezas
+  const two = cube.add(cube.translate([40, 0, 0]));
+  const bodies = bodiesOf([{ color: '#00ff00', solid: two }]);
+  assert.equal(bodies.length, 2);
+  const o = meshObject(bodies[0].solid, '#00ff00', 'pieza');
+  assert.equal(o.type, 'stl'); assert.ok(Math.abs(o.w - 20) < 0.01); assert.ok(o.mesh.verts.length > 0);
+});

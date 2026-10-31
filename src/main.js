@@ -3,6 +3,7 @@ import { CATEGORIES, GENERATORS, APPS, FAMILIES, SHARED_GROUPS, FAMILY_SHARE, fi
 import { renderTaller, sendToTaller } from './taller/taller.js';
 import { makeObject, solidToMeshData, groupObjects } from './taller/objects.js';
 import { icon } from './ui/icons.js';
+import { setupPanes, paneButtons, newButton } from './ui/panes.js';
 import { renderParams, defaultValues } from './ui/params.js';
 import { initEngine, modelStats, loadFont, collect } from './engine/index.js';
 import { Viewer } from './engine/viewer.js';
@@ -176,6 +177,7 @@ async function renderGenerator(id, fam = null) {
     </aside>
     <section class="gen-view">
       <div class="viewer" id="viewer"></div>
+      <div class="panebar">${paneButtons()}${newButton('id="new"')}</div>
       <div class="views">
         <button data-view="iso" class="on">3D</button><button data-view="top">Arriba</button><button data-view="bottom">Abajo</button><button data-view="front">Frente</button><button data-view="side">Costado</button>
       </div>
@@ -245,7 +247,8 @@ async function renderGenerator(id, fam = null) {
     }
   };
   let parts = [], token = 0, timer = null, alive = true;
-  cleanup = () => { alive = false; clearTimeout(timer); viewer.renderer.dispose(); collect([]); };
+  const unpane = setupPanes(document.querySelector('main.gen'), document.querySelector('.panebar'));
+  cleanup = () => { alive = false; clearTimeout(timer); unpane(); viewer.renderer.dispose(); collect([]); };
 
   const ctx = { font: loadFont, image: (url, opts) => imageToMask(url, opts), gray: (url, opts) => imageToGray(url, opts) };
   const rebuild = async () => {
@@ -281,11 +284,13 @@ async function renderGenerator(id, fam = null) {
   };
 
   renderParams($('params'), gen.params, values, () => { rememberShared(); schedule(); });
-  $('reset').addEventListener('click', () => {
+  const resetAll = () => {
     Object.assign(values, defaultValues(gen.params));
     renderParams($('params'), gen.params, values, () => { rememberShared(); schedule(); });
     schedule();
-  });
+  };
+  $('reset').addEventListener('click', resetAll);
+  $('new').addEventListener('click', resetAll);
   document.querySelector('.views').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     document.querySelectorAll('.views button').forEach(x => x.classList.toggle('on', x === b));

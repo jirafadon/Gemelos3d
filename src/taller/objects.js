@@ -445,3 +445,41 @@ export function meshToManifold(mesh) {
   meshCache.set(mesh, solid);
   return solid;
 }
+
+// ---------------- Cortar y separar en piezas ----------------
+
+/** Objeto de malla fija a partir de un sólido ya ubicado en el mundo (queda en el mismo lugar). */
+export function meshObject(solid, color, name, index = 0) {
+  const b = solid.boundingBox();
+  const r = n => Math.round(n * 100) / 100;
+  return makeObject('stl', index, {
+    name, color, mesh: solidToMeshData(solid),
+    x: r((b.min[0] + b.max[0]) / 2), y: r((b.min[1] + b.max[1]) / 2), z: r(b.min[2]),
+    w: r(b.max[0] - b.min[0]), d: r(b.max[1] - b.min[1]), h: r(b.max[2] - b.min[2]),
+  });
+}
+
+/**
+ * Corta piezas con un plano perpendicular a un eje.
+ * @param parts [{ color, solid }] en el mundo
+ * @param axis 0 | 1 | 2 (X, Y, Z) · @param pos coordenada del corte (mm)
+ * @returns { above: [{color, solid}], below: [...] } (above = del lado de los valores más grandes)
+ */
+export function splitParts(parts, axis, pos) {
+  const n = [0, 0, 0]; n[axis] = 1;
+  const above = [], below = [];
+  for (const p of parts) {
+    const [a, b] = p.solid.splitByPlane(n, pos);
+    if (!a.isEmpty() && a.volume() > 0.01) above.push({ color: p.color, solid: a });
+    if (!b.isEmpty() && b.volume() > 0.01) below.push({ color: p.color, solid: b });
+  }
+  return { above, below };
+}
+
+/** Separa en cuerpos sueltos: cada parte que no toca a las demás queda aparte (con su color). */
+export function bodiesOf(parts) {
+  const out = [];
+  for (const p of parts) for (const s of p.solid.decompose()) if (s.volume() > 0.01) out.push({ color: p.color, solid: s });
+  // De arriba-izquierda a abajo-derecha, para que los nombres sigan un orden lógico
+  return out.sort((a, b) => { const A = a.solid.boundingBox(), B = b.solid.boundingBox(); return (B.max[1] - A.max[1]) || (A.min[0] - B.min[0]); });
+}
