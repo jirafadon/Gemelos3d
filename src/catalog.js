@@ -129,7 +129,9 @@ export const GENERATORS = [
   g('lampara-social', 'Lámpara LED @usuario', 'Caja de luz: tu @usuario se ilumina con una tira LED adentro.', 'deco', 4, () => import('./generators/lampara-social.js')),
   g('string-art', 'String art', 'Placa con postes por el contorno de una forma o letra para tensar hilo.', 'deco', 4, () => import('./generators/string-art.js')),
   g('mini-microfono', 'Mini micrófono', 'Micrófono de juguete con cubo de logo personalizable.', 'deco', 3),
-  g('adorno-navidad', 'Adornos navideños', 'Bolas, copos y estrellas con nombre calado.', 'deco', 1, () => import('./generators/adorno-navidad.js')),
+  g('adorno-navidad', 'Adornos navideños', 'Bola, corona, reno, bastón, gnomo, galletita, arbolito, campana, copo o estrella con nombre.', 'deco', 1, () => import('./generators/adorno-navidad.js')),
+  g('adorno-giratorio', 'Adorno giratorio', 'Aro con una figura que gira adentro, impreso de una vez, con nombre y año.', 'deco', 1, () => import('./generators/adorno-giratorio.js')),
+  g('arbol-nombres', 'Árbol de nombres', 'Un pino con un nombre de la familia en cada piso y el apellido en el tronco.', 'nombres', 1, () => import('./generators/arbol-nombres.js')),
   g('thermoform', 'Texturas tipo tela', 'Piezas con textura de malla o tela para imprimir sobre tela.', 'deco', 4),
 
   // ---------- Letras grandes ----------
@@ -170,7 +172,7 @@ export const FAMILIES = [
   { id: 'placas', icon: 'frame', tone: 'indigo', title: 'Placas y cuadros', desc: 'Placa profesional, cuadros y portafotos, con base para pararlos.', cover: 'cuadro-marco', cat: 'carteles',
     items: ['placa-profesional', 'placa-rayas', 'cuadro-marco', 'portafotos'] },
   { id: 'fiestas', icon: 'gift', tone: 'pink', title: 'Fiestas y regalos', desc: 'Toppers, estacas, adornos, colgantes, marcapáginas, cubos con letras y peines.', cover: 'topper-torta', cat: 'deco',
-    items: ['chop', 'topper-torta', 'estacas', 'adorno-navidad', 'colgante-familia', 'marcapaginas', 'cubos-apilables', 'peines', 'rosa-nombre', 'adorno-galleta'] },
+    items: ['chop', 'topper-torta', 'estacas', 'adorno-navidad', 'adorno-giratorio', 'arbol-nombres', 'colgante-familia', 'marcapaginas', 'cubos-apilables', 'peines', 'rosa-nombre', 'adorno-galleta'] },
   { id: 'mascotas', icon: 'paw', tone: 'amber', title: 'Mascotas', desc: 'Placas con nombre y teléfono: hueso, pez, óvalo, corazón y más.', cover: 'placa-mascota', cat: 'nombres',
     items: ['placa-mascota'] },
   { id: 'cocina', icon: 'cookie', tone: 'orange', title: 'Cocina y repostería', desc: 'Cortadores, eyectores con émbolo, sellos y stencils.', cover: 'cortador-galletas', cat: 'cocina',
