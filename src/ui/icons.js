@@ -19,6 +19,7 @@ const P = {
   trophy: '<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 20h8M9 17h6"/>',
   phone: '<rect x="6" y="2" width="12" height="20" rx="3"/><rect x="8.5" y="4.5" width="3.5" height="5" rx="1.2"/><path d="M11 18h2"/>',
   back: '<path d="M15 18l-6-6 6-6"/>',
+  store: '<path d="M4 9l1.5-5h13L20 9"/><path d="M4 9a2.7 2.7 0 0 0 5.3 0 2.7 2.7 0 0 0 5.4 0 2.7 2.7 0 0 0 5.3 0"/><path d="M5 11v9h14v-9M10 20v-5h4v5"/>',
   calc: '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h2M12 12h2M16 12v5M8 16h2M12 16h2"/>',
   search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',
   download: '<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',

@@ -48,19 +48,22 @@ function route() {
 }
 window.addEventListener('hashchange', route);
 
+const STORE_URL = 'https://gemelos3d.com.ar';
+
 function header() {
   const base = import.meta.env.BASE_URL;
   const h = location.hash || '#/';
   const on = test => (test ? ' class="on"' : '');
   return `<header class="top">
     <a class="brand" href="#/"><img class="logo" src="${base}brand/logo-mark.jpg" alt="Gemelos 3D" width="46" height="46"><span>Gemelos 3D <b>Lab</b></span></a>
-    <nav><a href="#/">Inicio</a><a href="#/taller">Taller 3D</a><a href="${base}calculadora.html" target="_blank">${icon('calc')} Calculadora</a></nav>
+    <nav><a href="#/">Inicio</a><a href="#/taller">Taller 3D</a><a href="${base}calculadora.html" target="_blank">${icon('calc')} Calculadora</a><a class="store" href="${STORE_URL}">${icon('store')} Volver a la tienda</a></nav>
   </header>
   <nav class="tabbar" aria-label="Navegación">
     <a href="#/"${on(h === '#/' || h === '#')}>${icon('home')}<span>Inicio</span></a>
     <a href="#/buscar"${on(h.startsWith('#/buscar'))}>${icon('search')}<span>Buscar</span></a>
     <a href="#/taller"${on(h.startsWith('#/taller'))}>${icon('cube')}<span>Taller 3D</span></a>
     <a href="${base}calculadora.html" target="_blank">${icon('calc')}<span>Calculadora</span></a>
+    <a href="${STORE_URL}">${icon('store')}<span>Tienda</span></a>
   </nav>`;
 }
 

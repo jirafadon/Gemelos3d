@@ -7,117 +7,210 @@
 <link rel="icon" type="image/png" sizes="32x32" href="./brand/favicon-32.png">
 <link rel="apple-touch-icon" href="./brand/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
 :root{
-  --bg:#f5f8fc; --panel:#ffffff; --soft:#e3f1fb; --soft2:#f1f5f9; --line:#d7e3ee;
-  --text:#14202e; --muted:#5b6b7c; --brand:#1565c0; --brand-ink:#ffffff;
-  --ok:#15803d; --ok-bg:#ecfdf3; --ok-line:#a7e3bd; --warn:#b45309; --warn-bg:#fff7e6;
-  --bad:#b91c1c; --radius:14px; --shadow:0 1px 2px rgba(20,32,46,.06),0 4px 16px rgba(20,32,46,.05);
+  --bg:#f3f6fa; --panel:#ffffff; --soft:#f6f9fc; --line:#e1e8f0; --line2:#cfd9e4;
+  --text:#101a26; --muted:#5d6c7b; --brand:#1565c0; --brand2:#0e4f9c; --brand-soft:#e8f1fc; --brand-ink:#ffffff;
+  --ok:#0f7a3c; --ok-soft:#e9f8ef; --warn:#a85a00; --warn-soft:#fff5e3; --bad:#c0262d;
+  --hero1:#0d2c54; --hero2:#1565c0;
+  --radius:16px; --shadow:0 1px 2px rgba(16,26,38,.05),0 8px 24px rgba(16,26,38,.06);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#0e141b; --panel:#151d26; --soft:#16283a; --soft2:#1b2531; --line:#263443;
-    --text:#e6edf4; --muted:#93a4b5; --brand:#4b9ef0; --brand-ink:#06121f;
-    --ok:#4ade80; --ok-bg:#10241a; --ok-line:#22543a; --warn:#fbbf24; --warn-bg:#2a2210; --bad:#f87171;
+    --bg:#0c1218; --panel:#131b24; --soft:#18222d; --line:#232f3c; --line2:#2f3d4c;
+    --text:#e8eef5; --muted:#97a6b6; --brand:#5aa7f5; --brand2:#3b8de6; --brand-soft:#16273a; --brand-ink:#061321;
+    --ok:#52d68a; --ok-soft:#11261b; --warn:#f6b94a; --warn-soft:#2a2210; --bad:#f87171;
+    --hero1:#0b2140; --hero2:#17508f;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#0e141b; --panel:#151d26; --soft:#16283a; --soft2:#1b2531; --line:#263443;
-  --text:#e6edf4; --muted:#93a4b5; --brand:#4b9ef0; --brand-ink:#06121f;
-  --ok:#4ade80; --ok-bg:#10241a; --ok-line:#22543a; --warn:#fbbf24; --warn-bg:#2a2210; --bad:#f87171;
+  --bg:#0c1218; --panel:#131b24; --soft:#18222d; --line:#232f3c; --line2:#2f3d4c;
+  --text:#e8eef5; --muted:#97a6b6; --brand:#5aa7f5; --brand2:#3b8de6; --brand-soft:#16273a; --brand-ink:#061321;
+  --ok:#52d68a; --ok-soft:#11261b; --warn:#f6b94a; --warn-soft:#2a2210; --bad:#f87171;
+  --hero1:#0b2140; --hero2:#17508f;
 }
 *{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 Inter,system-ui,sans-serif}
-h1,h2,h3{font-family:Poppins,Inter,sans-serif;margin:0}
-.wrap{max-width:1180px;margin:0 auto;padding:24px 16px 60px}
-header.top{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between;margin-bottom:20px}
-header.top h1{font-size:30px;line-height:1.1}
-header.top p{margin:4px 0 0;color:var(--muted)}
-.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:start}
-@media (max-width:900px){.grid{grid-template-columns:1fr}}
+h1,h2,h3{font-family:Poppins,Inter,sans-serif;margin:0;letter-spacing:-.01em}
+a{color:var(--brand)}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- Barra superior ---------- */
+.bar{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--panel) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.bar-in{max-width:1200px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text);font-family:Poppins;font-weight:700;font-size:16px;margin-right:auto;min-width:0}
+.brand img{width:34px;height:34px;border-radius:9px;border:1px solid var(--line)}
+.brand small{display:block;font:500 12px Inter;color:var(--muted)}
+.btn{font:inherit;font-weight:600;font-size:14px;cursor:pointer;border-radius:999px;border:1px solid var(--line2);background:var(--panel);color:var(--text);padding:8px 14px;display:inline-flex;align-items:center;gap:7px;text-decoration:none;white-space:nowrap;line-height:1.2}
+.btn:hover{border-color:var(--brand);color:var(--brand)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.btn.primary:hover{background:var(--brand2);color:var(--brand-ink)}
+.btn.store{background:var(--text);border-color:var(--text);color:var(--bg)}
+.btn.store:hover{opacity:.9;color:var(--bg)}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--muted)}
+.btn.ghost:hover{color:var(--bad)}
+.btn.sm{padding:6px 11px;font-size:13px}
+.btn svg{width:17px;height:17px;flex:none}
+@media (max-width:640px){.hide-sm{display:none}.brand small{display:none}}
+@media (min-width:641px){.only-sm{display:none}}
+
+/* ---------- Estructura ---------- */
+.wrap{max-width:1200px;margin:0 auto;padding:20px 16px 64px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:20px;align-items:start}
+@media (max-width:940px){.grid{grid-template-columns:1fr}}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
-.card + .card{margin-top:16px}
-.card h2{font-size:17px;display:flex;align-items:center;gap:8px}
-.card .sub{color:var(--muted);font-size:13.5px;margin:4px 0 14px}
-.step{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--brand);color:var(--brand-ink);font-size:12px;font-family:Inter}
-label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:4px;font-weight:500}
-.field{position:relative}
-.field .unit{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--muted);pointer-events:none}
-input,select{width:100%;font:inherit;color:var(--text);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 11px;min-width:0}
-input:focus,select:focus{outline:2px solid color-mix(in srgb,var(--brand) 40%,transparent);border-color:var(--brand)}
-.field input{padding-right:42px}
-.f2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.f3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.f4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-@media (max-width:560px){.f3,.f4{grid-template-columns:1fr 1fr}}
-button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);padding:9px 14px;font-weight:600}
-button:hover{border-color:var(--brand)}
-button.primary{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
-button.ghost{background:transparent;border-color:transparent;color:var(--muted);padding:6px 8px}
-button.ghost:hover{color:var(--bad)}
-button.small{padding:6px 10px;font-size:13px}
-.drop{border:2px dashed color-mix(in srgb,var(--brand) 45%,var(--line));background:var(--soft);border-radius:var(--radius);padding:26px 16px;text-align:center;cursor:pointer;transition:.15s}
-.drop.over{background:color-mix(in srgb,var(--brand) 18%,var(--soft));transform:scale(1.005)}
-.drop strong{display:block;font-size:16px;margin-bottom:4px}
-.drop span{color:var(--muted);font-size:13px}
-.pieces{display:flex;flex-direction:column;gap:12px;margin-top:14px}
-.piece{display:grid;grid-template-columns:96px 1fr;gap:14px;border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--soft2)}
-@media (max-width:560px){.piece{grid-template-columns:1fr}}
-.thumb{width:96px;height:96px;border-radius:10px;background:var(--panel);border:1px solid var(--line);display:grid;place-items:center;overflow:hidden;color:var(--muted);font-size:11px;text-align:center}
-.thumb img,.thumb canvas{width:100%;height:100%;object-fit:contain}
-.piece-head{display:flex;gap:8px;align-items:center;margin-bottom:8px}
-.piece-head input{font-weight:600}
-.badge{font-size:11.5px;padding:3px 8px;border-radius:99px;white-space:nowrap;border:1px solid var(--line);color:var(--muted)}
-.badge.exact{background:var(--ok-bg);color:var(--ok);border-color:var(--ok-line)}
-.badge.est{background:var(--warn-bg);color:var(--warn);border-color:color-mix(in srgb,var(--warn) 35%,transparent)}
+.stack>*+*{margin-top:16px}
+.card-h{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.card-h h2{font-size:17px}
+.card-h .n{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--brand-soft);color:var(--brand);font:700 13px Inter;flex:none}
+.card-h .aside{margin-left:auto}
+.sub{color:var(--muted);font-size:13px;margin:-8px 0 14px}
+label,.lbl{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:600;letter-spacing:.01em}
+
+/* ---------- Campos ---------- */
+.in{display:flex;align-items:center;height:42px;border:1px solid var(--line2);border-radius:11px;background:var(--panel);overflow:hidden;transition:border-color .12s, box-shadow .12s}
+.in:focus-within{border-color:var(--brand);box-shadow:0 0 0 3px color-mix(in srgb,var(--brand) 18%,transparent)}
+.in input,.in select{flex:1;min-width:0;height:100%;border:0;background:transparent;color:var(--text);font:inherit;font-variant-numeric:tabular-nums;padding:0 12px;outline:none}
+.in select{cursor:pointer;padding-right:8px}
+.in .u{padding:0 12px 0 0;color:var(--muted);font-size:13px;white-space:nowrap}
+.in .u.pre{padding:0 0 0 12px}
+.in .sep{width:1px;align-self:stretch;background:var(--line)}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield}
+.in.time input{text-align:right;padding:0 4px 0 10px;width:3.2em;flex:1}
+.in.time .u{padding:0 10px 0 0}
+.in.qty button{width:32px;flex:none;height:100%;border:0;background:var(--soft);color:var(--text);font-size:18px;cursor:pointer}
+.in.qty button:hover{color:var(--brand)}
+.in.qty input{text-align:center;padding:0}
+.txt{width:100%;height:42px;border:1px solid var(--line2);border-radius:11px;background:var(--panel);color:var(--text);font:inherit;padding:0 12px;outline:none}
+.txt:focus{border-color:var(--brand);box-shadow:0 0 0 3px color-mix(in srgb,var(--brand) 18%,transparent)}
+.f2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.f3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:560px){.f3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.hint{font-size:12px;color:var(--muted);margin-top:6px}
+
+/* ---------- Archivos y piezas ---------- */
+.drop{display:flex;align-items:center;gap:14px;border:1.5px dashed var(--line2);border-radius:14px;padding:14px 16px;cursor:pointer;background:var(--soft);transition:.15s}
+.drop:hover,.drop.over{border-color:var(--brand);background:var(--brand-soft)}
+.drop .ico{width:42px;height:42px;border-radius:12px;background:var(--panel);border:1px solid var(--line);display:grid;place-items:center;color:var(--brand);flex:none}
+.drop b{display:block;font-size:14.5px}
+.drop span{color:var(--muted);font-size:12.5px}
+.pieces{margin-top:14px;display:flex;flex-direction:column;gap:10px}
+.piece{border:1px solid var(--line);border-radius:14px;padding:12px;background:var(--panel)}
+.piece-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.thumb{width:44px;height:44px;border-radius:10px;background:var(--soft);border:1px solid var(--line);display:grid;place-items:center;overflow:hidden;color:var(--muted);flex:none}
+.thumb img{width:100%;height:100%;object-fit:contain}
+.thumb svg{width:20px;height:20px}
+.pname{flex:1;min-width:0;border:0;background:transparent;font:600 15px Inter;color:var(--text);padding:6px 8px;border-radius:8px;outline:none}
+.pname:hover{background:var(--soft)}.pname:focus{background:var(--soft);box-shadow:0 0 0 2px var(--brand-soft)}
+.badge{font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:99px;white-space:nowrap;background:var(--soft);color:var(--muted);border:1px solid var(--line)}
+.badge.exact{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+.badge.est{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.piece-f{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,.85fr) minmax(0,1.15fr) minmax(0,.9fr);gap:10px}
+@media (max-width:700px){.piece-f{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
 .meta{font-size:12px;color:var(--muted);margin-top:8px}
 .warn{font-size:12.5px;color:var(--warn);margin-top:6px}
-.empty{color:var(--muted);font-size:13.5px;text-align:center;padding:6px 0 0}
-details.box{border-top:1px solid var(--line);padding-top:14px;margin-top:14px}
-details.box summary{cursor:pointer;font-weight:600;list-style:none;display:flex;justify-content:space-between}
-details.box summary::-webkit-details-marker{display:none}
-details.box summary::after{content:"▾";color:var(--muted)}
-details.box[open] summary::after{content:"▴"}
-.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--soft2);border:1px solid var(--line);border-radius:10px;padding:3px;gap:3px;margin-bottom:8px}
-.seg button{border:0;background:transparent;padding:6px;font-size:13px}
-.seg button.on{background:var(--brand);color:var(--brand-ink)}
-.result{position:sticky;top:16px;background:var(--ok-bg);border-color:var(--ok-line)}
-.total-box{background:var(--panel);border:1px solid var(--ok-line);border-radius:12px;padding:16px;margin:14px 0}
-.total-line{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
-.total-line .big{font-family:Poppins;font-size:32px;font-weight:700}
-.total-line + .total-line{margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}
-.kv{display:flex;justify-content:space-between;padding:4px 0;font-size:14px}
-.kv span:last-child{font-variant-numeric:tabular-nums}
-.kv.strong{font-weight:600;border-top:1px solid var(--line);margin-top:4px;padding-top:8px}
-.sect{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:14px 0 4px}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:4px}
-.stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center}
-.stat b{display:block;font-size:16px}
-.stat small{color:var(--muted);font-size:11.5px}
-.links{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 12px}
-.links a{font-size:13px;font-weight:600;color:var(--brand);text-decoration:none;border:1px solid var(--line);border-radius:99px;padding:6px 12px;background:var(--panel)}
+.add-row{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:10px}
+
+/* ---------- Chips ---------- */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;border:1px solid var(--line2);background:var(--panel);color:var(--text);border-radius:12px;padding:9px 12px;text-align:left;line-height:1.15}
+.chip small{display:block;font-weight:500;font-size:11.5px;color:var(--muted);margin-top:2px}
+.chip:hover{border-color:var(--brand)}
+.chip.on{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.chip.on small{color:color-mix(in srgb,var(--brand-ink) 80%,transparent)}
+.switch{display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;font-weight:500;color:var(--text);margin:0}
+.switch input{appearance:none;width:40px;height:24px;border-radius:99px;background:var(--line2);position:relative;cursor:pointer;transition:.15s;flex:none;margin:0}
+.switch input::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.15s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.switch input:checked{background:var(--brand)}
+.switch input:checked::after{left:19px}
+
+/* ---------- Plegables ---------- */
+details.fold{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);box-shadow:var(--shadow)}
+details.fold>summary{list-style:none;cursor:pointer;padding:16px 20px;display:flex;align-items:center;gap:10px;font:600 15px Poppins}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary small{font:500 12.5px Inter;color:var(--muted);margin-left:auto;text-align:right}
+details.fold>summary::after{content:"";width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin:-4px 2px 0 6px;transition:.15s}
+details.fold[open]>summary::after{transform:rotate(-135deg);margin-top:4px}
+details.fold .fold-b{padding:0 20px 20px}
+.seg{display:inline-grid;grid-auto-flow:column;background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:3px;gap:3px;margin-bottom:8px}
+.seg button{border:0;background:transparent;padding:5px 10px;font:600 12.5px Inter;color:var(--muted);border-radius:7px;cursor:pointer}
+.seg button.on{background:var(--panel);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.links{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 14px}
+.links a{font-size:13px;font-weight:600;text-decoration:none;border:1px solid var(--line2);border-radius:99px;padding:6px 12px;background:var(--panel)}
 .links a:hover{border-color:var(--brand)}
-.cmp{font-size:13.5px;margin-top:8px;padding:10px;border-radius:10px;background:var(--soft2)}
-.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:.2s;pointer-events:none;z-index:50}
+.cmp{font-size:13.5px;margin-top:10px;padding:12px;border-radius:12px;background:var(--soft)}
+
+/* ---------- Resultado ---------- */
+.result{position:sticky;top:76px;padding:0;overflow:hidden}
+.hero{background:linear-gradient(135deg,var(--hero1),var(--hero2));color:#fff;padding:22px 22px 20px}
+.hero .k{font:600 11.5px Inter;letter-spacing:.1em;text-transform:uppercase;opacity:.75}
+.hero .price{font:700 44px/1.05 Poppins;margin:6px 0 2px;letter-spacing:-.02em}
+.hero .per{font-size:14px;opacity:.85}
+.hero .com{margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.18);display:flex;justify-content:space-between;font-size:14px;gap:10px}
+.hero .com b{font-size:16px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--line)}
+.stat{padding:12px 8px;text-align:center}
+.stat+.stat{border-left:1px solid var(--line)}
+.stat b{display:block;font-size:15.5px}
+.stat small{color:var(--muted);font-size:11.5px}
+.res-b{padding:16px 20px 20px}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:5px 0;font-size:14px}
+.kv span:last-child{font-variant-numeric:tabular-nums}
+.kv.strong{font-weight:700;border-top:1px solid var(--line);margin-top:6px;padding-top:10px}
+.kv.dim{color:var(--muted)}
+.sect{font:700 11px Inter;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:12px 0 2px}
+details.detail>summary{list-style:none;cursor:pointer;font-weight:600;font-size:14px;color:var(--brand);display:flex;align-items:center;gap:6px;padding:2px 0}
+details.detail>summary::-webkit-details-marker{display:none}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+.actions .btn{justify-content:center;border-radius:12px;padding:11px 12px}
+.profit{font-size:13px;color:var(--ok);background:var(--ok-soft);padding:9px 12px;border-radius:10px;margin-top:12px}
+.profit.bad{color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,transparent)}
+
+/* ---------- Aviso ---------- */
+.note{display:flex;gap:12px;align-items:flex-start;background:var(--brand-soft);border:1px solid color-mix(in srgb,var(--brand) 25%,transparent);border-radius:14px;padding:12px 14px;margin-bottom:16px;font-size:13.5px}
+.note b{display:block}
+.note .btn{margin-left:auto}
+
+/* ---------- Panel "Mi taller" ---------- */
+.drawer{position:fixed;inset:0;z-index:40;display:none}
+.drawer.open{display:block}
+.drawer .shade{position:absolute;inset:0;background:rgba(8,14,22,.45)}
+.drawer .panel{position:absolute;top:0;right:0;bottom:0;width:min(520px,100%);background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;box-shadow:-12px 0 40px rgba(0,0,0,.18);animation:in .18s ease-out}
+@keyframes in{from{transform:translateX(30px);opacity:0}}
+.dr-h{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.dr-h h2{font-size:18px}
+.saved{font-size:12px;color:var(--ok);font-weight:600;margin-left:auto;opacity:0;transition:.2s}
+.saved.show{opacity:1}
+.dr-b{padding:16px 20px 28px;overflow:auto;flex:1}
+.dr-b h3{font-size:13px;margin:22px 0 10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-family:Inter}
+.dr-b h3:first-child{margin-top:0}
+.prof-row{display:flex;gap:8px;align-items:center}
+.prof-row .in{flex:1}
+.fil{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1.1fr) minmax(0,.8fr) auto;gap:8px;margin-bottom:8px;align-items:center}
+.dr-f{padding:12px 20px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px}
+
+/* Precio siempre a mano en el celular */
+.mbar{display:none}
+@media (max-width:940px){
+  .mbar{display:flex;position:fixed;left:12px;right:12px;bottom:12px;z-index:30;align-items:center;gap:12px;background:linear-gradient(135deg,var(--hero1),var(--hero2));color:#fff;border-radius:16px;padding:10px 12px 10px 18px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+  .mbar b{font:700 22px Poppins;margin-right:auto}
+  .mbar small{display:block;font:500 11.5px Inter;opacity:.8}
+  .mbar .btn{background:#fff;color:#0d2c54;border-color:#fff}
+  .wrap{padding-bottom:110px}
+  .bar .brand span{font-size:14.5px}
+}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;transition:.2s;pointer-events:none;z-index:60}
 .toast.show{opacity:1}
-dialog{border:1px solid var(--line);border-radius:16px;background:var(--panel);color:var(--text);padding:0;width:min(720px,calc(100vw - 32px));max-height:calc(100vh - 32px)}
-dialog::backdrop{background:rgba(10,16,24,.5)}
-.dlg-head{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px}
-.dlg-body{padding:18px 20px;overflow:auto;max-height:calc(100vh - 190px)}
-.dlg-foot{padding:14px 20px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
-.dlg-body h3{font-size:14px;margin:18px 0 8px}
-.dlg-body h3:first-child{margin-top:0}
-.fil-row{display:grid;grid-template-columns:1.2fr 1fr .8fr auto;gap:8px;margin-bottom:8px;align-items:center}
-.hint{font-size:12px;color:var(--muted);margin-top:6px}
 .spin{display:inline-block;width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--brand);border-radius:50%;animation:s .8s linear infinite;vertical-align:-2px}
 @keyframes s{to{transform:rotate(360deg)}}
 #quote{display:none}
 @media print{
   body{background:#fff;color:#000}
-  .wrap,.toast,dialog{display:none!important}
+  .bar,.wrap,.toast,.drawer{display:none!important}
   #quote{display:block;padding:24px;font-family:Inter,sans-serif;color:#000}
   #quote table{width:100%;border-collapse:collapse;margin:16px 0}
   #quote th,#quote td{border-bottom:1px solid #ccc;padding:8px;text-align:left;font-size:13px}
@@ -126,144 +219,149 @@ dialog::backdrop{background:rgba(10,16,24,.5)}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header class="top">
-    <div>
-      <h1>Calculadora de presupuestos</h1>
-      <p>Arrastrá tus archivos, retocá si hace falta y listo el precio.</p>
-    </div>
-    <div class="row">
-      <a href="./" style="display:inline-flex;align-items:center;gap:8px;color:var(--brand);font-weight:600;text-decoration:none;margin-right:6px"><img src="./brand/logo-mark.jpg" alt="" width="30" height="30" style="border-radius:8px;border:1px solid var(--line)">← Gemelos 3D Lab</a>
-      <select id="profileSelect" style="width:auto" aria-label="Perfil"></select>
-      <button id="btnProfile">⚙ Perfil</button>
-    </div>
-  </header>
+<header class="bar">
+  <div class="bar-in">
+    <a class="brand" href="./"><img src="./brand/logo-mark.jpg" alt=""><span>Calculadora de precios<small>Gemelos 3D Lab</small></span></a>
+    <button class="btn" id="btnProfile" title="Tu impresora, la luz y tus precios"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span id="profileName">Mi taller</span></button>
+    <a class="btn hide-sm" href="./">Lab</a>
+    <a class="btn store" href="https://gemelos3d.com.ar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 18l-6-6 6-6"/></svg><span class="hide-sm">Volver a la tienda</span><span class="only-sm">Tienda</span></a>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="note" id="firstNote" hidden>
+    <div><b>Arrancás con valores de ejemplo.</b>Cargá una vez el precio de tu filamento, la luz y tu impresora en «Mi taller». Se guarda solo y no te lo vuelve a pedir.</div>
+    <button class="btn sm primary" id="noteOpen">Ajustar</button>
+    <button class="btn sm ghost" id="noteClose" aria-label="Cerrar">✕</button>
+  </div>
 
   <div class="grid">
-    <div>
+    <div class="stack">
       <section class="card">
-        <h2><span class="step">1</span> Piezas del trabajo</h2>
-        <p class="sub">STL y 3MF se estiman por volumen. Un 3MF laminado (Orca / Bambu Studio) o un G-code traen gramos y tiempo exactos.</p>
+        <div class="card-h"><span class="n">1</span><h2>Qué vas a imprimir</h2></div>
         <label class="drop" id="drop">
           <input type="file" id="fileInput" multiple accept=".stl,.3mf,.gcode,.gco,.g,.bgcode" hidden>
-          <strong>Arrastrá STL, 3MF o G-code acá</strong>
-          <span>o tocá para elegir archivos · podés subir varios a la vez</span>
+          <span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 16V4M7 9l5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg></span>
+          <span><b>Soltá el 3MF laminado, el G-code o el STL</b><span>El 3MF de Orca o Bambu trae gramos y tiempo exactos. El STL se estima.</span></span>
         </label>
-        <div class="row" style="margin-top:10px;justify-content:space-between">
-          <button class="small" id="btnManual">+ Agregar pieza a mano</button>
-          <span id="loading" class="hint"></span>
-        </div>
         <div class="pieces" id="pieces"></div>
+        <div class="add-row">
+          <button class="btn sm" id="btnManual">+ Otra pieza</button>
+          <span id="loading" class="hint" style="margin:0"></span>
+        </div>
       </section>
 
       <section class="card">
-        <h2><span class="step">2</span> Pedido y extras</h2>
-        <p class="sub">Los extras se suman después de la ganancia: no se multiplican.</p>
-        <div class="f2">
-          <div><label for="jobName">Nombre del trabajo</label><input id="jobName" placeholder="Ej: Cartel JONI"></div>
-          <div><label for="units">Unidades del pedido</label><div class="field"><input id="units" type="number" min="1" step="1" value="1"><span class="unit">u</span></div></div>
+        <div class="card-h"><span class="n">2</span><h2>Cómo cobrás</h2></div>
+        <div class="lbl">Ganancia sobre el costo</div>
+        <div class="chips" id="markups"></div>
+        <div class="f2" style="margin-top:16px;align-items:end">
+          <div><label for="units">Unidades del pedido</label><div class="in qty"><button type="button" data-step="-1" data-for="units">−</button><input id="units" type="number" min="1" step="1" value="1" inputmode="numeric"><button type="button" data-step="1" data-for="units">+</button></div></div>
+          <div id="customBox" hidden><label for="customMarkup">Multiplicador propio</label><div class="in"><input id="customMarkup" type="number" min="1" step="0.1" inputmode="decimal"><span class="u">×</span></div></div>
         </div>
-        <details class="box" id="extrasBox">
-          <summary>Insumos, diseño y posprocesado</summary>
-          <div style="margin-top:12px">
-            <label for="supplies">Insumos por unidad (imanes, argollas, LED, pintura…)</label>
-            <div class="field"><input id="supplies" type="number" min="0" step="any" value="0"><span class="unit">$</span></div>
-            <div class="f2" style="margin-top:12px">
-              <div>
-                <label>Diseño y modelado (una sola vez)</label>
-                <div class="seg" data-target="design"><button data-mode="fixed">Monto fijo</button><button data-mode="hours">Por hora</button></div>
-                <div class="field"><input id="designValue" type="number" min="0" step="any" value="0"><span class="unit" id="designUnit">$</span></div>
-              </div>
-              <div>
-                <label>Posprocesado (por unidad)</label>
-                <div class="seg" data-target="post"><button data-mode="fixed">Monto fijo</button><button data-mode="hours">Por hora</button></div>
-                <div class="field"><input id="postValue" type="number" min="0" step="any" value="0"><span class="unit" id="postUnit">$</span></div>
-              </div>
+      </section>
+
+      <details class="fold" id="extrasBox">
+        <summary>Extras <small id="extrasSum">Insumos, diseño y terminación</small></summary>
+        <div class="fold-b">
+          <p class="sub" style="margin:0 0 14px">Se suman después de la ganancia, no se multiplican.</p>
+          <label for="supplies">Insumos por unidad (imanes, argollas, LED, pintura…)</label>
+          <div class="in"><span class="u pre">$</span><input id="supplies" type="number" min="0" step="any" inputmode="decimal"></div>
+          <div class="f2" style="margin-top:14px">
+            <div>
+              <div class="lbl">Diseño (una sola vez)</div>
+              <div class="seg" data-target="design"><button data-mode="fixed">Monto</button><button data-mode="hours">Horas</button></div>
+              <div class="in"><span class="u pre" id="designPre">$</span><input id="designValue" type="number" min="0" step="any" inputmode="decimal"><span class="u" id="designUnit"></span></div>
+            </div>
+            <div>
+              <div class="lbl">Terminación (por unidad)</div>
+              <div class="seg" data-target="post"><button data-mode="fixed">Monto</button><button data-mode="hours">Horas</button></div>
+              <div class="in"><span class="u pre" id="postPre">$</span><input id="postValue" type="number" min="0" step="any" inputmode="decimal"><span class="u" id="postUnit"></span></div>
             </div>
           </div>
-        </details>
-      </section>
+        </div>
+      </details>
 
-      <section class="card">
-        <h2><span class="step">3</span> Comparar con el mercado</h2>
-        <p class="sub">Buscá productos parecidos ya publicados y anotá un precio de referencia para ver dónde quedás.</p>
-        <label for="searchText">Qué buscar</label>
-        <input id="searchText" placeholder="Ej: llavero personalizado">
-        <div class="links" id="links"></div>
-        <label for="marketRef">Precio de referencia que encontraste (por unidad)</label>
-        <div class="field"><input id="marketRef" type="number" min="0" step="any" placeholder="0"><span class="unit">$</span></div>
-        <div id="cmp"></div>
-      </section>
+      <details class="fold">
+        <summary>Comparar con el mercado <small>¿Estoy caro o barato?</small></summary>
+        <div class="fold-b">
+          <label for="searchText">Qué buscar</label>
+          <input class="txt" id="searchText" placeholder="Ej: llavero personalizado">
+          <div class="links" id="links"></div>
+          <label for="marketRef">Precio que encontraste (por unidad)</label>
+          <div class="in"><span class="u pre">$</span><input id="marketRef" type="number" min="0" step="any" inputmode="decimal"></div>
+          <div id="cmp"></div>
+        </div>
+      </details>
     </div>
 
     <aside class="card result" id="result">
-      <div class="row" style="justify-content:space-between">
-        <h2>Resultado</h2>
-        <span class="badge" id="profileBadge"></span>
-      </div>
-      <div class="total-box">
-        <div class="total-line"><span style="font-weight:600">TOTAL A COBRAR</span><span class="big" id="rTotal">$ 0</span></div>
-        <div class="total-line"><span>Por unidad</span><b id="rUnit">$ 0</b></div>
-        <div class="total-line"><span id="rComLabel">Publicado con comisión</span><b id="rCom">$ 0</b></div>
-        <div class="hint" id="rProfit"></div>
+      <div class="hero">
+        <div class="k">Precio a cobrar</div>
+        <div class="price num" id="rTotal">$ 0</div>
+        <div class="per" id="rUnit"></div>
+        <div class="com"><span id="rComLabel">Publicado con comisión</span><b class="num" id="rCom">$ 0</b></div>
       </div>
       <div class="stats">
-        <div class="stat"><b id="sGrams">0 g</b><small>filamento</small></div>
-        <div class="stat"><b id="sTime">0 h</b><small>impresión</small></div>
-        <div class="stat"><b id="sPerHour">$ 0</b><small>ganás por hora</small></div>
+        <div class="stat"><b class="num" id="sGrams">0 g</b><small>filamento</small></div>
+        <div class="stat"><b class="num" id="sTime">0 min</b><small>impresión</small></div>
+        <div class="stat"><b class="num" id="sPerHour">$ 0</b><small>ganás por hora</small></div>
       </div>
-      <div class="sect">Costos base</div>
-      <div class="kv"><span>Material</span><span id="rMat"></span></div>
-      <div class="kv"><span>Electricidad</span><span id="rElec"></span></div>
-      <div class="kv"><span>Desgaste de máquina</span><span id="rWear"></span></div>
-      <div class="kv"><span id="rErrLabel">Margen de error</span><span id="rErr"></span></div>
-      <div class="kv strong"><span>Costo de producción</span><span id="rProd"></span></div>
-      <div class="kv"><span id="rMarkLabel">Ganancia</span><span id="rMark"></span></div>
-      <div class="sect">Extras</div>
-      <div class="kv"><span>Insumos</span><span id="rSup"></span></div>
-      <div class="kv"><span>Diseño</span><span id="rDes"></span></div>
-      <div class="kv"><span>Posprocesado</span><span id="rPost"></span></div>
-      <div class="row" style="margin-top:16px">
-        <button style="flex:1" id="btnCopy">Copiar para WhatsApp</button>
-        <button class="primary" style="flex:1" id="btnQuote">Cotización PDF</button>
+      <div class="res-b">
+        <details class="detail" id="detail">
+          <summary>Ver de dónde sale el precio</summary>
+          <div class="sect">Costo</div>
+          <div class="kv"><span>Material</span><span id="rMat"></span></div>
+          <div class="kv"><span>Luz</span><span id="rElec"></span></div>
+          <div class="kv"><span>Desgaste de la máquina</span><span id="rWear"></span></div>
+          <div class="kv"><span id="rErrLabel">Fallas y pruebas</span><span id="rErr"></span></div>
+          <div class="kv strong"><span>Costo de producción</span><span id="rProd"></span></div>
+          <div class="kv"><span id="rMarkLabel">Ganancia</span><span id="rMark"></span></div>
+          <div id="extrasRows"></div>
+        </details>
+        <div class="profit" id="rProfit"></div>
+        <div class="actions">
+          <button class="btn" id="btnCopy">Copiar para WhatsApp</button>
+          <button class="btn primary" id="btnQuote">Cotización PDF</button>
+        </div>
+        <button class="btn ghost" style="width:100%;justify-content:center;margin-top:8px" id="btnNew">Empezar otro presupuesto</button>
       </div>
-      <button class="ghost" style="width:100%;margin-top:8px" id="btnNew">Empezar presupuesto nuevo</button>
     </aside>
+  </div>
+</main>
+
+<div class="drawer" id="drawer" aria-hidden="true">
+  <div class="shade" id="drShade"></div>
+  <div class="panel" role="dialog" aria-label="Mi taller">
+    <div class="dr-h"><h2>Mi taller</h2><span class="saved" id="saved">✓ Guardado</span><button class="btn ghost sm" id="drClose" aria-label="Cerrar">✕</button></div>
+    <div class="dr-b" id="drBody"></div>
+    <div class="dr-f">
+      <button class="btn sm" id="pNew">Nueva impresora</button>
+      <button class="btn sm" id="pDup">Duplicar</button>
+      <button class="btn sm" id="pDel">Eliminar</button>
+      <button class="btn sm" id="pExport">Exportar</button>
+      <button class="btn sm" id="pImport">Importar</button>
+      <input type="file" id="pImportFile" accept=".json" hidden>
+    </div>
   </div>
 </div>
 
-<dialog id="dlg">
-  <div class="dlg-head">
-    <div><h2 style="font-size:18px">Perfil de impresora</h2><div class="hint" style="margin:2px 0 0">Se carga una vez y queda guardado en este navegador.</div></div>
-    <button class="ghost" id="dlgClose" aria-label="Cerrar">✕</button>
-  </div>
-  <div class="dlg-body" id="dlgBody"></div>
-  <div class="dlg-foot">
-    <div class="row">
-      <button class="small" id="pNew">Nuevo</button>
-      <button class="small" id="pDup">Duplicar</button>
-      <button class="small" id="pDel">Eliminar</button>
-      <button class="small" id="pExport">Exportar</button>
-      <button class="small" id="pImport">Importar</button>
-      <input type="file" id="pImportFile" accept=".json" hidden>
-    </div>
-    <button class="primary" id="pSave">Guardar perfil</button>
-  </div>
-</dialog>
+<div class="mbar" id="mbar"><div><small>Precio a cobrar</small><b class="num" id="mTotal">$ 0</b></div><button class="btn sm" id="mGo">Ver detalle</button></div>
 
 <div id="quote"></div>
 <div class="toast" id="toast"></div>
 
 <script>
 /* ============================================================
-   Calculadora de presupuestos — Gemelos 3D
-   Un solo archivo, sin backend. Guarda perfiles en localStorage.
+   Calculadora de precios — Gemelos 3D
+   Un solo archivo, sin backend. "Mi taller" se guarda solo en este navegador
+   (y se puede exportar/importar para llevarlo a otro).
    ============================================================ */
 
-// ---------- Storage helpers ----------
-const STORE = { profiles: 'g3d_calc_profiles', active: 'g3d_calc_active', job: 'g3d_calc_job' };
+// ---------- Guardado ----------
+const STORE = { profiles: 'g3d_calc_profiles', active: 'g3d_calc_active', job: 'g3d_calc_job', seen: 'g3d_calc_seen' };
 function load(key, fallback) { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; } }
-function save(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* storage full or blocked */ } }
+function save(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* sin espacio o bloqueado */ } }
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 
@@ -283,31 +381,40 @@ function defaultProfile() {
     ],
   };
 }
+const manualPiece = (n = 1) => ({ id: uid(), name: n === 1 ? 'Pieza' : `Pieza ${n}`, filament: 0, grams: 0, minutes: 0, qty: 1, source: 'manual', thumb: null, meta: '', warn: '' });
 function emptyJob() {
-  return { name: '', units: 1, pieces: [], supplies: 0, design: { mode: 'fixed', value: 0 }, post: { mode: 'fixed', value: 0 }, searchText: '', marketRef: 0 };
+  return { name: '', units: 1, pieces: [manualPiece()], markup: null, supplies: 0, design: { mode: 'fixed', value: 0 }, post: { mode: 'fixed', value: 0 }, searchText: '', marketRef: 0 };
 }
 
 let profiles = load(STORE.profiles, null);
 const firstRun = !profiles || !profiles.length;
-if (firstRun) profiles = [defaultProfile()];
+if (firstRun) { profiles = [defaultProfile()]; }
+profiles = profiles.map(p => Object.assign(defaultProfile(), p, { est: Object.assign(defaultProfile().est, p.est), bed: Object.assign(defaultProfile().bed, p.bed) }));
 let activeId = load(STORE.active, profiles[0].id);
 if (!profiles.find(p => p.id === activeId)) activeId = profiles[0].id;
-// Cada vez que se abre, el presupuesto arranca vacío (el perfil sí queda guardado).
-// Si llegaron piezas desde el Lab ("Mandar a la calculadora"), se cargan y se borran del pase.
-let job = emptyJob();
+const persistProfiles = () => { save(STORE.profiles, profiles); save(STORE.active, activeId); };
+persistProfiles(); // queda guardado desde la primera visita: nunca más se vuelve a pedir
+
+// El presupuesto en curso también se guarda (sin miniaturas, que pesan), así no se pierde si cerrás la pestaña.
+let job = Object.assign(emptyJob(), load(STORE.job, {}));
+if (!Array.isArray(job.pieces) || !job.pieces.length) job.pieces = [manualPiece()];
 const incoming = load('g3d_calc_incoming', null);
-if (incoming && Array.isArray(incoming.pieces)) job = Object.assign(emptyJob(), incoming);
-try { localStorage.removeItem('g3d_calc_incoming'); localStorage.removeItem(STORE.job); } catch { /* sin acceso */ }
+if (incoming && Array.isArray(incoming.pieces) && incoming.pieces.length) {
+  const blank = job.pieces.length === 1 && !num(job.pieces[0].grams) && !num(job.pieces[0].minutes);
+  job = Object.assign(emptyJob(), incoming, { markup: job.markup });
+  if (!blank) { /* lo nuevo reemplaza al presupuesto anterior */ }
+}
+try { localStorage.removeItem('g3d_calc_incoming'); } catch { /* sin acceso */ }
 
 const profile = () => profiles.find(p => p.id === activeId);
-const persistJob = () => {}; // el presupuesto no se guarda entre visitas
-const persistProfiles = () => { save(STORE.profiles, profiles); save(STORE.active, activeId); };
+let jobTimer = 0;
+const persistJob = () => { clearTimeout(jobTimer); jobTimer = setTimeout(() => save(STORE.job, { ...job, pieces: job.pieces.map(p => ({ ...p, thumb: p.thumb && p.thumb.length < 60000 ? p.thumb : null })) }), 250); };
 
-// ---------- Formatting ----------
+// ---------- Formato ----------
 const moneyFmt = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 });
 const money = n => moneyFmt.format(isFinite(n) ? n : 0);
-const num = v => { const n = parseFloat(String(v).replace(',', '.')); return isFinite(n) ? n : 0; };
-function fmtTime(min) { min = Math.round(min); const h = Math.floor(min / 60), m = min % 60; return h ? `${h} h ${m ? m + ' min' : ''}`.trim() : `${m} min`; }
+function num(v) { const n = parseFloat(String(v ?? '').replace(',', '.')); return isFinite(n) ? n : 0; }
+function fmtTime(min) { min = Math.round(min); const h = Math.floor(min / 60), m = min % 60; return h ? `${h} h${m ? ' ' + m + ' min' : ''}` : `${m} min`; }
 const $ = id => document.getElementById(id);
 function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2200); }
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -573,6 +680,8 @@ async function handleFiles(fileList) {
       }
       piece.grams = Math.round(piece.grams * 10) / 10;
       piece.minutes = Math.round(piece.minutes);
+      // La pieza vacía del arranque se reemplaza por la del archivo
+      if (job.pieces.length === 1 && job.pieces[0].source === 'manual' && !num(job.pieces[0].grams) && !num(job.pieces[0].minutes)) job.pieces = [];
       job.pieces.push(piece);
       if (!job.searchText) job.searchText = piece.name;
       if (!job.name) job.name = piece.name;
@@ -588,6 +697,14 @@ async function handleFiles(fileList) {
 /* ============================================================
    Cálculo
    ============================================================ */
+const MARKUPS = [
+  { v: 2, t: 'Costo ×2', s: 'Precio amigo' },
+  { v: 3, t: 'Mayorista ×3', s: 'Reventa, cantidad' },
+  { v: 4, t: 'Minorista ×4', s: 'Venta directa' },
+  { v: 5, t: 'Llaveros ×5', s: 'Piezas chicas' },
+];
+const markupOf = () => Math.max(1, num(job.markup ?? profile().markup) || 1);
+
 function compute() {
   const p = profile(), units = Math.max(1, Math.round(num(job.units)) || 1);
   let grams = 0, minutes = 0, material = 0;
@@ -604,109 +721,118 @@ function compute() {
   const base = material + electricity + wear;
   const error = base * num(p.errorPct) / 100;
   const production = base + error;
-  const priced = production * Math.max(1, num(p.markup));
+  const mk = markupOf();
+  const priced = production * mk;
   const supplies = num(job.supplies) * units;
   const design = job.design.mode === 'hours' ? num(job.design.value) * num(p.designRate) : num(job.design.value);
   const post = (job.post.mode === 'hours' ? num(job.post.value) * num(p.postRate) : num(job.post.value)) * units;
   const r = Math.max(1, num(p.roundTo) || 1);
-  const total = Math.ceil((priced + supplies + design + post) / r) * r;
+  const raw = priced + supplies + design + post;
+  const total = raw > 0 ? Math.ceil(raw / r) * r : 0;
   const c = Math.min(90, Math.max(0, num(p.commissionPct))) / 100;
-  const withCommission = Math.ceil(total / (1 - c) / r) * r;
+  const withCommission = total > 0 ? Math.ceil(total / (1 - c) / r) * r : 0;
   const profit = total - production - supplies;
-  return { units, grams, minutes, material, electricity, wear, error, production, markupAmount: priced - production, supplies, design, post, total, perUnit: total / units, withCommission, profit };
+  return { units, grams, minutes, material, electricity, wear, error, production, mk, markupAmount: priced - production, supplies, design, post, total, perUnit: total / units, withCommission, profit };
 }
 
 /* ============================================================
-   Render
+   Pantalla
    ============================================================ */
-function renderProfileSelect() {
-  $('profileSelect').innerHTML = profiles.map(p => `<option value="${p.id}" ${p.id === activeId ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
-  $('profileBadge').textContent = profile().name;
-}
+const ICON_CUBE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M3 7l9 5 9-5M12 12v10"/></svg>';
 
-function renderPieces() {
-  const p = profile(), box = $('pieces');
-  if (!job.pieces.length) { box.innerHTML = '<div class="empty">Todavía no hay piezas. Arrastrá un archivo o agregala a mano.</div>'; return; }
-  box.innerHTML = job.pieces.map(pc => {
-    const badge = pc.source === 'slicer' ? '<span class="badge exact">Exacto</span>' : pc.source === 'mesh' ? '<span class="badge est" title="Estimado por volumen. Si laminás y cargás el 3MF o G-code queda exacto.">Estimado</span>' : '<span class="badge">Manual</span>';
-    const h = Math.floor(num(pc.minutes) / 60), m = Math.round(num(pc.minutes) % 60);
-    return `<div class="piece" data-id="${pc.id}">
-      <div class="thumb">${pc.thumb ? `<img src="${pc.thumb}" alt="">` : 'sin<br>vista'}</div>
-      <div>
-        <div class="piece-head">
-          <input data-k="name" value="${esc(pc.name)}" aria-label="Nombre de la pieza">
-          ${badge}
-          <button class="ghost" data-act="del" title="Quitar">✕</button>
-        </div>
-        <div class="f4">
-          <div><label>Filamento</label><select data-k="filament">${p.filaments.map((f, i) => `<option value="${i}" ${i === +pc.filament ? 'selected' : ''}>${esc(f.name)}</option>`).join('')}</select></div>
-          <div><label>Gramos</label><div class="field"><input data-k="grams" type="number" min="0" step="any" value="${pc.grams}"><span class="unit">g</span></div></div>
-          <div><label>Tiempo</label><div class="f2" style="gap:4px"><div class="field"><input data-k="h" type="number" min="0" step="1" value="${h}"><span class="unit">h</span></div><div class="field"><input data-k="m" type="number" min="0" max="59" step="1" value="${m}"><span class="unit">m</span></div></div></div>
-          <div><label>Cantidad</label><div class="field"><input data-k="qty" type="number" min="1" step="1" value="${pc.qty}"><span class="unit">u</span></div></div>
-        </div>
-        ${pc.meta ? `<div class="meta">${esc(pc.meta)}</div>` : ''}
-        ${pc.warn ? `<div class="warn">⚠ ${esc(pc.warn)}</div>` : ''}
-      </div>
-    </div>`;
-  }).join('');
+function renderTop() { $('profileName').textContent = profile().name || 'Mi taller'; }
+
+function pieceHTML(pc, p) {
+  const badge = pc.source === 'slicer' ? '<span class="badge exact">Exacto</span>' : pc.source === 'mesh' ? '<span class="badge est" title="Estimado por volumen. Si laminás y cargás el 3MF o el G-code queda exacto.">Estimado</span>' : '';
+  const h = Math.floor(num(pc.minutes) / 60), m = Math.round(num(pc.minutes) % 60);
+  const del = job.pieces.length > 1 || pc.source !== 'manual' ? `<button class="btn ghost sm" data-act="del" title="Quitar" aria-label="Quitar">✕</button>` : '';
+  return `<div class="piece" data-id="${pc.id}">
+    <div class="piece-top">
+      <div class="thumb">${pc.thumb ? `<img src="${pc.thumb}" alt="">` : ICON_CUBE}</div>
+      <input class="pname" data-k="name" value="${esc(pc.name)}" aria-label="Nombre de la pieza">
+      ${badge}${del}
+    </div>
+    <div class="piece-f">
+      <div><label>Material</label><div class="in"><select data-k="filament">${p.filaments.map((f, i) => `<option value="${i}" ${i === +pc.filament ? 'selected' : ''}>${esc(f.name)} · ${money(f.price)}/kg</option>`).join('')}</select></div></div>
+      <div><label>Peso</label><div class="in"><input data-k="grams" type="number" min="0" step="any" inputmode="decimal" placeholder="0" value="${num(pc.grams) || ''}"><span class="u">g</span></div></div>
+      <div><label>Tiempo de impresión</label><div class="in time"><input data-k="h" type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${h || ''}" aria-label="Horas"><span class="u">h</span><span class="sep"></span><input data-k="m" type="number" min="0" max="59" step="1" inputmode="numeric" placeholder="0" value="${m || ''}" aria-label="Minutos"><span class="u">min</span></div></div>
+      <div><label>Cantidad</label><div class="in qty"><button type="button" data-act="minus">−</button><input data-k="qty" type="number" min="1" step="1" inputmode="numeric" value="${pc.qty}"><button type="button" data-act="plus">+</button></div></div>
+    </div>
+    ${pc.meta ? `<div class="meta">${esc(pc.meta)}</div>` : ''}
+    ${pc.warn ? `<div class="warn">⚠ ${esc(pc.warn)}</div>` : ''}
+  </div>`;
+}
+function renderPieces() { const p = profile(); $('pieces').innerHTML = job.pieces.map(pc => pieceHTML(pc, p)).join(''); }
+
+function renderMarkups() {
+  const mk = markupOf(), preset = MARKUPS.some(m => m.v === mk) && job.markup !== 'custom';
+  const custom = job.custom === true || !preset;
+  $('markups').innerHTML = MARKUPS.map(m => `<button class="chip ${!custom && m.v === mk ? 'on' : ''}" data-mk="${m.v}">${m.t}<small>${m.s}</small></button>`).join('') +
+    `<button class="chip ${custom ? 'on' : ''}" data-mk="custom">Otro<small>${custom ? '×' + mk : 'Elegís vos'}</small></button>`;
+  $('customBox').hidden = !custom;
+  if (custom && document.activeElement !== $('customMarkup')) $('customMarkup').value = mk;
 }
 
 function renderJobInputs() {
-  $('jobName').value = job.name; $('units').value = job.units;
-  $('supplies').value = job.supplies; $('designValue').value = job.design.value; $('postValue').value = job.post.value;
-  $('searchText').value = job.searchText; $('marketRef').value = job.marketRef || '';
+  $('units').value = job.units;
+  $('supplies').value = num(job.supplies) || ''; $('designValue').value = num(job.design.value) || ''; $('postValue').value = num(job.post.value) || '';
+  $('searchText').value = job.searchText || ''; $('marketRef').value = job.marketRef || '';
   document.querySelectorAll('.seg').forEach(seg => {
     const mode = job[seg.dataset.target].mode;
     seg.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.mode === mode));
   });
-  $('designUnit').textContent = job.design.mode === 'hours' ? 'h' : '$';
-  $('postUnit').textContent = job.post.mode === 'hours' ? 'h' : '$';
+  for (const k of ['design', 'post']) { const hrs = job[k].mode === 'hours'; $(k + 'Pre').hidden = hrs; $(k + 'Unit').textContent = hrs ? 'h' : ''; }
   if (num(job.supplies) || num(job.design.value) || num(job.post.value)) $('extrasBox').open = true;
 }
 
 function renderLinks() {
   const q = (job.searchText || '').trim();
-  if (!q) { $('links').innerHTML = '<span class="hint">Escribí qué buscar para ver los atajos.</span>'; return; }
+  if (!q) { $('links').innerHTML = '<span class="hint" style="margin:0">Escribí qué buscar para ver los atajos.</span>'; return; }
   const enc = encodeURIComponent(q);
-  const slug = q.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const slug = q.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   const links = [
     ['Mercado Libre', `https://listado.mercadolibre.com.ar/${slug}-impresion-3d`],
     ['MakerWorld', `https://makerworld.com/es/search/models?keyword=${enc}`],
     ['Printables', `https://www.printables.com/search/models?q=${enc}`],
     ['Cults3D', `https://cults3d.com/es/b%C3%BAsqueda?q=${enc}`],
-    ['Thingiverse', `https://www.thingiverse.com/search?q=${enc}&type=things`],
   ];
   $('links').innerHTML = links.map(([n, u]) => `<a href="${u}" target="_blank" rel="noopener">${n} ↗</a>`).join('');
 }
 
 function renderResult() {
   const r = compute(), p = profile();
-  $('rTotal').textContent = money(r.total);
-  $('rUnit').textContent = money(r.perUnit);
+  $('rTotal').textContent = money(r.total); $('mTotal').textContent = money(r.total);
+  $('rUnit').textContent = r.units > 1 ? `${money(r.perUnit)} cada una · ${r.units} unidades` : r.total ? 'por unidad' : 'Cargá el peso y el tiempo de la pieza';
   $('rComLabel').textContent = `Publicado con comisión (${num(p.commissionPct)}%)`;
   $('rCom').textContent = money(r.withCommission);
-  $('rProfit').textContent = `Te queda ${money(r.profit)} de ganancia · ×${num(p.markup)} sobre el costo de producción`;
   $('sGrams').textContent = `${Math.round(r.grams)} g`;
   $('sTime').textContent = fmtTime(r.minutes);
   $('sPerHour').textContent = r.minutes ? money(r.profit / (r.minutes / 60)) : '$ 0';
   $('rMat').textContent = money(r.material); $('rElec').textContent = money(r.electricity); $('rWear').textContent = money(r.wear);
-  $('rErrLabel').textContent = `Margen de error (${num(p.errorPct)}%)`; $('rErr').textContent = money(r.error);
+  $('rErrLabel').textContent = `Fallas y pruebas (${num(p.errorPct)}%)`; $('rErr').textContent = money(r.error);
   $('rProd').textContent = money(r.production);
-  $('rMarkLabel').textContent = `Ganancia (×${num(p.markup)})`; $('rMark').textContent = money(r.markupAmount);
-  $('rSup').textContent = money(r.supplies); $('rDes').textContent = money(r.design); $('rPost').textContent = money(r.post);
+  $('rMarkLabel').textContent = `Ganancia (×${r.mk})`; $('rMark').textContent = money(r.markupAmount);
+  const ex = [['Insumos', r.supplies], ['Diseño', r.design], ['Terminación', r.post]].filter(x => x[1] > 0);
+  $('extrasRows').innerHTML = ex.length ? '<div class="sect">Extras</div>' + ex.map(([k, v]) => `<div class="kv"><span>${k}</span><span>${money(v)}</span></div>`).join('') : '';
+  const pr = $('rProfit');
+  pr.hidden = !r.total;
+  pr.classList.toggle('bad', r.profit <= 0);
+  pr.textContent = r.profit > 0 ? `Te quedan ${money(r.profit)} de ganancia limpia.` : 'Con este precio no ganás nada: subí el multiplicador.';
+  const sum = [r.supplies && 'insumos', r.design && 'diseño', r.post && 'terminación'].filter(Boolean);
+  $('extrasSum').textContent = sum.length ? `Sumando ${sum.join(', ')}` : 'Insumos, diseño y terminación';
 
   const ref = num(job.marketRef);
   if (ref > 0 && r.perUnit > 0) {
     const diff = (r.perUnit - ref) / ref * 100;
     const msg = Math.abs(diff) < 10 ? 'Estás en línea con el mercado.' :
-      diff > 0 ? `Estás un ${diff.toFixed(0)}% por encima. Si el tuyo no tiene algo distinto (tamaño, terminación, personalización), puede costar venderlo.` :
-                 `Estás un ${Math.abs(diff).toFixed(0)}% por debajo. Tenés margen para subir el precio.`;
+      diff > 0 ? `Estás un ${diff.toFixed(0)}% arriba. Si el tuyo no tiene algo distinto (tamaño, terminación, personalización), puede costar venderlo.` :
+                 `Estás un ${Math.abs(diff).toFixed(0)}% abajo. Tenés margen para subir.`;
     const minPrice = (r.production + r.supplies + r.post) / r.units;
-    $('cmp').innerHTML = `<div class="cmp"><b>Tu precio por unidad: ${money(r.perUnit)}</b> · mercado ${money(ref)}<br>${msg}<br><span class="hint">Debajo de ${money(minPrice)} por unidad perdés plata.</span></div>`;
+    $('cmp').innerHTML = `<div class="cmp"><b>Tu precio por unidad: ${money(r.perUnit)}</b> · mercado ${money(ref)}<br>${msg}<br><span class="hint">Por debajo de ${money(minPrice)} por unidad perdés plata.</span></div>`;
   } else $('cmp').innerHTML = '';
 }
 
-function renderAll() { renderProfileSelect(); renderPieces(); renderJobInputs(); renderLinks(); renderResult(); }
+function renderAll() { renderTop(); renderPieces(); renderMarkups(); renderJobInputs(); renderLinks(); renderResult(); }
 
 /* ============================================================
    Eventos
@@ -715,13 +841,12 @@ const drop = $('drop');
 ['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
 ['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
 drop.addEventListener('drop', e => handleFiles(e.dataTransfer.files));
-// También acepta archivos soltados en cualquier parte de la página
 document.addEventListener('dragover', e => e.preventDefault());
 document.addEventListener('drop', e => { if (!drop.contains(e.target)) { e.preventDefault(); handleFiles(e.dataTransfer.files); } });
 $('fileInput').addEventListener('change', e => { handleFiles(e.target.files); e.target.value = ''; });
 
 $('btnManual').addEventListener('click', () => {
-  job.pieces.push({ id: uid(), name: `Pieza ${job.pieces.length + 1}`, filament: 0, grams: 0, minutes: 0, qty: 1, source: 'manual', thumb: null, meta: '', warn: '' });
+  job.pieces.push(manualPiece(job.pieces.length + 1));
   persistJob(); renderPieces(); renderResult();
   const inputs = $('pieces').querySelectorAll('input[data-k="grams"]'); inputs[inputs.length - 1]?.focus();
 });
@@ -732,21 +857,46 @@ $('pieces').addEventListener('input', e => {
   if (k === 'name') pc.name = el.value;
   else if (k === 'filament') pc.filament = +el.value;
   else if (k === 'grams') pc.grams = num(el.value);
-  else if (k === 'qty') pc.qty = Math.max(1, Math.round(num(el.value)));
+  else if (k === 'qty') pc.qty = Math.max(1, Math.round(num(el.value)) || 1);
   else if (k === 'h' || k === 'm') {
-    const h = num(card.querySelector('[data-k="h"]').value), m = num(card.querySelector('[data-k="m"]').value);
-    pc.minutes = h * 60 + m;
+    let h = num(card.querySelector('[data-k="h"]').value), m = num(card.querySelector('[data-k="m"]').value);
+    pc.minutes = Math.max(0, h * 60 + m);
   }
   persistJob(); renderResult();
 });
+$('pieces').addEventListener('change', e => {
+  // Si alguien pone 90 minutos, queda como 1 h 30 min
+  const card = e.target.closest('.piece'); if (!card || e.target.dataset.k !== 'm') return;
+  const pc = job.pieces.find(x => x.id === card.dataset.id);
+  const h = Math.floor(pc.minutes / 60), m = Math.round(pc.minutes % 60);
+  card.querySelector('[data-k="h"]').value = h || ''; card.querySelector('[data-k="m"]').value = m || '';
+});
 $('pieces').addEventListener('click', e => {
-  if (e.target.dataset.act !== 'del') return;
-  const id = e.target.closest('.piece').dataset.id;
-  job.pieces = job.pieces.filter(x => x.id !== id); persistJob(); renderPieces(); renderResult();
+  const btn = e.target.closest('button'); if (!btn) return;
+  const card = btn.closest('.piece'), pc = job.pieces.find(x => x.id === card.dataset.id);
+  if (btn.dataset.act === 'del') {
+    job.pieces = job.pieces.filter(x => x !== pc);
+    if (!job.pieces.length) job.pieces = [manualPiece()];
+    persistJob(); renderPieces(); renderResult();
+  } else if (btn.dataset.act === 'plus' || btn.dataset.act === 'minus') {
+    pc.qty = Math.max(1, (pc.qty || 1) + (btn.dataset.act === 'plus' ? 1 : -1));
+    card.querySelector('[data-k="qty"]').value = pc.qty; persistJob(); renderResult();
+  }
 });
 
+$('markups').addEventListener('click', e => {
+  const b = e.target.closest('[data-mk]'); if (!b) return;
+  if (b.dataset.mk === 'custom') { job.custom = true; if (MARKUPS.some(m => m.v === markupOf())) job.markup = markupOf() + 0.5; }
+  else { job.custom = false; job.markup = +b.dataset.mk; }
+  persistJob(); renderMarkups(); renderResult();
+  if (job.custom) $('customMarkup').focus();
+});
+$('customMarkup').addEventListener('input', e => { job.markup = Math.max(1, num(e.target.value)) || 1; job.custom = true; persistJob(); renderResult(); renderMarkups(); });
+
+document.querySelectorAll('[data-for="units"]').forEach(b => b.addEventListener('click', () => {
+  job.units = Math.max(1, (Math.round(num(job.units)) || 1) + +b.dataset.step); $('units').value = job.units; persistJob(); renderResult();
+}));
 const bindJob = (id, setter) => $(id).addEventListener('input', e => { setter(e.target.value); persistJob(); renderResult(); });
-bindJob('jobName', v => job.name = v);
 bindJob('units', v => job.units = Math.max(1, Math.round(num(v)) || 1));
 bindJob('supplies', v => job.supplies = num(v));
 bindJob('designValue', v => job.design.value = num(v));
@@ -758,19 +908,19 @@ document.querySelectorAll('.seg').forEach(seg => seg.addEventListener('click', e
   job[seg.dataset.target].mode = mode; persistJob(); renderJobInputs(); renderResult();
 }));
 
-$('profileSelect').addEventListener('change', e => { activeId = e.target.value; persistProfiles(); renderAll(); });
-
 $('btnNew').addEventListener('click', () => {
-  if (job.pieces.length && !confirm('¿Borrar el presupuesto actual y empezar otro?')) return;
-  job = emptyJob(); persistJob(); renderAll();
+  const has = job.pieces.some(p => num(p.grams) || num(p.minutes));
+  if (has && !confirm('¿Borrar este presupuesto y empezar otro? Tu taller queda como está.')) return;
+  const keep = { markup: job.markup, custom: job.custom };
+  job = Object.assign(emptyJob(), keep); persistJob(); renderAll();
 });
 
 function summaryText() {
   const r = compute(), p = profile();
-  const lines = [`*Presupuesto ${p.business ? '— ' + p.business : ''}*`];
+  const lines = [`*Presupuesto${p.business ? ' — ' + p.business : ''}*`];
   if (job.name) lines.push(job.name);
   lines.push('');
-  job.pieces.forEach(pc => lines.push(`• ${pc.name}${pc.qty > 1 ? ' ×' + pc.qty : ''} (${(p.filaments[pc.filament] || {}).name || ''})`));
+  job.pieces.filter(pc => num(pc.grams) || num(pc.minutes)).forEach(pc => lines.push(`• ${pc.name}${pc.qty > 1 ? ' ×' + pc.qty : ''} (${(p.filaments[pc.filament] || {}).name || ''})`));
   if (r.units > 1) lines.push(`Unidades: ${r.units}`);
   lines.push('', `Tiempo de impresión: ${fmtTime(r.minutes)}`);
   lines.push(`*Total: ${money(r.total)}*${r.units > 1 ? ` (${money(r.perUnit)} c/u)` : ''}`);
@@ -778,7 +928,7 @@ function summaryText() {
   return lines.join('\n');
 }
 $('btnCopy').addEventListener('click', async () => {
-  try { await navigator.clipboard.writeText(summaryText()); toast('Resumen copiado'); }
+  try { await navigator.clipboard.writeText(summaryText()); toast('Copiado: pegalo en WhatsApp'); }
   catch { prompt('Copiá el resumen:', summaryText()); }
 });
 
@@ -786,14 +936,15 @@ $('btnQuote').addEventListener('click', () => {
   const r = compute(), p = profile(), today = new Date();
   const until = new Date(today.getTime() + p.validDays * 86400000);
   const fmtD = d => d.toLocaleDateString('es-AR');
+  const list = job.pieces.filter(pc => num(pc.grams) || num(pc.minutes));
   $('quote').innerHTML = `
     <h1 style="font-family:Poppins">${esc(p.business || 'Presupuesto')}</h1>
     <p>Presupuesto de impresión 3D · ${fmtD(today)} · válido hasta ${fmtD(until)}</p>
     ${job.name ? `<h2 style="margin-top:16px">${esc(job.name)}</h2>` : ''}
     <table><thead><tr><th>Pieza</th><th>Material</th><th>Cantidad</th></tr></thead><tbody>
-      ${job.pieces.map(pc => `<tr><td>${esc(pc.name)}</td><td>${esc((p.filaments[pc.filament] || {}).name || '')}</td><td>${pc.qty * r.units}</td></tr>`).join('')}
+      ${list.map(pc => `<tr><td>${esc(pc.name)}</td><td>${esc((p.filaments[pc.filament] || {}).name || '')}</td><td>${pc.qty * r.units}</td></tr>`).join('')}
       ${r.design ? `<tr><td>Diseño y modelado</td><td>—</td><td>1</td></tr>` : ''}
-      ${r.post ? `<tr><td>Posprocesado / terminación</td><td>—</td><td>${r.units}</td></tr>` : ''}
+      ${r.post ? `<tr><td>Terminación</td><td>—</td><td>${r.units}</td></tr>` : ''}
     </tbody></table>
     <p>Tiempo estimado de impresión: ${fmtTime(r.minutes)}</p>
     ${r.units > 1 ? `<p>Precio por unidad: ${money(r.perUnit)}</p>` : ''}
@@ -801,92 +952,104 @@ $('btnQuote').addEventListener('click', () => {
   window.print();
 });
 
-/* ---------- Diálogo de perfil ---------- */
-let draft = null;
-function fieldHTML(path, label, unit, hint) {
-  const val = path.split('.').reduce((o, k) => o[k], draft);
-  const type = typeof val === 'number' ? 'number' : 'text';
-  return `<div><label>${label}</label><div class="field"><input data-p="${path}" type="${type}" ${type === 'number' ? 'step="any" min="0"' : ''} value="${esc(val)}">${unit ? `<span class="unit">${unit}</span>` : ''}</div>${hint ? `<div class="hint">${hint}</div>` : ''}</div>`;
+/* ---------- Mi taller (se guarda solo) ---------- */
+function F(path, label, unit, hint, pre) {
+  const val = path.split('.').reduce((o, k) => o[k], profile());
+  const isNum = typeof val === 'number';
+  return `<div><label>${label}</label><div class="in">${pre ? `<span class="u pre">${pre}</span>` : ''}<input data-p="${path}" ${isNum ? 'type="number" step="any" min="0" inputmode="decimal"' : ''} value="${esc(val)}">${unit ? `<span class="u">${unit}</span>` : ''}</div>${hint ? `<div class="hint">${hint}</div>` : ''}</div>`;
 }
-function renderDialog() {
-  $('dlgBody').innerHTML = `
-    <h3>Tu negocio y tu impresora</h3>
-    <div class="f2">${fieldHTML('name', 'Nombre del perfil')}${fieldHTML('business', 'Nombre del negocio (sale en la cotización)')}</div>
-    <div class="f3" style="margin-top:10px">${fieldHTML('bed.x', 'Cama X', 'mm')}${fieldHTML('bed.y', 'Cama Y', 'mm')}${fieldHTML('bed.z', 'Altura Z', 'mm')}</div>
-    <h3>Luz y desgaste</h3>
-    <div class="f2">${fieldHTML('kwhPrice', 'Precio del kWh', '$', 'Lo ves en tu factura de luz.')}${fieldHTML('watts', 'Consumo promedio', 'W', 'Promedio real imprimiendo, no el máximo de la fuente.')}</div>
-    <div class="f2" style="margin-top:10px">${fieldHTML('lifeHours', 'Vida útil estimada', 'h')}${fieldHTML('partsCost', 'Repuestos en esa vida útil', '$', 'Picos, PEI, correas, ventiladores…')}</div>
-    <h3>Precio</h3>
-    <div class="f3">${fieldHTML('errorPct', 'Margen de error', '%', 'Fallas y pruebas.')}${fieldHTML('markup', 'Multiplicador', '×', '3 = cobrás 3 veces el costo.')}${fieldHTML('commissionPct', 'Comisión de venta', '%', 'Mercado Libre, MP, etc.')}</div>
-    <div class="f4" style="margin-top:10px">${fieldHTML('designRate', 'Hora de diseño', '$')}${fieldHTML('postRate', 'Hora de posprocesado', '$')}${fieldHTML('roundTo', 'Redondear a', '$')}${fieldHTML('validDays', 'Validez', 'días')}</div>
+function renderDrawer() {
+  const p = profile();
+  $('drBody').innerHTML = `
+    <h3>Impresora</h3>
+    ${profiles.length > 1 ? `<div style="margin-bottom:12px"><label>Estás usando</label><div class="in"><select id="profileSelect">${profiles.map(x => `<option value="${x.id}" ${x.id === activeId ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></div></div>` : ''}
+    <div class="f2">${F('name', 'Nombre de la impresora')}${F('business', 'Tu negocio (sale en la cotización)')}</div>
+    <div class="f3" style="margin-top:12px">${F('bed.x', 'Cama X', 'mm')}${F('bed.y', 'Cama Y', 'mm')}${F('bed.z', 'Altura', 'mm')}</div>
     <h3>Filamentos</h3>
-    <div id="filList"></div>
-    <button class="small" id="filAdd">+ Agregar filamento</button>
-    <h3>Estimación para STL y 3MF sin laminar</h3>
-    <div class="f4">${fieldHTML('est.infill', 'Relleno', '%')}${fieldHTML('est.walls', 'Paredes', '')}${fieldHTML('est.lineWidth', 'Ancho de línea', 'mm')}${fieldHTML('est.gph', 'Velocidad', 'g/h')}</div>
-    <div class="hint">Para afinar la velocidad: laminá una pieza típica, dividí los gramos por las horas que te da Orca y poné ese número.</div>`;
-  renderFilaments();
-  $('filAdd').onclick = () => { draft.filaments.push({ name: 'Nuevo', price: 25000, density: 1.24 }); renderFilaments(); };
+    <div class="fil hint" style="margin:0 0 4px"><span>Nombre</span><span>Precio del kilo</span><span>Densidad</span><span></span></div>
+    ${p.filaments.map((f, i) => `<div class="fil">
+      <input class="txt" data-f="${i}" data-fk="name" value="${esc(f.name)}">
+      <div class="in"><span class="u pre">$</span><input data-f="${i}" data-fk="price" type="number" step="any" min="0" inputmode="decimal" value="${f.price}"></div>
+      <div class="in"><input data-f="${i}" data-fk="density" type="number" step="0.01" min="0" inputmode="decimal" value="${f.density}"></div>
+      <button class="btn ghost sm" data-fdel="${i}" ${p.filaments.length < 2 ? 'disabled' : ''} aria-label="Quitar">✕</button></div>`).join('')}
+    <button class="btn sm" id="filAdd">+ Agregar filamento</button>
+    <h3>Luz y desgaste</h3>
+    <div class="f2">${F('kwhPrice', 'Precio del kWh', '', 'Está en tu factura de luz.', '$')}${F('watts', 'Consumo imprimiendo', 'W', 'El promedio real, no el máximo de la fuente.')}</div>
+    <div class="f2" style="margin-top:12px">${F('lifeHours', 'Vida útil', 'h')}${F('partsCost', 'Repuestos en esa vida útil', '', 'Picos, PEI, correas, ventiladores…', '$')}</div>
+    <h3>Precios</h3>
+    <div class="f3">${F('errorPct', 'Fallas y pruebas', '%')}${F('markup', 'Ganancia de siempre', '×')}${F('commissionPct', 'Comisión de venta', '%', 'Mercado Libre, MP…')}</div>
+    <div class="f2" style="margin-top:12px">${F('designRate', 'Tu hora de diseño', '', '', '$')}${F('postRate', 'Tu hora de terminación', '', '', '$')}</div>
+    <div class="f2" style="margin-top:12px">${F('roundTo', 'Redondear a', '', 'Ej: 100 → $4.380 queda $4.400', '$')}${F('validDays', 'La cotización vale', 'días')}</div>
+    <h3>Para estimar un STL sin laminar</h3>
+    <div class="f2">${F('est.infill', 'Relleno', '%')}${F('est.walls', 'Paredes', '')}</div>
+    <div class="f2" style="margin-top:12px">${F('est.lineWidth', 'Ancho de línea', 'mm')}${F('est.gph', 'Velocidad', 'g/h', 'Gramos ÷ horas de una pieza típica que hayas laminado.')}</div>`;
+  $('filAdd').onclick = () => { profile().filaments.push({ name: 'Nuevo', price: 25000, density: 1.24 }); saveProfile(); renderDrawer(); };
+  const sel = $('profileSelect'); if (sel) sel.onchange = e => { activeId = e.target.value; persistProfiles(); renderDrawer(); renderAll(); };
 }
-function renderFilaments() {
-  $('filList').innerHTML = `<div class="fil-row hint" style="margin:0 0 4px"><span>Nombre</span><span>Precio por kilo</span><span>Densidad g/cm³</span><span></span></div>` +
-    draft.filaments.map((f, i) => `<div class="fil-row">
-      <input data-f="${i}" data-fk="name" value="${esc(f.name)}">
-      <div class="field"><input data-f="${i}" data-fk="price" type="number" step="any" min="0" value="${f.price}"><span class="unit">$/kg</span></div>
-      <input data-f="${i}" data-fk="density" type="number" step="0.01" min="0" value="${f.density}">
-      <button class="ghost" data-fdel="${i}" ${draft.filaments.length < 2 ? 'disabled' : ''}>✕</button></div>`).join('');
+let savedT = 0;
+function saveProfile() {
+  persistProfiles();
+  const s = $('saved'); s.classList.add('show'); clearTimeout(savedT); savedT = setTimeout(() => s.classList.remove('show'), 1400);
 }
-$('dlgBody').addEventListener('input', e => {
-  const el = e.target;
+$('drBody').addEventListener('input', e => {
+  const el = e.target, p = profile();
   if (el.dataset.p) {
     const keys = el.dataset.p.split('.'), last = keys.pop();
-    const obj = keys.reduce((o, k) => o[k], draft);
+    const obj = keys.reduce((o, k) => o[k], p);
     obj[last] = el.type === 'number' ? num(el.value) : el.value;
   } else if (el.dataset.f) {
-    const f = draft.filaments[+el.dataset.f]; f[el.dataset.fk] = el.dataset.fk === 'name' ? el.value : num(el.value);
-  }
+    const f = p.filaments[+el.dataset.f]; f[el.dataset.fk] = el.dataset.fk === 'name' ? el.value : num(el.value);
+  } else return;
+  saveProfile(); renderTop(); renderResult();
 });
-$('dlgBody').addEventListener('click', e => {
-  if (e.target.dataset.fdel === undefined) return;
-  draft.filaments.splice(+e.target.dataset.fdel, 1); renderFilaments();
+$('drBody').addEventListener('change', e => { if (e.target.dataset.f || e.target.dataset.p === 'markup') { renderPieces(); renderMarkups(); } });
+$('drBody').addEventListener('click', e => {
+  const b = e.target.closest('[data-fdel]'); if (!b) return;
+  const p = profile(); p.filaments.splice(+b.dataset.fdel, 1);
+  job.pieces.forEach(pc => { if (pc.filament >= p.filaments.length) pc.filament = 0; });
+  saveProfile(); renderDrawer(); renderAll();
 });
-function openProfile() { draft = structuredClone(profile()); renderDialog(); $('dlg').showModal(); }
-$('btnProfile').addEventListener('click', openProfile);
-$('dlgClose').addEventListener('click', () => $('dlg').close());
-$('pSave').addEventListener('click', () => {
-  const i = profiles.findIndex(p => p.id === draft.id);
-  if (i >= 0) profiles[i] = draft; else profiles.push(draft);
-  activeId = draft.id; persistProfiles();
-  job.pieces.forEach(pc => { if (pc.filament >= draft.filaments.length) pc.filament = 0; });
-  $('dlg').close(); renderAll(); toast('Perfil guardado');
-});
-$('pNew').addEventListener('click', () => { draft = defaultProfile(); draft.name = 'Perfil nuevo'; renderDialog(); });
-$('pDup').addEventListener('click', () => { draft = structuredClone(draft); draft.id = uid(); draft.name += ' (copia)'; renderDialog(); toast('Copia lista: guardala para conservarla'); });
+function openDrawer() { renderDrawer(); $('drawer').classList.add('open'); $('drawer').setAttribute('aria-hidden', 'false'); dismissNote(); }
+function closeDrawer() { $('drawer').classList.remove('open'); $('drawer').setAttribute('aria-hidden', 'true'); renderAll(); }
+$('btnProfile').addEventListener('click', openDrawer);
+$('drClose').addEventListener('click', closeDrawer);
+$('drShade').addEventListener('click', closeDrawer);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('drawer').classList.contains('open')) closeDrawer(); });
+
+$('pNew').addEventListener('click', () => { const p = defaultProfile(); p.name = 'Otra impresora'; profiles.push(p); activeId = p.id; saveProfile(); renderDrawer(); renderAll(); toast('Impresora nueva creada'); });
+$('pDup').addEventListener('click', () => { const p = structuredClone(profile()); p.id = uid(); p.name += ' (copia)'; profiles.push(p); activeId = p.id; saveProfile(); renderDrawer(); renderAll(); toast('Copia creada'); });
 $('pDel').addEventListener('click', () => {
-  if (profiles.length < 2) return toast('Tiene que quedar al menos un perfil');
-  if (!confirm(`¿Eliminar el perfil "${draft.name}"?`)) return;
-  profiles = profiles.filter(p => p.id !== draft.id); activeId = profiles[0].id; persistProfiles(); $('dlg').close(); renderAll();
+  if (profiles.length < 2) return toast('Tiene que quedar al menos una impresora');
+  if (!confirm(`¿Eliminar "${profile().name}"?`)) return;
+  profiles = profiles.filter(p => p.id !== activeId); activeId = profiles[0].id; saveProfile(); renderDrawer(); renderAll();
 });
 $('pExport').addEventListener('click', () => {
   const blob = new Blob([JSON.stringify(profiles, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'perfiles_gemelos3d.json'; a.click();
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'mi-taller_gemelos3d.json'; a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 });
 $('pImport').addEventListener('click', () => $('pImportFile').click());
 $('pImportFile').addEventListener('change', async e => {
   try {
     const data = JSON.parse(await e.target.files[0].text());
-    const list = (Array.isArray(data) ? data : [data]).filter(p => p && p.filaments && p.bed);
+    const list = (Array.isArray(data) ? data : [data]).filter(p => p && p.filaments);
     if (!list.length) throw new Error();
     list.forEach(p => { p.id = uid(); profiles.push(Object.assign(defaultProfile(), p)); });
-    activeId = profiles[profiles.length - 1].id; persistProfiles(); $('dlg').close(); renderAll(); toast(`${list.length} perfil(es) importado(s)`);
-  } catch { toast('Ese archivo no es un perfil válido'); }
+    activeId = profiles[profiles.length - 1].id; saveProfile(); renderDrawer(); renderAll(); toast(`${list.length} impresora(s) importada(s)`);
+  } catch { toast('Ese archivo no es de Mi taller'); }
   e.target.value = '';
 });
 
+/* ---------- Aviso de la primera vez (no bloquea nada) ---------- */
+function dismissNote() { $('firstNote').hidden = true; save(STORE.seen, 1); }
+if (!load(STORE.seen, 0)) $('firstNote').hidden = false;
+$('noteOpen').addEventListener('click', openDrawer);
+$('noteClose').addEventListener('click', dismissNote);
+
+$('mGo').addEventListener('click', () => $('result').scrollIntoView({ behavior: 'smooth', block: 'start' }));
+
 // ---------- Inicio ----------
 renderAll();
-if (firstRun) { persistProfiles(); openProfile(); }
 </script>
 </body>
 </html>
