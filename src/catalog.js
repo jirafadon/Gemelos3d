@@ -65,6 +65,7 @@ export const GENERATORS = [
   g('exhibidor-salon', 'Exhibidor para salón', 'Escalones con ranuras para tips, pestañas o tarjetas, con el nombre del negocio.', 'qr', 3, () => import('./generators/exhibidor-salon.js')),
 
   // ---------- Cocina y repostería ----------
+  g('portafotos-colgante', 'Portafotos colgante', 'Marco de dos colores con el nombre arriba, la foto entra por arriba, con detalles navideños.', 'carteles', 1, () => import('./generators/portafotos-colgante.js')),
   g('bandeja', 'Bandejas organizadoras', 'A medida, con divisiones en grilla, apilable, paredes caladas, etiqueta y muesca.', 'hogar', 1, () => import('./generators/bandeja.js')),
   g('jarron', 'Jarrones y macetas', 'Perfil a gusto, sección redonda, poligonal, ondas o estrella, con giro en espiral. Modo jarrón o con pared.', 'deco', 1, () => import('./generators/jarron.js')),
   g('puzle-encastre', 'Puzle encastrable', 'Tabla con el hueco de la figura y piezas de colores que encastran, con botones para agarrar.', 'imagen', 1, () => import('./generators/puzle-encastre.js')),
@@ -174,7 +175,7 @@ export const FAMILIES = [
   { id: 'letreros', icon: 'sign', tone: 'purple', title: 'Letreros', desc: 'Palabras superpuestas, @usuario, letras separadas y palabra con corazón.', cover: 'letrero-palabras', cat: 'carteles',
     items: ['letrero-palabras', 'letrero-social', 'letras-separadas', 'palabra-corazon', 'letrero-imagen', 'letrero-multipart', 'texto-guia'] },
   { id: 'placas', icon: 'frame', tone: 'indigo', title: 'Placas y cuadros', desc: 'Placa profesional, cuadros y portafotos, con base para pararlos.', cover: 'cuadro-marco', cat: 'carteles',
-    items: ['placa-profesional', 'placa-rayas', 'cuadro-marco', 'portafotos'] },
+    items: ['placa-profesional', 'placa-rayas', 'cuadro-marco', 'portafotos', 'portafotos-colgante'] },
   { id: 'fiestas', icon: 'gift', tone: 'pink', title: 'Fiestas y regalos', desc: 'Toppers, estacas, adornos, colgantes, marcapáginas, cubos con letras y peines.', cover: 'topper-torta', cat: 'deco',
     items: ['chop', 'topper-torta', 'estacas', 'adorno-navidad', 'adorno-giratorio', 'arbol-nombres', 'colgante-familia', 'marcapaginas', 'cubos-apilables', 'peines', 'rosa-nombre', 'adorno-galleta'] },
   { id: 'mascotas', icon: 'paw', tone: 'amber', title: 'Mascotas', desc: 'Placas con nombre y teléfono: hueso, pez, óvalo, corazón y más.', cover: 'placa-mascota', cat: 'nombres',
