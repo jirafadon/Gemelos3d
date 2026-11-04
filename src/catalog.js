@@ -32,7 +32,7 @@ export const GENERATORS = [
   g('llavero-nfc', 'Llavero NFC', 'Llavero con un hueco escondido para el tag NFC (se pone con una pausa).', 'nombres', 3, () => import('./generators/llavero-nfc.js')),
   g('placa-mascota', 'Placa de mascota', 'Hueso, pez, ovalada, ondulada o con la forma que quieras, con nombre y teléfono.', 'nombres', 1, () => import('./generators/placa-mascota.js')),
   g('colgante-familia', 'Colgante de nombres familiares', 'Cadena de corazones o patitas con un nombre en cada uno.', 'nombres', 1, () => import('./generators/colgante-familia.js')),
-  g('rosa-nombre', 'Rosa con nombre', 'Rosa con el nombre en letra cursiva unido al tallo.', 'nombres', 2),
+  g('rosa-nombre', 'Rosa con nombre', 'El nombre en cursiva hace de tallo, con una rosa en relieve al final.', 'nombres', 1, () => import('./generators/rosa-nombre.js')),
   g('marcapaginas', 'Marcapáginas', 'Tira con tu nombre o el nombre que asoma del libro, con adorno.', 'nombres', 2, () => import('./generators/marcapaginas.js')),
   g('cubos-apilables', 'Cubos apilables', 'Un cubo por letra, con la letra en relieve y encastre para apilarlos.', 'nombres', 3, () => import('./generators/cubos-apilables.js')),
   g('abrelatas', 'Destapador llavero', 'Destapador con moneda encastrada, tu texto y argolla.', 'nombres', 1, () => import('./generators/abrelatas.js')),
@@ -45,13 +45,13 @@ export const GENERATORS = [
   g('placa-rayas', 'Placa con rayas y base', 'Placa con fondo rayado y texto, para regalar.', 'carteles', 1, () => import('./generators/placa-rayas.js')),
   g('cuadro-marco', 'Cuadro con marco', 'Cuadro con texto, fecha y datos (ideal nacimientos), con marco y pie.', 'carteles', 1, () => import('./generators/cuadro-marco.js')),
   g('palabra-corazon', 'Palabra en 2 capas con corazón', 'Palabra cursiva con un corazón final, en dos capas.', 'carteles', 1, () => import('./generators/palabra-corazon.js')),
-  g('letrero-imagen', 'Letrero con imagen', 'Una o dos líneas de texto más un ícono, en 2 o 3 colores.', 'carteles', 2),
+  g('letrero-imagen', 'Letrero con imagen', 'Una o dos líneas de texto más un ícono o tu dibujo, en 2 o 3 colores.', 'carteles', 1, () => import('./generators/letrero-imagen.js')),
   g('letrero-multipart', 'Letrero multipartes desde imagen', 'Logo o dibujo grande en piezas de color que encastran en una base.', 'carteles', 1, () => import('./generators/letrero-multipart.js')),
   g('medalla', 'Diseñá tu medalla', 'Medalla con borde, laurel, ícono y textos, con pasacinta o argolla.', 'carteles', 3, () => import('./generators/medalla.js')),
   g('graduados', 'Egresados y graduados', 'Birrete, año y nombre como adorno, llavero, imán o topper; uno por egresado.', 'carteles', 3, () => import('./generators/graduados.js')),
   g('souvenirs', 'Souvenirs para eventos', 'Forma con el nombre de cada invitado y la fecha: llavero, imán o colgante.', 'carteles', 3, () => import('./generators/souvenirs.js')),
   g('trofeo', 'Trofeo imagen + texto', 'Copa, estrella, medalla, escudo, pelota o birrete, con base y dos líneas de texto.', 'carteles', 2, () => import('./generators/trofeo.js')),
-  g('texto-guia', 'Texto de pared con guía', 'Letras grandes para pegar en pared, con plantilla de colocación.', 'carteles', 3),
+  g('texto-guia', 'Texto de pared con guía', 'Letras grandes sueltas para la pared, con plantilla para ubicarlas.', 'carteles', 1, () => import('./generators/texto-guia.js')),
 
   // ---------- QR y comercios ----------
   g('placa-qr', 'Placa QR', 'QR con texto o logo sobre placa con soporte.', 'qr', 2, () => import('./generators/placa-qr.js')),
@@ -105,7 +105,7 @@ export const GENERATORS = [
   g('imagen-resina', 'Imagen con bordes altos para resina', 'Molde abierto: el dibujo queda hundido para rellenar con resina o glitter.', 'imagen', 2, () => import('./generators/imagen-resina.js')),
   g('rompecabezas', 'Rompecabezas', 'Piezas con encastre, marco y un nombre repartido entre las piezas.', 'imagen', 4, () => import('./generators/rompecabezas.js')),
   g('portafotos', 'Portafotos', 'Marco de mesa para foto, con tapa a presión, texto y base.', 'imagen', 3, () => import('./generators/portafotos.js')),
-  g('botton', 'Accesorios para botton', 'Imán, llavero y adorno con borde para chapitas, y test de tamaño.', 'imagen', 3),
+  g('botton', 'Accesorios para botton', 'Marco para chapitas con imán, llavero, adorno o pie, y prueba de tamaño.', 'imagen', 1, () => import('./generators/botton.js')),
 
   // ---------- Hogar y organización ----------
   g('cajas', 'Cajas y organizadores', 'Caja a medida con divisiones y tapa a presión con nombre.', 'hogar', 3, () => import('./generators/cajas.js')),
@@ -122,7 +122,7 @@ export const GENERATORS = [
   g('funda-celular', 'Funda de TPU para celular o tablet', 'iPhone, Galaxy, Motorola, Xiaomi, LG, iPad y Galaxy Tab: cámara, botones, puertos y trama atrás.', 'hogar', 3, () => import('./generators/funda-celular.js')),
   g('soporte-logo', 'Soporte con tu logo o nombre', 'Soporte de celular o tablet con tu logo y tu nombre en el respaldo, calado o en otro color.', 'hogar', 3, () => import('./generators/soporte-logo.js')),
   g('soporte-celular', 'Soportes de celular y tablet', 'Triángulo, Z, onda, corazón, escritorio, placa Zen o amplificador, con trama voronoi, nombre o logo y detalles de color.', 'hogar', 3, () => import('./generators/soporte-celular.js')),
-  g('soporte-universal', 'Soporte universal', 'Soportes de escritorio, pared o debajo de mesa.', 'hogar', 3),
+  g('soporte-universal', 'Soporte universal', 'Gancho bajo escritorio, soporte de pared para objetos redondos y organizador de cables.', 'hogar', 1, () => import('./generators/soporte-universal.js')),
   g('peines', 'Peines con formas', 'Peine con dientes finos, anchos o mixtos y el nombre en el mango.', 'hogar', 3, () => import('./generators/peines.js')),
   g('contenedor-sellos', 'Contenedor de sellos', 'Caja con compartimentos para sellos de plastilina o masa.', 'hogar', 1, () => import('./generators/contenedor-sellos.js')),
   g('contador-rascar', 'Tablero de metas o rifas', 'Casilleros numerados con título, para metas de ahorro o rifas.', 'hogar', 3, () => import('./generators/contador-rascar.js')),
