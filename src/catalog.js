@@ -67,6 +67,7 @@ export const GENERATORS = [
   // ---------- Cocina y repostería ----------
   g('portafotos-colgante', 'Portafotos colgante', 'Marco de dos colores con el nombre arriba, la foto entra por arriba, con detalles navideños.', 'carteles', 1, () => import('./generators/portafotos-colgante.js')),
   g('termoformado', 'Moldes para termoformado', 'Par macho y hembra para adornos huecos de plástico o malla, con texto o inicial.', 'deco', 1, () => import('./generators/termoformado.js')),
+  g('clicker', 'Clicker', 'Clicker con switch de teclado: forma, texto o tu dibujo en la tecla, con argolla.', 'nombres', 1, () => import('./generators/clicker.js')),
   g('ladrillos', 'Ladrillos de encastre', 'Ladrillos, placas y tejas de 8 mm, rectangulares o con la forma que dibujes, con holgura ajustable.', 'hogar', 1, () => import('./generators/ladrillos.js')),
   g('bandeja', 'Bandejas organizadoras', 'A medida, con divisiones en grilla, apilable, paredes caladas, etiqueta y muesca.', 'hogar', 1, () => import('./generators/bandeja.js')),
   g('jarron', 'Jarrones y macetas', 'Perfil a gusto, sección redonda, poligonal, ondas o estrella, con giro en espiral. Modo jarrón o con pared.', 'deco', 1, () => import('./generators/jarron.js')),
@@ -168,7 +169,7 @@ export const APPS = [
  */
 export const FAMILIES = [
   { id: 'llaveros', icon: 'tag', tone: 'blue', title: 'Llaveros', desc: 'Nombre con contorno, placa, nombre y apellido o con logo.', cover: 'llavero-nombre', cat: 'nombres',
-    items: ['llavero-nombre', 'llavero-forma', 'llavero-rectangular', 'llavero-nombre-completo', 'llavero-logo', 'llavero-nfc', 'llavero-espejo', 'abrelatas'] },
+    items: ['llavero-nombre', 'llavero-forma', 'llavero-rectangular', 'llavero-nombre-completo', 'llavero-logo', 'llavero-nfc', 'llavero-espejo', 'abrelatas', 'clicker'] },
   { id: 'premios', icon: 'trophy', tone: 'gold', title: 'Trofeos, medallas y souvenirs', desc: 'Diseñá tu trofeo o medalla, recuerdos de egresados y souvenirs con el nombre de cada invitado.', cover: 'medalla', cat: 'carteles',
     items: ['trofeo', 'medalla', 'graduados', 'souvenirs'] },
   { id: 'fundas', icon: 'phone', tone: 'slate', title: 'Fundas y soportes de celular', desc: 'Funda de TPU a medida y 8 estilos de soporte: triángulo, Z, corazón, placa Zen, amplificador y más.', cover: 'funda-celular', cat: 'hogar',
