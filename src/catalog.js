@@ -67,6 +67,7 @@ export const GENERATORS = [
   // ---------- Cocina y repostería ----------
   g('bandeja', 'Bandejas organizadoras', 'A medida, con divisiones en grilla, apilable, paredes caladas, etiqueta y muesca.', 'hogar', 1, () => import('./generators/bandeja.js')),
   g('jarron', 'Jarrones y macetas', 'Perfil a gusto, sección redonda, poligonal, ondas o estrella, con giro en espiral. Modo jarrón o con pared.', 'deco', 1, () => import('./generators/jarron.js')),
+  g('puzle-encastre', 'Puzle encastrable', 'Tabla con el hueco de la figura y piezas de colores que encastran, con botones para agarrar.', 'imagen', 1, () => import('./generators/puzle-encastre.js')),
   g('foto-color', 'Tu foto en colores', 'Tu foto o dibujo separado en colores: adorno, posavasos, llavero, imán o dije.', 'imagen', 1, () => import('./generators/foto-color.js')),
   g('cortador-galletas', 'Fábrica de cortadores', 'Logo o dibujo a cortador, cortador con sello o sello macizo', 'cocina', 2, () => import('./generators/cortador-galletas.js')),
   g('eyector', 'Eyector de masa', 'Cortador con émbolo y marca opcional, para galletitas, caramelos y bombones.', 'cocina', 2, () => import('./generators/eyector.js')),
@@ -181,7 +182,7 @@ export const FAMILIES = [
   { id: 'cocina', icon: 'cookie', tone: 'orange', title: 'Cocina y repostería', desc: 'Cortadores, eyectores con émbolo, sellos y stencils.', cover: 'cortador-galletas', cat: 'cocina',
     items: ['cortador-galletas', 'eyector', 'sello-imagen', 'sello-letras', 'stencil', 'sello-eva', 'cortador-rectangulos', 'soporte-torta', 'rodillo-textura'] },
   { id: 'imagen', icon: 'image', tone: 'rose', title: 'Imagen a 3D', desc: 'Tu dibujo a pieza, litofanías, rompecabezas, para colorear y moldes de resina.', cover: 'dibujo-stl', cat: 'imagen',
-    items: ['foto-color', 'dibujo-stl', 'litofania', 'posavasos-imagen', 'line-art', 'rompecabezas', 'colorear', 'imagen-resina', 'imagen-multipartes'] },
+    items: ['foto-color', 'dibujo-stl', 'litofania', 'posavasos-imagen', 'line-art', 'rompecabezas', 'puzle-encastre', 'colorear', 'imagen-resina', 'imagen-multipartes'] },
   { id: 'hogar', icon: 'home', tone: 'green', title: 'Hogar y organización', desc: 'Cajas, Gridfinity, portalápices, porta-marcadores, posavasos, ganchos y soportes.', cover: 'cajas', cat: 'hogar',
     items: ['bandeja', 'cajas', 'gridfinity', 'portalapices', 'porta-boligrafos', 'posavasos', 'ganchos', 'contador-rascar', 'caja-figuritas', 'packaging', 'soporte-universal'] },
   { id: 'taller', icon: 'gear', tone: 'slate', title: 'Taller y repuestos', desc: 'Engranajes, roscas, adaptadores, conectores y gabinetes para electrónica.', cover: 'engranajes', cat: 'taller',
