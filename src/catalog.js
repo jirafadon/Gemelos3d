@@ -156,6 +156,7 @@ export const findGenerator = id => GENERATORS.find(x => x.id === id);
 /** Apps del Lab: herramientas completas que no son un generador (van primero). */
 export const APPS = [
   { id: 'calculadora', icon: 'calc', tone: 'green', title: 'Calculadora de presupuestos', desc: 'Arrastrá STL, 3MF o G-code y te arma el precio: material, luz, desgaste, extras y comisión.', href: 'calculadora.html' },
+  { id: 'separar-color', icon: 'scissors', tone: 'rose', title: 'Separar por colores', desc: 'Cargá un STL o 3MF, elegí la parte con la varita y sale cortada con encastre, una pieza por color.', route: '#/g/separar-color' },
   { id: 'taller', icon: 'cube', tone: 'blue', title: 'Taller 3D', desc: 'Editor libre estilo Tinkercad: sumá formas, texto, imágenes o tu STL, marcá huecos y exportá.', route: '#/taller' },
 ];
 
