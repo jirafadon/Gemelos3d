@@ -55,19 +55,24 @@ export const firstLine = (...texts) => (texts.find(t => t && String(t).trim()) |
 import { maskToShape, sampleMask } from '../engine/trace.js';
 
 export const imageParams = ({ label = 'Imagen', showIf } = {}) => [
-  { key: 'image', type: 'image', label, default: '', show: showIf, hint: 'Mientras no subas nada se muestra un ejemplo.' },
-  { key: 'threshold', type: 'number', label: 'Sensibilidad', default: 128, min: 20, max: 240, step: 1, unit: '', show: showIf, hint: 'Subila si faltan partes claras del dibujo; bajala si aparece el fondo.' },
+  { key: 'image', type: 'image', label, default: '', show: showIf, hint: 'PNG, JPG o SVG. El SVG se usa como vector, con sus curvas exactas. Mientras no subas nada se muestra un ejemplo.' },
+  { key: 'removeBg', type: 'toggle', label: 'Quitar el fondo', default: false, show: v => (!showIf || showIf(v)) && !!v.image && !/^data:image\/svg/.test(v.image || ''), hint: 'Para fotos o dibujos sobre un fondo liso: se queda con lo que no toca el borde.' },
+  { key: 'bgTol', type: 'number', label: 'Cuánto se parece al fondo', default: 40, min: 5, max: 120, step: 1, unit: '', show: v => (!showIf || showIf(v)) && !!v.removeBg && !!v.image },
+  { key: 'threshold', type: 'number', label: 'Sensibilidad', default: 128, min: 20, max: 240, step: 1, unit: '', show: v => (!showIf || showIf(v)) && !v.removeBg && !/^data:image\/svg/.test(v.image || ''), hint: 'Subila si faltan partes claras del dibujo; bajala si aparece el fondo.' },
   { key: 'invert', type: 'toggle', label: 'Invertir (tomar lo claro)', default: false, show: showIf },
-  { key: 'smooth', type: 'number', label: 'Suavizado de bordes', default: 0.4, min: 0, max: 2, step: 0.1, unit: 'mm', show: showIf },
-  { key: 'detail', type: 'segment', label: 'Detalle', default: 320, show: showIf, options: [{ value: 200, label: 'Rápido' }, { value: 320, label: 'Normal' }, { value: 520, label: 'Alto' }] },
+  { key: 'smooth', type: 'number', label: 'Suavizado de bordes', default: 0.3, min: 0, max: 2, step: 0.05, unit: 'mm', show: showIf },
+  { key: 'specks', type: 'number', label: 'Limpieza de motas', default: 0.6, min: 0, max: 20, step: 0.1, unit: 'mm²', show: showIf, hint: 'Saca puntitos y agujeritos más chicos que esto.' },
+  { key: 'detail', type: 'segment', label: 'Detalle', default: 480, show: v => (!showIf || showIf(v)) && !/^data:image\/svg/.test(v.image || ''), options: [{ value: 260, label: 'Rápido' }, { value: 480, label: 'Normal' }, { value: 800, label: 'Alto' }, { value: 1200, label: 'Máximo' }] },
 ];
 
 /** Silueta de la imagen subida (o del ejemplo) con el ancho pedido en mm. */
 export async function silhouette(v, ctx, width, { fill = false } = {}) {
   const mask = v.image && ctx.image
-    ? await ctx.image(v.image, { threshold: v.threshold, invert: v.invert, maxPx: v.detail })
+    ? await ctx.image(v.image, { threshold: v.threshold, invert: v.invert, maxPx: Math.max(120, +v.detail || 480), removeBg: !!v.removeBg, bgTol: v.bgTol ?? 40 })
     : sampleMask();
-  return maskToShape(mask, { width, smooth: v.smooth ?? 0.4, fill, minArea: Math.max(0.5, width * width * 0.0004) });
+  // Las motas se miden sobre el tamaño final: el ancho pedido se escala después en cada herramienta
+  const minArea = v.specks ?? Math.max(0.5, width * width * 0.0004);
+  return maskToShape(mask, { width, smooth: v.smooth ?? 0.3, fill, minArea: Math.max(0.01, minArea * (width / 100) ** 2) });
 }
 
 /**

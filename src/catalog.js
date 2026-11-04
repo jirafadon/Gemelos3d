@@ -65,7 +65,7 @@ export const GENERATORS = [
   g('exhibidor-salon', 'Exhibidor para salón', 'Escalones con ranuras para tips, pestañas o tarjetas, con el nombre del negocio.', 'qr', 3, () => import('./generators/exhibidor-salon.js')),
 
   // ---------- Cocina y repostería ----------
-  g('cortador-galletas', 'Cortador de galletas', 'Con forma, nombre o desde imagen. Con filo, refuerzo y faldón.', 'cocina', 2, () => import('./generators/cortador-galletas.js')),
+  g('cortador-galletas', 'Fábrica de cortadores', 'Logo o dibujo a cortador, cortador con sello o sello macizo', 'cocina', 2, () => import('./generators/cortador-galletas.js')),
   g('eyector', 'Eyector de masa', 'Cortador con émbolo y marca opcional, para galletitas, caramelos y bombones.', 'cocina', 2, () => import('./generators/eyector.js')),
   g('sello-imagen', 'Sello desde imagen', 'Sello circular o con forma para bombones, galletitas o fondant.', 'cocina', 2, () => import('./generators/sello-imagen.js')),
   g('sello-letras', 'Sellos de letras y números', 'Un sello por letra o número, con mango, para escribir en masas.', 'cocina', 2, () => import('./generators/sello-letras.js')),
