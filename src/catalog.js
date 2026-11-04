@@ -66,6 +66,7 @@ export const GENERATORS = [
 
   // ---------- Cocina y repostería ----------
   g('portafotos-colgante', 'Portafotos colgante', 'Marco de dos colores con el nombre arriba, la foto entra por arriba, con detalles navideños.', 'carteles', 1, () => import('./generators/portafotos-colgante.js')),
+  g('termoformado', 'Moldes para termoformado', 'Par macho y hembra para adornos huecos de plástico o malla, con texto o inicial.', 'deco', 1, () => import('./generators/termoformado.js')),
   g('bandeja', 'Bandejas organizadoras', 'A medida, con divisiones en grilla, apilable, paredes caladas, etiqueta y muesca.', 'hogar', 1, () => import('./generators/bandeja.js')),
   g('jarron', 'Jarrones y macetas', 'Perfil a gusto, sección redonda, poligonal, ondas o estrella, con giro en espiral. Modo jarrón o con pared.', 'deco', 1, () => import('./generators/jarron.js')),
   g('puzle-encastre', 'Puzle encastrable', 'Tabla con el hueco de la figura y piezas de colores que encastran, con botones para agarrar.', 'imagen', 1, () => import('./generators/puzle-encastre.js')),
@@ -189,7 +190,7 @@ export const FAMILIES = [
   { id: 'taller', icon: 'gear', tone: 'slate', title: 'Taller y repuestos', desc: 'Engranajes, roscas, adaptadores, conectores y gabinetes para electrónica.', cover: 'engranajes', cat: 'taller',
     items: ['engranajes', 'roscas', 'adaptador', 'conectores', 'caja-electronica', 'repara', 'jig', 'mueble-salvado'] },
   { id: 'deco', icon: 'lamp', tone: 'yellow', title: 'Deco y lámparas', desc: 'Floreros, pantallas y bowls en espiral, y string art.', cover: 'vasos-espiral', cat: 'deco',
-    items: ['jarron', 'vasos-espiral', 'bowls', 'string-art'] },
+    items: ['jarron', 'termoformado', 'vasos-espiral', 'bowls', 'string-art'] },
   { id: 'letras', icon: 'letter', tone: 'cyan', title: 'Letras grandes', desc: 'Inicial con nombre, letras corpóreas, neón flex y lámparas de letra o @usuario.', cover: 'letra-grande', cat: 'letras',
     items: ['letra-grande', 'corporeas', 'neon-flex', 'lampara-letra', 'lampara-social'] },
 ];
