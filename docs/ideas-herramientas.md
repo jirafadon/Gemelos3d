@@ -199,24 +199,24 @@ Tipos de producto vistos en otras páginas; todo se hace con diseño propio, sin
 | 106 | Bandejas Bento | Medidas editables sobre el modelo, grilla de divisiones, espesor, redondeo, apilable, calado en paredes, etiqueta, muesca para el dedo | hecho (`bandeja`) |
 | 107 | Moldes para termoformado | Par de moldes macho/hembra para adornos huecos (corazón, flor, globo, bola, cuadrado) con texto o inicial | hecho (`termoformado`) |
 | 108 | Portafotos colgante | Marco de 2 colores con texto o nombre arriba y detalles (moño, arbolito, copos); también DXF | hecho (`portafotos-colgante`) |
-| 109 | Letrero de palabra con contorno (2 capas) | Letras sobre un fondo más grande de otro color | revisar `letrero-palabras` |
+| 109 | Letrero de palabra con contorno (2 capas) | Letras sobre un fondo más grande de otro color | hecho (`letrero-contorno`) |
 | 110 | Corona navideña "Merry Christmas" de 3 colores | Hojas, bayas, moño y campanas con texto en el centro | ampliar `adorno-navidad` |
 | 111 | Puzle encastrable tipo Montessori | Placa con la figura calada y piezas de color que encastran (con dibujos propios o tu imagen) | hecho (`puzle-encastre`) |
 | 112 | Estudio de puzles | Rectangular, hexagonal, circular, por silueta, fractal, tetris, deslizable; filas/columnas, tamaño de lengüeta, variación al azar, vista 2D/3D, colores e imagen | en parte (`rompecabezas`: contornos, variación, foto) |
 | 113 | Adorno con tu foto | Foto → quitar fondo, suavizado, N colores, aro para colgar; 3MF con colores | hecho (`foto-color`) |
 | 114 | Posavasos con imagen (mejora) | Plano o colores en relieve, borde, alturas por color, margen, tamaño y posición del dibujo | en parte (`foto-color` modo posavasos) |
 | 115 | Decorador de galletitas | Galletita jengibre con glaseado y nombre (Navidad / Halloween) | nueva |
-| 116 | Funda para vaso de café | Manga a medida con nombres o dibujo conectados | nueva |
-| 117 | Aros (pares) desde tu dibujo | Par espejado con argolla | nueva |
+| 116 | Funda para vaso de café | Manga a medida con nombres o dibujo conectados | hecho (`funda-vaso`) |
+| 117 | Aros (pares) desde tu dibujo | Par espejado con argolla | hecho (`aros`) |
 | 118 | Clicker (fábrica) | Clickers con mecanismo, desde imagen, letras o personajes | ya en la lista (7) |
 | 119 | Bandeja para copa | Bandeja con forma de copa y nombre | nueva |
 | 120 | Imán desde imagen | Pieza con hueco para imán | hecho (`foto-color` modo imán) |
-| 121 | Organizador con forma de nombre | Lapicero con las letras del nombre | nueva |
-| 122 | Bandeja desde foto | Bandejita con la silueta y colores de la foto | pendiente |
+| 121 | Organizador con forma de nombre | Lapicero con las letras del nombre | hecho (`organizador-nombre`) |
+| 122 | Bandeja desde foto | Bandejita con la silueta y colores de la foto | hecho (`bandeja-foto`) |
 | 123 | Cortar y conectar / flexi / piezas para modelos | Cortar STL con encastres, articulaciones flexi, hacer hueco, puzle desde un modelo 3D | nueva (Fase 5) |
 | 124 | Moldes desde un modelo | Caja de molde con llaves de registro | ya en el catálogo (Fase 5) |
 | 125 | Organizadores: cajonera, torre, bandeja con compartimentos | Medidas y divisiones | nueva |
-| 126 | SVG a STL | Vector plano con espesor | nueva |
+| 126 | SVG a STL | Vector plano con espesor | hecho (todas las herramientas de imagen leen SVG como vector; `dibujo-stl`) |
 | 127 | Cuentas con letras, porta-gafete, salvauñas, colgante para gomitas | Pequeños desde imagen o texto | nuevas |
 
 ## Enlaces del 04/11
