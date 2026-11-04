@@ -65,6 +65,7 @@ export const GENERATORS = [
   g('exhibidor-salon', 'Exhibidor para salón', 'Escalones con ranuras para tips, pestañas o tarjetas, con el nombre del negocio.', 'qr', 3, () => import('./generators/exhibidor-salon.js')),
 
   // ---------- Cocina y repostería ----------
+  g('bandeja', 'Bandejas organizadoras', 'A medida, con divisiones en grilla, apilable, paredes caladas, etiqueta y muesca.', 'hogar', 1, () => import('./generators/bandeja.js')),
   g('jarron', 'Jarrones y macetas', 'Perfil a gusto, sección redonda, poligonal, ondas o estrella, con giro en espiral. Modo jarrón o con pared.', 'deco', 1, () => import('./generators/jarron.js')),
   g('foto-color', 'Tu foto en colores', 'Tu foto o dibujo separado en colores: adorno, posavasos, llavero, imán o dije.', 'imagen', 1, () => import('./generators/foto-color.js')),
   g('cortador-galletas', 'Fábrica de cortadores', 'Logo o dibujo a cortador, cortador con sello o sello macizo', 'cocina', 2, () => import('./generators/cortador-galletas.js')),
@@ -182,7 +183,7 @@ export const FAMILIES = [
   { id: 'imagen', icon: 'image', tone: 'rose', title: 'Imagen a 3D', desc: 'Tu dibujo a pieza, litofanías, rompecabezas, para colorear y moldes de resina.', cover: 'dibujo-stl', cat: 'imagen',
     items: ['foto-color', 'dibujo-stl', 'litofania', 'posavasos-imagen', 'line-art', 'rompecabezas', 'colorear', 'imagen-resina', 'imagen-multipartes'] },
   { id: 'hogar', icon: 'home', tone: 'green', title: 'Hogar y organización', desc: 'Cajas, Gridfinity, portalápices, porta-marcadores, posavasos, ganchos y soportes.', cover: 'cajas', cat: 'hogar',
-    items: ['cajas', 'gridfinity', 'portalapices', 'porta-boligrafos', 'posavasos', 'ganchos', 'contador-rascar', 'caja-figuritas', 'packaging', 'soporte-universal'] },
+    items: ['bandeja', 'cajas', 'gridfinity', 'portalapices', 'porta-boligrafos', 'posavasos', 'ganchos', 'contador-rascar', 'caja-figuritas', 'packaging', 'soporte-universal'] },
   { id: 'taller', icon: 'gear', tone: 'slate', title: 'Taller y repuestos', desc: 'Engranajes, roscas, adaptadores, conectores y gabinetes para electrónica.', cover: 'engranajes', cat: 'taller',
     items: ['engranajes', 'roscas', 'adaptador', 'conectores', 'caja-electronica', 'repara', 'jig', 'mueble-salvado'] },
   { id: 'deco', icon: 'lamp', tone: 'yellow', title: 'Deco y lámparas', desc: 'Floreros, pantallas y bowls en espiral, y string art.', cover: 'vasos-espiral', cat: 'deco',
