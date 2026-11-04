@@ -95,7 +95,7 @@ function simplifyLoop(loop, tol) {
  * @param opts.minArea  descarta islas (y agujeros) más chicas que esto (mm²): "limpieza de motas"
  * @param opts.fill     rellena los huecos interiores (deja solo la silueta)
  */
-export function maskToShape(mask, { width = 50, smooth = 0.4, minArea = 1, fill = false } = {}) {
+export function maskToShape(mask, { width = 50, smooth = 0.4, minArea = 1, fill = false, center = true } = {}) {
   const { CrossSection } = wasm();
   let polys;
   let k;
@@ -124,6 +124,7 @@ export function maskToShape(mask, { width = 50, smooth = 0.4, minArea = 1, fill 
   if (fill) kept = kept.filter(p => signedArea(p) > 0);
   kept = kept.filter(p => Math.abs(signedArea(p)) >= minArea);
   cs = track(new CrossSection(kept, 'Positive'));
+  if (!center) return cs;
   const b = cs.bounds();
   return cs.translate([-(b.min[0] + b.max[0]) / 2, -(b.min[1] + b.max[1]) / 2]);
 }
@@ -139,4 +140,20 @@ export function sampleMask(n = 160) {
     data[y * n + x] = heart && !(r < starR) ? 1 : 0;
   }
   return { width: n, height: n, data };
+}
+
+/** Capas de colores de ejemplo (para cuando no hay foto): corazón, estrella y puntitos. */
+export function sampleColorLayers(n = 160) {
+  const L = [new Uint8Array(n * n), new Uint8Array(n * n), new Uint8Array(n * n)];
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+    const u = (x / n - 0.5) * 2.6, v = -(y / n - 0.55) * 2.6;
+    const heart = (u * u + v * v - 1) ** 3 - u * u * v * v * v <= 0;
+    if (!heart) continue;
+    const a = Math.atan2(v - 0.05, u), r = Math.hypot(u, v - 0.05);
+    const star = r < 0.32 + 0.16 * Math.cos(5 * a);
+    const dot = [[-0.55, 0.45], [0.55, 0.45], [0, -0.75]].some(([cx, cy]) => Math.hypot(u - cx, v - cy) < 0.12);
+    L[star ? 1 : dot ? 2 : 0][y * n + x] = 1;
+  }
+  const colors = ['#D62828', '#FCBF49', '#F5F5F5'];
+  return { width: n, height: n, palette: colors, layers: L.map((data, i) => ({ color: colors[i], mask: { width: n, height: n, data } })) };
 }

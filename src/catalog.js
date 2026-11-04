@@ -65,6 +65,7 @@ export const GENERATORS = [
   g('exhibidor-salon', 'Exhibidor para salón', 'Escalones con ranuras para tips, pestañas o tarjetas, con el nombre del negocio.', 'qr', 3, () => import('./generators/exhibidor-salon.js')),
 
   // ---------- Cocina y repostería ----------
+  g('foto-color', 'Tu foto en colores', 'Tu foto o dibujo separado en colores: adorno, posavasos, llavero, imán o dije.', 'imagen', 1, () => import('./generators/foto-color.js')),
   g('cortador-galletas', 'Fábrica de cortadores', 'Logo o dibujo a cortador, cortador con sello o sello macizo', 'cocina', 2, () => import('./generators/cortador-galletas.js')),
   g('eyector', 'Eyector de masa', 'Cortador con émbolo y marca opcional, para galletitas, caramelos y bombones.', 'cocina', 2, () => import('./generators/eyector.js')),
   g('sello-imagen', 'Sello desde imagen', 'Sello circular o con forma para bombones, galletitas o fondant.', 'cocina', 2, () => import('./generators/sello-imagen.js')),
@@ -178,7 +179,7 @@ export const FAMILIES = [
   { id: 'cocina', icon: 'cookie', tone: 'orange', title: 'Cocina y repostería', desc: 'Cortadores, eyectores con émbolo, sellos y stencils.', cover: 'cortador-galletas', cat: 'cocina',
     items: ['cortador-galletas', 'eyector', 'sello-imagen', 'sello-letras', 'stencil', 'sello-eva', 'cortador-rectangulos', 'soporte-torta', 'rodillo-textura'] },
   { id: 'imagen', icon: 'image', tone: 'rose', title: 'Imagen a 3D', desc: 'Tu dibujo a pieza, litofanías, rompecabezas, para colorear y moldes de resina.', cover: 'dibujo-stl', cat: 'imagen',
-    items: ['dibujo-stl', 'litofania', 'posavasos-imagen', 'line-art', 'rompecabezas', 'colorear', 'imagen-resina', 'imagen-multipartes'] },
+    items: ['foto-color', 'dibujo-stl', 'litofania', 'posavasos-imagen', 'line-art', 'rompecabezas', 'colorear', 'imagen-resina', 'imagen-multipartes'] },
   { id: 'hogar', icon: 'home', tone: 'green', title: 'Hogar y organización', desc: 'Cajas, Gridfinity, portalápices, porta-marcadores, posavasos, ganchos y soportes.', cover: 'cajas', cat: 'hogar',
     items: ['cajas', 'gridfinity', 'portalapices', 'porta-boligrafos', 'posavasos', 'ganchos', 'contador-rascar', 'caja-figuritas', 'packaging', 'soporte-universal'] },
   { id: 'taller', icon: 'gear', tone: 'slate', title: 'Taller y repuestos', desc: 'Engranajes, roscas, adaptadores, conectores y gabinetes para electrónica.', cover: 'engranajes', cat: 'taller',

@@ -9,7 +9,7 @@ import { initEngine, modelStats, loadFont, collect } from './engine/index.js';
 import { Viewer } from './engine/viewer.js';
 import { to3MF, toSTLZip, mergedSTL, download } from './engine/export.js';
 import { estimate, sendToCalculator } from './engine/cost.js';
-import { imageToMask, imageToGray } from './engine/image.js';
+import { imageToMask, imageToGray, imageToColors } from './engine/image.js';
 
 const app = document.getElementById('app');
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -258,7 +258,7 @@ async function renderGenerator(id, fam = null) {
   const unpane = setupPanes(document.querySelector('main.gen'), document.querySelector('.panebar'));
   cleanup = () => { alive = false; clearTimeout(timer); unpane(); viewer.renderer.dispose(); collect([]); };
 
-  const ctx = { font: loadFont, image: (url, opts) => imageToMask(url, opts), gray: (url, opts) => imageToGray(url, opts) };
+  const ctx = { font: loadFont, image: (url, opts) => imageToMask(url, opts), gray: (url, opts) => imageToGray(url, opts), colors: (url, opts) => imageToColors(url, opts) };
   const rebuild = async () => {
     const my = ++token;
     status('<span class="spin"></span> Generando…');
