@@ -65,6 +65,7 @@ export const GENERATORS = [
   g('exhibidor-salon', 'Exhibidor para salón', 'Escalones con ranuras para tips, pestañas o tarjetas, con el nombre del negocio.', 'qr', 3, () => import('./generators/exhibidor-salon.js')),
 
   // ---------- Cocina y repostería ----------
+  g('jarron', 'Jarrones y macetas', 'Perfil a gusto, sección redonda, poligonal, ondas o estrella, con giro en espiral. Modo jarrón o con pared.', 'deco', 1, () => import('./generators/jarron.js')),
   g('foto-color', 'Tu foto en colores', 'Tu foto o dibujo separado en colores: adorno, posavasos, llavero, imán o dije.', 'imagen', 1, () => import('./generators/foto-color.js')),
   g('cortador-galletas', 'Fábrica de cortadores', 'Logo o dibujo a cortador, cortador con sello o sello macizo', 'cocina', 2, () => import('./generators/cortador-galletas.js')),
   g('eyector', 'Eyector de masa', 'Cortador con émbolo y marca opcional, para galletitas, caramelos y bombones.', 'cocina', 2, () => import('./generators/eyector.js')),
@@ -185,7 +186,7 @@ export const FAMILIES = [
   { id: 'taller', icon: 'gear', tone: 'slate', title: 'Taller y repuestos', desc: 'Engranajes, roscas, adaptadores, conectores y gabinetes para electrónica.', cover: 'engranajes', cat: 'taller',
     items: ['engranajes', 'roscas', 'adaptador', 'conectores', 'caja-electronica', 'repara', 'jig', 'mueble-salvado'] },
   { id: 'deco', icon: 'lamp', tone: 'yellow', title: 'Deco y lámparas', desc: 'Floreros, pantallas y bowls en espiral, y string art.', cover: 'vasos-espiral', cat: 'deco',
-    items: ['vasos-espiral', 'bowls', 'string-art'] },
+    items: ['jarron', 'vasos-espiral', 'bowls', 'string-art'] },
   { id: 'letras', icon: 'letter', tone: 'cyan', title: 'Letras grandes', desc: 'Inicial con nombre, letras corpóreas, neón flex y lámparas de letra o @usuario.', cover: 'letra-grande', cat: 'letras',
     items: ['letra-grande', 'corporeas', 'neon-flex', 'lampara-letra', 'lampara-social'] },
 ];
