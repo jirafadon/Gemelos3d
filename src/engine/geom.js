@@ -107,7 +107,8 @@ export function textShape(font, text, opts = {}) {
   const widths = [];
   lines.forEach((line, i) => {
     if (!line.trim()) { widths.push(0); return; }
-    const polys = pathToPolygons(layoutLine(font, line, i * lineStep, size, spacing), 0.08);
+    let polys = [];
+    try { polys = pathToPolygons(layoutLine(font, line, i * lineStep, size, spacing), 0.08); } catch { /* letra que la tipografía no tiene */ }
     if (!polys.length) { widths.push(0); return; }
     const cs = track(new CrossSection(polys, 'NonZero'));
     const b = cs.bounds();

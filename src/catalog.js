@@ -67,6 +67,7 @@ export const GENERATORS = [
   // ---------- Cocina y repostería ----------
   g('portafotos-colgante', 'Portafotos colgante', 'Marco de dos colores con el nombre arriba, la foto entra por arriba, con detalles navideños.', 'carteles', 1, () => import('./generators/portafotos-colgante.js')),
   g('termoformado', 'Moldes para termoformado', 'Par macho y hembra para adornos huecos de plástico o malla, con texto o inicial.', 'deco', 1, () => import('./generators/termoformado.js')),
+  g('dados', 'Estudio de dados', 'D4, D6, D8, D10, D12 y D20 con números, puntos o caras propias, en otro color o grabados.', 'hogar', 1, () => import('./generators/dados.js')),
   g('clicker', 'Clicker', 'Clicker con switch de teclado: forma, texto o tu dibujo en la tecla, con argolla.', 'nombres', 1, () => import('./generators/clicker.js')),
   g('ladrillos', 'Ladrillos de encastre', 'Ladrillos, placas y tejas de 8 mm, rectangulares o con la forma que dibujes, con holgura ajustable.', 'hogar', 1, () => import('./generators/ladrillos.js')),
   g('bandeja', 'Bandejas organizadoras', 'A medida, con divisiones en grilla, apilable, paredes caladas, etiqueta y muesca.', 'hogar', 1, () => import('./generators/bandeja.js')),
@@ -189,7 +190,7 @@ export const FAMILIES = [
   { id: 'imagen', icon: 'image', tone: 'rose', title: 'Imagen a 3D', desc: 'Tu dibujo a pieza, litofanías, rompecabezas, para colorear y moldes de resina.', cover: 'dibujo-stl', cat: 'imagen',
     items: ['foto-color', 'dibujo-stl', 'litofania', 'posavasos-imagen', 'line-art', 'rompecabezas', 'puzle-encastre', 'colorear', 'imagen-resina', 'imagen-multipartes'] },
   { id: 'hogar', icon: 'home', tone: 'green', title: 'Hogar y organización', desc: 'Cajas, Gridfinity, portalápices, porta-marcadores, posavasos, ganchos y soportes.', cover: 'cajas', cat: 'hogar',
-    items: ['bandeja', 'ladrillos', 'cajas', 'gridfinity', 'portalapices', 'porta-boligrafos', 'posavasos', 'ganchos', 'contador-rascar', 'caja-figuritas', 'packaging', 'soporte-universal'] },
+    items: ['bandeja', 'ladrillos', 'dados', 'cajas', 'gridfinity', 'portalapices', 'porta-boligrafos', 'posavasos', 'ganchos', 'contador-rascar', 'caja-figuritas', 'packaging', 'soporte-universal'] },
   { id: 'taller', icon: 'gear', tone: 'slate', title: 'Taller y repuestos', desc: 'Engranajes, roscas, adaptadores, conectores y gabinetes para electrónica.', cover: 'engranajes', cat: 'taller',
     items: ['engranajes', 'roscas', 'adaptador', 'conectores', 'caja-electronica', 'repara', 'jig', 'mueble-salvado'] },
   { id: 'deco', icon: 'lamp', tone: 'yellow', title: 'Deco y lámparas', desc: 'Floreros, pantallas y bowls en espiral, y string art.', cover: 'vasos-espiral', cat: 'deco',
