@@ -20,7 +20,7 @@ Estado: **nueva** = no existe nada parecido · **ampliar** = se resuelve agranda
 
 | # | Herramienta | Qué hace | Estado |
 |---|---|---|---|
-| 7 | Clicker (llavero o suelto) | Tapa + cuerpo alrededor de un switch mecánico de teclado; forma por contorno, círculo, corazón, estrella, escudo; imagen, ícono o texto; aro de llavero; holguras ajustables | nueva |
+| 7 | Clicker (llavero o suelto) | Tapa + cuerpo alrededor de un switch mecánico de teclado; forma por contorno, círculo, corazón, estrella, escudo; imagen, ícono o texto; aro de llavero; holguras ajustables | hecho (`clicker`) |
 | 8 | Llavero de nombre articulado | Letras unidas por bisagras impresas en el lugar (flexi), multicolor | nueva |
 | 9 | Llavero con nombre + emoji / ícono, en lote | Nombre en cursiva con un ícono al final (corazón, rosa, mariposa), varios nombres de una | ampliar `llavero-nombre` |
 | 10 | Cuentas con letras (dijes) | Cuentas con agujero para pulseras o cordón, una letra por cuenta, varias tipografías y colores | nueva |
@@ -53,7 +53,7 @@ Estado: **nueva** = no existe nada parecido · **ampliar** = se resuelve agranda
 |---|---|---|---|
 | 23 | Embosador de papel | Prensa con bisagra impresa en el lugar que marca texto o un dibujo en papel | nueva |
 | 24 | Fabricante de sellos completo | Texto curvo alrededor, bordes simple/doble, círculo/elipse/rectángulo, relieve o hundido, mango con rosca | ampliar `sello-letras` |
-| 25 | Estudio de dados | D4, D6, D8, D10, D12, D20 (y dados de caras repetidas); cada cara con puntos, número, texto o ícono; redondeo y profundidad | nueva |
+| 25 | Estudio de dados | D4, D6, D8, D10, D12, D20 (y dados de caras repetidas); cada cara con puntos, número, texto o ícono; redondeo y profundidad | hecho (`dados`) |
 | 26 | QR con estilos 3D | Además de plano: pirámide, terrazas, "río", colinas; logo al centro y texto abajo | ampliar `qr-3d` |
 
 ## Recipientes con trama (tipo "ParamaCraft")
@@ -176,8 +176,8 @@ Idea: armar un catálogo para vender lo que podemos hacer, **por categoría y co
 
 | # | Herramienta | Estado |
 |---|---|---|
-| 100 | Soporte plegable multiángulo (patas que se traban en varias inclinaciones) | nueva |
-| 101 | Soporte de bolsillo de una pieza, con bisagra impresa en el lugar (también como llavero) | nueva |
+| 100 | Soporte plegable multiángulo (patas que se traban en varias inclinaciones) | hecho (`soporte-plegable`, multiángulo) |
+| 101 | Soporte de bolsillo de una pieza, con bisagra impresa en el lugar (también como llavero) | hecho (`soporte-plegable`, de bolsillo) |
 | 102 | Soporte inclinable con engranajes | nueva (usa `engranajes`) |
 
 ## Orden sugerido
@@ -223,6 +223,6 @@ Tipos de producto vistos en otras páginas; todo se hace con diseño propio, sin
 
 | # | Herramienta | Qué tiene que hacer | Estado |
 |---|---|---|---|
-| 128 | Ladrillos de encastre (compatibles con bloques tipo ladrillo) | Dibujar el ladrillo pastilla por pastilla en una grilla (tocar o arrastrar, modo borrar), alto ladrillo/placa/teja, precio en vivo con la calculadora y STL. Medidas estándar: paso 8 mm, pastilla Ø4,8 × 1,7 mm, alto 9,6 mm (placa 3,2), tubos de abajo y holgura ajustable para la impresora. Código propio: MachineBlocks es CC BY-NC-SA (no se copia), y sin usar la marca en el nombre ni en las fotos. | nueva |
+| 128 | Ladrillos de encastre (compatibles con bloques tipo ladrillo) | Dibujar el ladrillo pastilla por pastilla en una grilla (tocar o arrastrar, modo borrar), alto ladrillo/placa/teja, precio en vivo con la calculadora y STL. Medidas estándar: paso 8 mm, pastilla Ø4,8 × 1,7 mm, alto 9,6 mm (placa 3,2), tubos de abajo y holgura ajustable para la impresora. Código propio: MachineBlocks es CC BY-NC-SA (no se copia), y sin usar la marca en el nombre ni en las fotos. | hecho (`ladrillos`) |
 | 129 | Snapframes (MakerWorld) | No se pudo abrir el enlace: pedir capturas. | a revisar |
 | 130 | Resumen de herramientas gratis de 3Druck | No se pudo abrir el enlace: pedir capturas o la lista. | a revisar |

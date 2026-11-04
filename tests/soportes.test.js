@@ -40,3 +40,17 @@ test('soporte con logo + nombre: calado, en color, en cada estilo con respaldo',
     ok(`${style}/${pMode}/${text || 'solo logo'}`, await logo.build({ ...b2, style, pMode, text, mScale: 80 }, ctx));
   }
 });
+
+test('soporte de bolsillo: las hojas salen sueltas de la tarjeta y giran sin chocar hasta 60°', async () => {
+  const fold = (await import('../src/generators/soporte-plegable.js')).default;
+  const b2 = Object.fromEntries(fold.params.filter(p => p.key).map(p => [p.key, p.default]));
+  const [card, leg, stop] = (await fold.build({ ...b2, text: '', _raw: true }, ctx)).map(p => p.solid);
+  assert.equal(card.add(leg).add(stop).decompose().filter(x => x.volume() > 0.01).length, 3, 'las hojas quedaron pegadas');
+  const ly = b2.h / 2 - 9 - b2.t / 2, sy = -b2.h / 2 + 5 + 14 - b2.t / 2, r = b2.t / 2;
+  for (const th of [20, 45, 60]) {
+    assert.ok(leg.translate([0, -ly, -r]).rotate([th, 0, 0]).translate([0, ly, r]).intersect(card).volume() < 0.01, `pata a ${th}°`);
+    assert.ok(stop.translate([0, -sy, -r]).rotate([-th, 0, 0]).translate([0, sy, r]).intersect(card).volume() < 0.01, `tope a ${th}°`);
+  }
+  const multi = await fold.build({ ...b2, kind: 'multi' }, ctx);
+  ok('multiángulo', multi);
+});

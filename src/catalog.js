@@ -67,6 +67,7 @@ export const GENERATORS = [
   // ---------- Cocina y repostería ----------
   g('portafotos-colgante', 'Portafotos colgante', 'Marco de dos colores con el nombre arriba, la foto entra por arriba, con detalles navideños.', 'carteles', 1, () => import('./generators/portafotos-colgante.js')),
   g('termoformado', 'Moldes para termoformado', 'Par macho y hembra para adornos huecos de plástico o malla, con texto o inicial.', 'deco', 1, () => import('./generators/termoformado.js')),
+  g('soporte-plegable', 'Soportes plegables', 'De bolsillo con bisagras impresas (también llavero) o multiángulo con ranuras a 50° a 80°.', 'hogar', 1, () => import('./generators/soporte-plegable.js')),
   g('dados', 'Estudio de dados', 'D4, D6, D8, D10, D12 y D20 con números, puntos o caras propias, en otro color o grabados.', 'hogar', 1, () => import('./generators/dados.js')),
   g('clicker', 'Clicker', 'Clicker con switch de teclado: forma, texto o tu dibujo en la tecla, con argolla.', 'nombres', 1, () => import('./generators/clicker.js')),
   g('ladrillos', 'Ladrillos de encastre', 'Ladrillos, placas y tejas de 8 mm, rectangulares o con la forma que dibujes, con holgura ajustable.', 'hogar', 1, () => import('./generators/ladrillos.js')),
@@ -174,7 +175,7 @@ export const FAMILIES = [
   { id: 'premios', icon: 'trophy', tone: 'gold', title: 'Trofeos, medallas y souvenirs', desc: 'Diseñá tu trofeo o medalla, recuerdos de egresados y souvenirs con el nombre de cada invitado.', cover: 'medalla', cat: 'carteles',
     items: ['trofeo', 'medalla', 'graduados', 'souvenirs'] },
   { id: 'fundas', icon: 'phone', tone: 'slate', title: 'Fundas y soportes de celular', desc: 'Funda de TPU a medida y 8 estilos de soporte: triángulo, Z, corazón, placa Zen, amplificador y más.', cover: 'funda-celular', cat: 'hogar',
-    items: ['funda-celular', 'soporte-celular', 'soporte-logo'] },
+    items: ['funda-celular', 'soporte-celular', 'soporte-logo', 'soporte-plegable'] },
   { id: 'qr', icon: 'qr', tone: 'teal', title: 'QR y comercios', desc: 'Placas de cobro, WiFi, redes, reseñas, listas de QR y tarjetas.', cover: 'placa-qr-mp', cat: 'qr',
     items: ['placa-qr-mp', 'placa-wifi', 'placa-redes', 'placa-google', 'placa-qr', 'lista-qr', 'tarjeta-presentacion', 'qr-3d', 'exhibidor-salon'] },
   { id: 'letreros', icon: 'sign', tone: 'purple', title: 'Letreros', desc: 'Palabras superpuestas, @usuario, letras separadas y palabra con corazón.', cover: 'letrero-palabras', cat: 'carteles',
