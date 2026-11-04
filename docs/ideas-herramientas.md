@@ -186,3 +186,35 @@ Idea: armar un catálogo para vender lo que podemos hacer, **por categoría y co
 2. Clicker (7) y dados (25): los más descargados en las capturas.
 3. Ampliaciones chicas: 9, 14, 16, 21, 24, 26.
 4. Resto, y la lámpara (22) al final por ser la más grande.
+
+## Herramientas "robustas" (capturas del 03/11)
+
+Tipos de producto vistos en otras páginas; todo se hace con diseño propio, sin copiar código, imágenes ni marcas.
+
+| # | Herramienta | Qué tiene que hacer | Estado |
+|---|---|---|---|
+| 103 | Separador de STL por colores | Cargar STL/3MF, varita y pincel para elegir la parte, borde sugerido editable, cierre plano o curvo, encastres (tetón, doble tetón, llave, cola de milano) con holgura por material, validación de piezas cerradas, varios cortes con deshacer, STL por pieza / ZIP / 3MF con colores | en curso |
+| 104 | Fábrica de cortadores (mejora) | Imagen/SVG → cortador, cortador con sello o sello macizo; umbral, suavizado, limpieza de motas, invertir, espejar, transparencia; filo, base de refuerzo, placa, línea del sello, profundidad, separación; medidas y triángulos | mejora de `cortador-galletas` |
+| 105 | Jarrones paramétricos | Perfil con anillos que se arrastran en 3D; sección lisa, polígono, ondas suaves/rectas (cantidad, amplitud), dibujada o libre; giro en espiral | nueva |
+| 106 | Bandejas Bento | Medidas editables sobre el modelo, grilla de divisiones, espesor, redondeo, apilable, calado en paredes, etiqueta, muesca para el dedo | nueva |
+| 107 | Moldes para termoformado | Par de moldes macho/hembra para adornos huecos (corazón, flor, globo, bola, cuadrado) con texto o inicial | nueva |
+| 108 | Portafotos colgante | Marco de 2 colores con texto o nombre arriba y detalles (moño, arbolito, copos); también DXF | nueva |
+| 109 | Letrero de palabra con contorno (2 capas) | Letras sobre un fondo más grande de otro color | revisar `letrero-palabras` |
+| 110 | Corona navideña "Merry Christmas" de 3 colores | Hojas, bayas, moño y campanas con texto en el centro | ampliar `adorno-navidad` |
+| 111 | Puzle encastrable tipo Montessori | Placa con la figura calada y piezas de color que encastran (con dibujos propios o tu imagen) | nueva |
+| 112 | Estudio de puzles | Rectangular, hexagonal, circular, por silueta, fractal, tetris, deslizable; filas/columnas, tamaño de lengüeta, variación al azar, vista 2D/3D, colores e imagen | ampliar `rompecabezas` |
+| 113 | Adorno con tu foto | Foto → quitar fondo, suavizado, N colores, aro para colgar; 3MF con colores | nueva |
+| 114 | Posavasos con imagen (mejora) | Plano o colores en relieve, borde, alturas por color, margen, tamaño y posición del dibujo | mejora de `posavasos-imagen` |
+| 115 | Decorador de galletitas | Galletita jengibre con glaseado y nombre (Navidad / Halloween) | nueva |
+| 116 | Funda para vaso de café | Manga a medida con nombres o dibujo conectados | nueva |
+| 117 | Aros (pares) desde tu dibujo | Par espejado con argolla | nueva |
+| 118 | Clicker (fábrica) | Clickers con mecanismo, desde imagen, letras o personajes | ya en la lista (7) |
+| 119 | Bandeja para copa | Bandeja con forma de copa y nombre | nueva |
+| 120 | Imán desde imagen | Pieza con hueco para imán | nueva |
+| 121 | Organizador con forma de nombre | Lapicero con las letras del nombre | nueva |
+| 122 | Bandeja desde foto | Bandejita con la silueta y colores de la foto | nueva |
+| 123 | Cortar y conectar / flexi / piezas para modelos | Cortar STL con encastres, articulaciones flexi, hacer hueco, puzle desde un modelo 3D | nueva (Fase 5) |
+| 124 | Moldes desde un modelo | Caja de molde con llaves de registro | ya en el catálogo (Fase 5) |
+| 125 | Organizadores: cajonera, torre, bandeja con compartimentos | Medidas y divisiones | nueva |
+| 126 | SVG a STL | Vector plano con espesor | nueva |
+| 127 | Cuentas con letras, porta-gafete, salvauñas, colgante para gomitas | Pequeños desde imagen o texto | nuevas |
