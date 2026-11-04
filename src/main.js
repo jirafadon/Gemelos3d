@@ -39,6 +39,11 @@ function route() {
     const fam = FAMILIES.find(f => f.id === fa[1]);
     if (!fam) { location.hash = '#/'; return; }
     renderGenerator(fa[2] || fam.items.find(id => findGenerator(id)?.load), fam);
+  } else if (m && findGenerator(m[1])?.tool) {
+    // Herramientas grandes con pantalla propia (separador por colores, etc.)
+    const token = Symbol();
+    cleanup = token;
+    findGenerator(m[1]).tool().then(render => render(app, header())).then(fn => { if (cleanup === token) cleanup = fn; else fn && fn(); });
   } else if (m) renderGenerator(m[1], familyOf(m[1]));
   else if (location.hash.startsWith('#/taller')) {
     const token = Symbol();

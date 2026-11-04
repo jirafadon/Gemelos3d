@@ -140,7 +140,7 @@ export const GENERATORS = [
   g('neon-flex', 'Cartel de neón flex', 'Placa con canal para neón flex siguiendo un texto, forma o dibujo.', 'letras', 5, () => import('./generators/neon-flex.js')),
 
   // ---------- Herramientas STL ----------
-  g('separar-color', 'Separar STL por color', 'Divide un modelo en piezas por color con encastres.', 'herramientas', 5),
+  { ...g('separar-color', 'Separar STL por color', 'Elegís una parte con la varita o el pincel, se corta con encastre y sale una pieza por color.', 'herramientas', 1), tool: () => import('./tools/separador.js').then(m => m.renderSplitter), href: '#/g/separar-color' },
   g('cortar-conectar', 'Cortá y conectá', 'Corta un STL y agrega encastres, bisagras o rótulas.', 'herramientas', 5),
   g('moldes-silicona', 'Moldes de silicona', 'Genera la caja del molde con llaves de registro a partir de tu pieza.', 'herramientas', 5),
 ];

@@ -457,3 +457,68 @@ button { font: inherit; cursor: pointer; color: inherit; }
 header.top nav a.store { background: var(--brand); color: #fff; border-radius: 999px; padding: 7px 14px; display: inline-flex; align-items: center; gap: 6px; }
 header.top nav a.store:hover { filter: brightness(1.08); color: #fff; }
 header.top nav a.store .ic { width: 17px; height: 17px; }
+
+/* ---------- Separador por colores ---------- */
+.sp { display: grid; grid-template-columns: 320px minmax(0, 1fr) 280px; height: calc(100vh - 71px); }
+.sp-left, .sp-right { overflow: auto; padding: 16px; background: var(--panel); }
+.sp-left { border-right: 1px solid var(--line); }
+.sp-right { border-left: 1px solid var(--line); }
+.sp-left h1 { font-size: 20px; margin: 10px 0 4px; }
+.sp-steps { list-style: none; padding: 0; margin: 12px 0; display: grid; gap: 4px; }
+.sp-steps li { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--muted); padding: 5px 8px; border-radius: 9px; }
+.sp-steps li b { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--soft); font-size: 12px; }
+.sp-steps li.on { background: var(--brand-soft); color: var(--text); font-weight: 600; }
+.sp-steps li.on b { background: var(--brand); color: var(--brand-ink); }
+.sp-sec { border-top: 1px solid var(--line); padding: 14px 0 6px; transition: opacity .15s; }
+.sp-sec.dim { opacity: .45; pointer-events: none; }
+.sp-sec h2 { font-size: 15px; margin-bottom: 10px; }
+.sp-drop { display: block; border: 1.5px dashed var(--line); border-radius: 12px; padding: 14px; text-align: center; cursor: pointer; background: var(--soft); margin-bottom: 8px; }
+.sp-drop.over, .sp-drop:hover { border-color: var(--brand); background: var(--brand-soft); }
+.sp-drop b { display: block; } .sp-drop span { font-size: 12.5px; color: var(--muted); }
+.sp-btn { border: 1px solid var(--line); background: var(--panel); border-radius: 10px; padding: 8px 12px; font-weight: 600; font-size: 13.5px; display: inline-flex; align-items: center; gap: 6px; justify-content: center; }
+.sp-btn:hover { border-color: var(--brand); color: var(--brand); }
+.sp-btn.sm { padding: 5px 9px; font-size: 12.5px; }
+.sp-btn.wide { width: 100%; }
+.sp-btn.primary { background: var(--brand); border-color: var(--brand); color: var(--brand-ink); margin-top: 6px; }
+.sp-btn.primary:hover { filter: brightness(1.08); color: var(--brand-ink); }
+.sp-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0; }
+.sp-seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; padding: 3px; border: 1px solid var(--line); border-radius: 10px; background: var(--soft); margin-bottom: 10px; }
+.sp-seg.four { grid-template-columns: repeat(4, 1fr); }
+#closeSeg { grid-template-columns: 1fr 1fr; }
+.sp-seg button { border: 0; background: transparent; border-radius: 7px; padding: 6px 4px; font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.sp-seg button.on { background: var(--panel); color: var(--text); box-shadow: 0 1px 2px rgba(0,0,0,.1); }
+.sp-l { display: flex; justify-content: space-between; font-size: 12.5px; font-weight: 600; color: var(--muted); margin: 6px 0 2px; }
+.sp-l output { color: var(--text); font-variant-numeric: tabular-nums; }
+.sp-left input[type=range] { width: 100%; accent-color: var(--brand); }
+.sp-in { width: 100%; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; background: var(--panel); color: var(--text); font: inherit; font-size: 13.5px; }
+.sp-check { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; }
+.sp-info { font-size: 12.5px; color: var(--muted); background: var(--soft); border-radius: 9px; padding: 8px 10px; margin: 8px 0; }
+.sp-info:empty { display: none; }
+.sp-left kbd { font: 600 11px Inter; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 0 4px; background: var(--panel); }
+.sp-view { position: relative; display: flex; flex-direction: column; min-width: 0; background: var(--viewer); }
+.sp-bar { display: flex; gap: 6px; padding: 8px 10px; border-bottom: 1px solid var(--line); background: var(--panel); flex-wrap: wrap; }
+.sp-sp { flex: 1; }
+.sp-canvas { position: relative; flex: 1; min-height: 0; }
+.sp-canvas canvas { display: block; width: 100% !important; height: 100% !important; touch-action: none; }
+.sp-empty { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; gap: 6px; pointer-events: none; }
+.sp-empty b { font: 600 20px Poppins; } .sp-empty span { color: var(--muted); }
+.sp-empty[hidden] { display: none; }
+.sp-status { padding: 8px 12px; font-size: 13px; border-top: 1px solid var(--line); background: var(--panel); }
+.sp-status::before { content: "● "; color: var(--ok); }
+.sp-status.bad::before { color: var(--bad); }
+.sp-right h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 16px 0 8px; font-family: Inter; }
+.sp-right h3:first-child { margin-top: 0; }
+.sp-dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; font-size: 13px; margin: 0; }
+.sp-dl dt { color: var(--muted); } .sp-dl dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.sp-parts { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; }
+.sp-parts li { display: flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 10px; padding: 5px 6px; cursor: pointer; }
+.sp-parts li.on { border-color: var(--brand); background: var(--brand-soft); }
+.sp-parts input[type=color] { width: 28px; height: 28px; border: 0; padding: 0; background: none; cursor: pointer; flex: none; }
+.sp-pname { flex: 1; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 13.5px; font-weight: 600; color: var(--text); }
+.sp-health p { margin: 4px 0; font-size: 13px; }
+.sp-health .ok { color: var(--ok); } .sp-health .bad { color: var(--bad); } .sp-health .warn { color: #b45309; }
+@media (max-width: 1100px) { .sp { grid-template-columns: 300px minmax(0, 1fr); } .sp-right { display: none; } }
+@media (max-width: 760px) {
+  .sp { grid-template-columns: 1fr; grid-template-rows: 55vh auto; height: auto; }
+  .sp-view { grid-row: 1; } .sp-left { grid-row: 2; border-right: 0; }
+}
