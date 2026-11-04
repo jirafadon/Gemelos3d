@@ -239,6 +239,23 @@ export function skinCutter(info, sel, thick = 1.6) {
   return { tool };
 }
 
+/**
+ * Corte recto por un plano perpendicular a X, Y o Z (para piezas que no entran en la cama).
+ * @param frac  posición del corte entre 0 (mínimo) y 1 (máximo) de la pieza en ese eje
+ */
+export function axisCutter(solid, axis = 2, frac = 0.5) {
+  const { CrossSection } = wasm();
+  const b = solid.boundingBox();
+  const n = [0, 0, 0]; n[axis] = 1;
+  const c = [0, 1, 2].map(i => (b.min[i] + b.max[i]) / 2);
+  c[axis] = b.min[axis] + (b.max[axis] - b.min[axis]) * Math.min(0.98, Math.max(0.02, frac));
+  const f = frame(n);
+  const span = Math.max(b.max[0] - b.min[0], b.max[1] - b.min[1], b.max[2] - b.min[2]) * 2 + 20;
+  const foot = CrossSection.square([span, span], true);
+  const H = span;
+  return { tool: foot.extrude(H).transform(toMat(f, c)), foot, frame: f, origin: c, H };
+}
+
 /** Saca astillas de volumen cero que a veces dejan las operaciones. */
 export function clean(solid) {
   const { Manifold } = wasm();

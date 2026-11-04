@@ -11,7 +11,7 @@ import { parseSTLMesh, meshToManifold } from '../taller/objects.js';
 import { unzipSync, strFromU8 } from 'fflate';
 import { icon } from '../ui/icons.js';
 import {
-  MATERIALS, meshInfo, wandSelect, brushSelect, fitPlane, planeCutter, skinCutter, applyCut, addJoint, checkPart, sampleModel, boundaryEdges, clean,
+  MATERIALS, axisCutter, meshInfo, wandSelect, brushSelect, fitPlane, planeCutter, skinCutter, applyCut, addJoint, checkPart, sampleModel, boundaryEdges, clean,
 } from './split-core.js';
 
 const PALETTE = ['#E63946', '#2A9D8F', '#F4A261', '#457B9D', '#8AC926', '#FFCA3A', '#6A4C93', '#1E1E1E', '#F5F5F5', '#FF85A1'];
@@ -62,7 +62,7 @@ function read3MF(buffer) {
 }
 
 /* ---------- Pantalla ---------- */
-export async function renderSplitter(app, headerHtml) {
+export async function renderSplitter(app, headerHtml, opts = {}) {
   app.innerHTML = `${headerHtml}
   <main class="sp">
     <aside class="sp-left">
@@ -101,11 +101,15 @@ export async function renderSplitter(app, headerHtml) {
 
       <section class="sp-sec" data-sec="3">
         <h2>3 · Cómo se corta</h2>
-        <div class="sp-seg" id="closeSeg"><button data-close="flat" class="on">Cierre plano</button><button data-close="curved">Cierre curvo</button></div>
+        <div class="sp-seg" id="closeSeg"><button data-close="flat" class="on">Plano</button><button data-close="curved">Curvo</button><button data-close="axis">Recto X/Y/Z</button></div>
         <div id="flatOpts"><label class="sp-l">Profundidad del corte <output id="depO"></output></label><input type="range" id="dep" min="-5" max="15" step="0.1" value="0.4">
           <p class="muted small">Plano: la pieza se imprime apoyada sobre la cara del corte. Más profundidad = más pieza y más lugar para el encastre.</p></div>
         <div id="curvedOpts" hidden><label class="sp-l">Espesor de la pieza <output id="thO"></output></label><input type="range" id="th" min="0.6" max="6" step="0.1" value="1.6">
           <p class="muted small">Curvo: la pieza copia la superficie, como una cáscara. Ideal para manchas, ojos o parches.</p></div>
+        <div id="axisOpts" hidden>
+          <div class="sp-seg" id="axisSeg"><button data-axis="0">X</button><button data-axis="1">Y</button><button data-axis="2" class="on">Z (altura)</button></div>
+          <label class="sp-l">Dónde se corta <output id="posO"></output></label><input type="range" id="pos" min="2" max="98" step="1" value="50">
+          <p class="muted small">Recto: corta toda la pieza con un plano, sin elegir nada. Para modelos que no entran en la cama: cortás, agregás encastre y los pegás.</p></div>
         <div class="sp-row"><button class="sp-btn" id="preview">Previsualizar</button><label class="sp-check"><input type="checkbox" id="ghost"> Ver a través</label></div>
       </section>
 
@@ -301,7 +305,7 @@ export async function renderSplitter(app, headerHtml) {
   const setSeg = (seg, attr, v) => seg.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset[attr] === v));
   $('toolSeg').addEventListener('click', e => { const t = e.target.dataset.tool; if (!t) return; S.tool = t; setSeg($('toolSeg'), 'tool', t); $('wandOpts').hidden = t !== 'wand'; $('brushOpts').hidden = t === 'wand'; });
   const out = (id, unit, f = v => v) => { const i = $(id), o = $(id + 'O'); const u = () => { o.textContent = f(i.value) + unit; }; i.addEventListener('input', u); u(); };
-  out('ang', '°'); out('br', ' mm', v => String(v).replace('.', ',')); out('dep', ' mm', v => String(v).replace('.', ',')); out('th', ' mm', v => String(v).replace('.', ',')); out('gap', ' mm', v => String(v).replace('.', ','));
+  out('ang', '°'); out('pos', ' %'); out('br', ' mm', v => String(v).replace('.', ',')); out('dep', ' mm', v => String(v).replace('.', ',')); out('th', ' mm', v => String(v).replace('.', ',')); out('gap', ' mm', v => String(v).replace('.', ','));
 
   const ray = new THREE.Raycaster();
   function hitActive(ev) {
@@ -364,7 +368,11 @@ export async function renderSplitter(app, headerHtml) {
   }));
 
   // ---------- Cortar ----------
-  $('closeSeg').addEventListener('click', e => { const c = e.target.dataset.close; if (!c) return; S.close = c; setSeg($('closeSeg'), 'close', c); $('flatOpts').hidden = c !== 'flat'; $('curvedOpts').hidden = c === 'flat'; if (S.preview) makePreview(); });
+  const setClose = c => { S.close = c; setSeg($('closeSeg'), 'close', c); $('flatOpts').hidden = c !== 'flat'; $('curvedOpts').hidden = c !== 'curved'; $('axisOpts').hidden = c !== 'axis'; app.querySelector('[data-sec="2"]').hidden = c === 'axis'; stepOn(); };
+  $('closeSeg').addEventListener('click', e => { const c = e.target.dataset.close; if (!c) return; setClose(c); if (S.preview || c === 'axis') makePreview(); });
+  S.axis = 2;
+  $('axisSeg').addEventListener('click', e => { const a = e.target.dataset.axis; if (a === undefined) return; S.axis = +a; setSeg($('axisSeg'), 'axis', a); makePreview(); });
+  $('pos').addEventListener('change', () => makePreview());
   $('jointSeg').addEventListener('click', e => { const j = e.target.dataset.joint; if (!j) return; S.joint = j; setSeg($('jointSeg'), 'joint', j); if (S.preview) makePreview(); });
   $('mat').addEventListener('change', e => { $('gapBox').hidden = e.target.value !== 'custom'; if (S.preview) makePreview(); });
   $('ghost').addEventListener('change', e => { S.ghost = e.target.checked; draw(); });
@@ -373,10 +381,20 @@ export async function renderSplitter(app, headerHtml) {
 
   function computeCut() {
     const part = S.parts[S.active];
-    if (!S.sel.size) throw new Error('Primero elegí la parte que querés separar.');
-    if (S.sel.size >= S.info.nt) throw new Error('Elegiste toda la pieza: no hay nada que separar.');
+    if (!part) throw new Error('Primero cargá un modelo.');
+    if (S.close !== 'axis' && !S.sel.size) throw new Error('Primero elegí la parte que querés separar.');
+    if (S.close !== 'axis' && S.sel.size >= S.info.nt) throw new Error('Elegiste toda la pieza: no hay nada que separar.');
     let tool, cut = null, edges = null;
-    if (S.close === 'flat') {
+    if (S.close === 'axis') {
+      cut = axisCutter(part.solid, S.axis, +$('pos').value / 100);
+      tool = cut.tool;
+      // Marco del plano para mostrarlo
+      const b = part.solid.boundingBox(), o = cut.origin, f = cut.frame;
+      const half = Math.max(b.max[0] - b.min[0], b.max[1] - b.min[1], b.max[2] - b.min[2]) * 0.6;
+      const corner = (x, y) => [o[0] + f.u[0] * x + f.v[0] * y, o[1] + f.u[1] * x + f.v[1] * y, o[2] + f.u[2] * x + f.v[2] * y];
+      const q = [corner(-half, -half), corner(half, -half), corner(half, half), corner(-half, half)];
+      edges = q.map((p, i) => [p, q[(i + 1) % 4]]);
+    } else if (S.close === 'flat') {
       const plane = fitPlane(S.info, S.sel);
       cut = planeCutter(S.info, S.sel, plane, { depth: +$('dep').value });
       if (!cut) throw new Error('No pude armar el corte con esa selección.');
@@ -395,11 +413,11 @@ export async function renderSplitter(app, headerHtml) {
       tool = sk.tool;
     }
     let { inside, rest } = applyCut(part.solid, tool);
-    if (inside.isEmpty() || inside.volume() < 0.01) throw new Error('El corte no toma material: probá más profundidad.');
+    if (inside.isEmpty() || inside.volume() < 0.01) throw new Error(S.close === 'axis' ? 'El plano no corta la pieza: movelo.' : 'El corte no toma material: probá más profundidad.');
     if (rest.isEmpty() || rest.volume() < 0.01) throw new Error('El corte se lleva toda la pieza.');
     let note = '';
     if (S.joint !== 'none') {
-      if (S.close !== 'flat') note = 'Los encastres van con el cierre plano: esta pieza va pegada.';
+      if (S.close === 'curved') note = 'Los encastres van con el cierre plano o recto: esta pieza va pegada.';
       else { const j = addJoint(inside, rest, cut, { kind: S.joint, gap: gapOf() }); inside = j.inside; rest = j.rest; note = j.note || `Encastre listo: ${j.info.count > 1 ? 'dos tetones' : S.joint === 'key' ? 'llave' : 'tetón'} de ${fmt(j.info.r * 2)} mm × ${fmt(j.info.L)} mm, holgura ${fmt(gapOf(), 2)} mm.`; }
     }
     const used = new Set(S.parts.map(p => p.color));
@@ -472,6 +490,7 @@ export async function renderSplitter(app, headerHtml) {
   $('x3mf').addEventListener('click', () => { if (ready()) download(to3MF(S.parts, { name: base() }), `${base()}_colores.3mf`, 'model/3mf'); });
   $('xzip').addEventListener('click', () => { if (ready()) download(toSTLZip(S.parts), `${base()}_piezas.zip`, 'application/zip'); });
 
+  if (opts.mode === 'axis') { setClose('axis'); app.querySelector('.sp-left h1').textContent = 'Cortá y conectá'; app.querySelector('.sp-left > p').textContent = 'Cortás un modelo grande en partes que entren en la cama, con tetones o llaves para que encastren al pegarlas. También podés separar partes por color.'; }
   refreshAll();
   return () => { window.removeEventListener('keydown', onKey); viewer.renderer.dispose(); };
 }

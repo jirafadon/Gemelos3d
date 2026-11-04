@@ -49,3 +49,17 @@ test('el pincel y el tubo (gorro sin tapa) se cortan del lado correcto', () => {
   const br = S.brushSelect(info, seed, [0, -11, 70], 4);
   assert.ok(br.size > 0 && br.size < sel.size);
 });
+
+test('corte recto en Z con tetón y con llave: dos piezas cerradas que no se pisan', () => {
+  const m = S.sampleModel();
+  for (const kind of ['peg', 'key', 'double']) {
+    const cut = S.axisCutter(m, 2, kind === 'double' ? 0.28 : 0.5);
+    const { inside, rest } = S.applyCut(m, cut.tool);
+    assert.ok(Math.abs(inside.volume() + rest.volume() - m.volume()) < 0.5);
+    const j = S.addJoint(inside, rest, cut, { kind, gap: 0.2 });
+    assert.equal(j.note, '', kind);
+    assert.ok(j.inside.intersect(j.rest).volume() < 0.01);
+    assert.equal(S.checkPart(j.inside).bodies, 1);
+  }
+  for (const axis of [0, 1]) { const c = S.axisCutter(m, axis, 0.3); const r = S.applyCut(m, c.tool); assert.ok(r.inside.volume() > 1 && r.rest.volume() > 1); }
+});

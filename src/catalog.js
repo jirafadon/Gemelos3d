@@ -156,8 +156,8 @@ export const GENERATORS = [
 
   // ---------- Herramientas STL ----------
   { ...g('separar-color', 'Separar STL por color', 'Elegís una parte con la varita o el pincel, se corta con encastre y sale una pieza por color.', 'herramientas', 1), tool: () => import('./tools/separador.js').then(m => m.renderSplitter), href: '#/g/separar-color' },
-  g('cortar-conectar', 'Cortá y conectá', 'Corta un STL y agrega encastres, bisagras o rótulas.', 'herramientas', 5),
-  g('moldes-silicona', 'Moldes de silicona', 'Genera la caja del molde con llaves de registro a partir de tu pieza.', 'herramientas', 5),
+  { ...g('cortar-conectar', 'Cortá y conectá', 'Cortá un modelo grande en partes que entren en la cama, con tetones o llaves para que encastren.', 'herramientas', 1), tool: () => import('./tools/separador.js').then(m => (app, h) => m.renderSplitter(app, h, { mode: 'axis' })), href: '#/g/cortar-conectar' },
+  { ...g('moldes-silicona', 'Moldes desde tu pieza', 'Molde rígido de dos mitades con llaves, bebedero y respiraderos, o caja para colar silicona.', 'herramientas', 1), tool: () => import('./tools/moldes.js').then(m => m.renderMolds), href: '#/g/moldes-silicona' },
 ];
 
 export const findGenerator = id => GENERATORS.find(x => x.id === id);
