@@ -218,3 +218,11 @@ Tipos de producto vistos en otras páginas; todo se hace con diseño propio, sin
 | 125 | Organizadores: cajonera, torre, bandeja con compartimentos | Medidas y divisiones | nueva |
 | 126 | SVG a STL | Vector plano con espesor | nueva |
 | 127 | Cuentas con letras, porta-gafete, salvauñas, colgante para gomitas | Pequeños desde imagen o texto | nuevas |
+
+## Enlaces del 04/11
+
+| # | Herramienta | Qué tiene que hacer | Estado |
+|---|---|---|---|
+| 128 | Ladrillos de encastre (compatibles con bloques tipo ladrillo) | Dibujar el ladrillo pastilla por pastilla en una grilla (tocar o arrastrar, modo borrar), alto ladrillo/placa/teja, precio en vivo con la calculadora y STL. Medidas estándar: paso 8 mm, pastilla Ø4,8 × 1,7 mm, alto 9,6 mm (placa 3,2), tubos de abajo y holgura ajustable para la impresora. Código propio: MachineBlocks es CC BY-NC-SA (no se copia), y sin usar la marca en el nombre ni en las fotos. | nueva |
+| 129 | Snapframes (MakerWorld) | No se pudo abrir el enlace: pedir capturas. | a revisar |
+| 130 | Resumen de herramientas gratis de 3Druck | No se pudo abrir el enlace: pedir capturas o la lista. | a revisar |
